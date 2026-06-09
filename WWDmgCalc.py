@@ -4241,14 +4241,13 @@ class ResonanceBuffPage(QWidget):
             return
         chain_num = item["id"]
         effects = item.get("effects", [])
-        effect_names = {e["name"] for e in effects}
 
-        # 先移除该链的旧效果
+        # 先移除该链的所有旧效果（传空集合 = 移除该 chain_num 的全部行）
         self._main_screen.page_keyword_assoc.remove_effects_by_chain(chain_num)
         self._main_screen.page_combined_perm.remove_effects_by_source_and_names(
-            "共鸣链效果", effect_names, chain_num=chain_num)
+            "共鸣链效果", set(), chain_num=chain_num)
         self._main_screen.page_combined_trigger.remove_effects_by_source_and_names(
-            "共鸣链效果", effect_names, chain_num=chain_num)
+            "共鸣链效果", set(), chain_num=chain_num)
 
         # 如果启用且有效果，重新添加
         if not item.get("enabled", True) or not effects:
