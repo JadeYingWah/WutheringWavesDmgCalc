@@ -3536,7 +3536,7 @@ class SaveManager:
 
         # ResonanceBuffPage
         pages["chain_buff"] = {
-            "items": ms.page_chain_buff.get_items(),
+            "items": ms.page_resonance_buff.get_items(),
         }
 
         # KeywordAssociationPage
@@ -3726,13 +3726,13 @@ class SaveManager:
         if cb_data:
             for item in cb_data.get("items", []):
                 # 更新已有共鸣链项（按 id 匹配）
-                for existing in ms.page_chain_buff._items:
+                for existing in ms.page_resonance_buff._items:
                     if existing["id"] == item.get("id"):
                         existing["name"] = item.get("name", existing["name"])
                         existing["enabled"] = item.get("enabled", True)
                         existing["effects"] = item.get("effects", [])
                         break
-            ms.page_chain_buff._refresh_cards()
+            ms.page_resonance_buff._refresh_cards()
 
         # 9d. 恢复 ResultPage._auto_compute 状态
         if rp_data:
