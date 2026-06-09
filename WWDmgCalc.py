@@ -4271,6 +4271,12 @@ class ResonanceBuffPage(QWidget):
                 eff.get("source", "共鸣链效果"), eff.get("sub_name", ""), "",
                 chain_prefix=f"共鸣链{chain_num}")
 
+        # 触发下游重算（综合填写→数值总结→计算结果→结果列表）
+        if self._main_screen.page_combined_perm._on_change_cb:
+            self._main_screen.page_combined_perm._on_change_cb()
+        if self._main_screen.page_keyword_assoc._on_change_cb:
+            self._main_screen.page_keyword_assoc._on_change_cb()
+
     def get_items(self):
         return self._items
 

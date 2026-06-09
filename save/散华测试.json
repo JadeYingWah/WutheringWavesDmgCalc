@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "WWDmgCalc",
-  "timestamp": "2026-06-09T19:58:16.964913",
+  "timestamp": "2026-06-09T20:10:02.788848",
   "name": "",
   "theme": "dark",
   "pages": {
@@ -43,9 +43,31 @@
           "seq": 1,
           "source": "角色效果",
           "sub_name": "散华固有技能1"
+        },
+        {
+          "name": "伤害提升",
+          "value": 35.0,
+          "locked": false,
+          "seq": 2,
+          "source": "共鸣链效果"
+        },
+        {
+          "name": "暴击率加成",
+          "value": 15.0,
+          "locked": false,
+          "seq": 3,
+          "source": "共鸣链效果"
+        },
+        {
+          "name": "伤害提升",
+          "value": 120.0,
+          "locked": false,
+          "seq": 4,
+          "source": "共鸣链效果",
+          "sub_name": "1"
         }
       ],
-      "counter": 2
+      "counter": 6
     },
     "enemy_defense": {
       "rows": [],
@@ -313,7 +335,7 @@
         {
           "id": 1,
           "name": "散华的共鸣链1",
-          "enabled": false,
+          "enabled": true,
           "effects": [
             {
               "name": "暴击率加成",
@@ -327,13 +349,13 @@
         {
           "id": 2,
           "name": "散华的共鸣链2",
-          "enabled": false,
+          "enabled": true,
           "effects": []
         },
         {
           "id": 3,
           "name": "散华的共鸣链3",
-          "enabled": false,
+          "enabled": true,
           "effects": [
             {
               "name": "伤害提升",
@@ -347,8 +369,16 @@
         {
           "id": 4,
           "name": "散华的共鸣链4",
-          "enabled": false,
-          "effects": []
+          "enabled": true,
+          "effects": [
+            {
+              "name": "伤害提升",
+              "value": 120.0,
+              "type": "特定",
+              "source": "共鸣链效果",
+              "sub_name": "1"
+            }
+          ]
         },
         {
           "id": 5,
@@ -373,10 +403,34 @@
           "source": "关联效果",
           "sub_name": "散华固有技能2",
           "keywords": "冰川爆炸伤害, 冰凌爆炸伤害, 冰棘爆炸伤害"
+        },
+        {
+          "name": "伤害提升",
+          "value": 35.0,
+          "eff_type": "百分比",
+          "source": "共鸣链效果",
+          "sub_name": "",
+          "keywords": ""
+        },
+        {
+          "name": "暴击率加成",
+          "value": 15.0,
+          "eff_type": "百分比",
+          "source": "共鸣链效果",
+          "sub_name": "",
+          "keywords": ""
+        },
+        {
+          "name": "伤害提升",
+          "value": 120.0,
+          "eff_type": "百分比",
+          "source": "共鸣链效果",
+          "sub_name": "1",
+          "keywords": ""
         }
       ],
-      "counter": 1,
-      "chain_counter": 0
+      "counter": 2,
+      "chain_counter": 3
     },
     "result_list": {
       "items": [],
