@@ -1658,7 +1658,7 @@ class OCRConfirmDialog(QDialog):
                 btn.setCursor(Qt.CursorShape.PointingHandCursor)
                 btn.clicked.connect(lambda checked, idx=i: self._load_tab(idx))
                 btn.setStyleSheet("""
-                    QPushButton { padding:4px 8px; border:1px solid #555; border-radius:3px;
+                    QPushButton { padding:7px 12px; border:1px solid #555; border-radius:3px;
                                   background:#2a2a2a; color:#aaa; font-size:12px; }
                     QPushButton:checked { background:#3a6a9a; color:#fff; border-color:#5a9aca; }
                 """)
@@ -2065,7 +2065,7 @@ class DamageMultConfirmDialog(QDialog):
             f"QTableWidget {{ background: {c['bg']}; border: 1px solid {c['border']}; border-radius: 6px; }}"
             f"QHeaderView::section {{"
             f"  background: {c['header_bg']}; color: {c['accent']}; font-weight: 600;"
-            f"  font-size: 13px; border: none; padding: 2px 4px;"
+            f"  font-size: 13px; border: none; padding: 6px 8px;"
             f"}}"
         )
 
@@ -2073,13 +2073,13 @@ class DamageMultConfirmDialog(QDialog):
         wide_style = (
             f"background: {c['input_bg']}; color: {c['text']};"
             f"border: 1px solid {c['input_border']}; border-radius: 4px;"
-            f"padding: 4px 6px; font-size: 13px;"
+            f"padding: 6px 8px; font-size: 13px;"
         )
         # 样式：窄列（基础数值/倍率/技能/元素/效应）
         narrow_style = (
             f"background: {c['input_bg']}; color: {c['text']};"
             f"border: 1px solid {c['input_border']}; border-radius: 3px;"
-            f"padding: 2px 3px; font-size: 12px;"
+            f"padding: 4px 6px; font-size: 12px;"
         )
         widget_focus = f"border-color: {c['input_focus']};"
         dropdown_style = (
@@ -4080,7 +4080,7 @@ class ResonanceBuffPage(QWidget):
 
     _BTN_STYLE = (
         "QPushButton {{ color: {}; background: {}; "
-        "border: 1px solid {}; border-radius: 4px; padding: 6px 16px; font-size: 14px; }}"
+        "border: 1px solid {}; border-radius: 4px; padding: 8px 18px; font-size: 14px; }}"
         "QPushButton:hover {{ background: {}; }}"
     )
 
@@ -4324,7 +4324,7 @@ class ResonanceChainEditDialog(QDialog):
         # 使用内联样式确保显示正确
         save_btn.setStyleSheet(
             "QPushButton { background-color: #e94560; color: white; border: none; "
-            "padding: 6px 16px; font-size: 14px; font-weight: 600; border-radius: 4px; }"
+            "padding: 8px 18px; font-size: 14px; font-weight: 600; border-radius: 4px; }"
             "QPushButton:hover { background-color: #ff6b81; }"
         )
         bottom.addWidget(save_btn)
@@ -4895,7 +4895,7 @@ class ResultDetailDialog(QDialog):
             tl.setSpacing(2)
             tag.setStyleSheet(
                 "background: rgba(100,181,246,0.15); border: 1px solid rgba(100,181,246,0.3);"
-                "border-radius: 3px; padding: 2px 4px;"
+                "border-radius: 3px; padding: 4px 6px;"
             )
             kl = QLabel(kw)
             kl.setStyleSheet("color: #64b5f6; font-size: 11px; border: none; background: transparent;")
@@ -5663,7 +5663,7 @@ class ResultListPage(QWidget):
         light = self._is_light_theme()
         _btn_base = (
             "QPushButton {{ color: {}; background: {}; "
-            "border: 1px solid {}; border-radius: 3px; padding: 2px 8px; }}"
+            "border: 1px solid {}; border-radius: 3px; padding: 6px 10px; }}"
             "QPushButton:hover {{ background: {}; }}"
         )
 
@@ -5801,7 +5801,7 @@ class ResultListPage(QWidget):
         if self._auto_update:
             self.auto_update_btn.setText("关闭全部自动更新")
             self.auto_update_btn.setStyleSheet(
-                "QPushButton { font-size: 13px; padding: 5px 14px; "
+                "QPushButton { font-size: 13px; padding: 7px 16px; "
                 "background: #4CAF50; color: #fff; border: 1px solid #388E3C; "
                 "border-radius: 4px; font-weight: bold; }"
                 "QPushButton:hover { background: #43A047; }"
@@ -5816,7 +5816,7 @@ class ResultListPage(QWidget):
         if self._auto_update:
             self.auto_update_btn.setText("关闭全部自动更新")
             self.auto_update_btn.setStyleSheet(
-                "QPushButton { font-size: 13px; padding: 5px 14px; "
+                "QPushButton { font-size: 13px; padding: 7px 16px; "
                 "background: #4CAF50; color: #fff; border: 1px solid #388E3C; "
                 "border-radius: 4px; font-weight: bold; }"
                 "QPushButton:hover { background: #43A047; }"
@@ -5915,7 +5915,7 @@ class ResultListPage(QWidget):
             tag_layout.setSpacing(1)
             tag.setStyleSheet(
                 "background: rgba(100,181,246,0.15); border: 1px solid rgba(100,181,246,0.3);"
-                "border-radius: 3px; padding: 1px 2px;"
+                "border-radius: 3px; padding: 3px 5px;"
             )
             kw_lbl = QLabel(kw)
             kw_lbl.setStyleSheet("color: #64b5f6; font-size: 10px; border: none; background: transparent;")
@@ -6449,7 +6449,7 @@ class ResultPage(QWidget):
         if self._auto_compute:
             self.auto_compute_btn.setText("关闭自动计算")
             self.auto_compute_btn.setStyleSheet(
-                "QPushButton { font-size: 13px; padding: 5px 14px; "
+                "QPushButton { font-size: 13px; padding: 7px 16px; "
                 "background: #4CAF50; color: #fff; border: 1px solid #388E3C; "
                 "border-radius: 4px; font-weight: bold; }"
                 "QPushButton:hover { background: #43A047; }"
@@ -7667,7 +7667,7 @@ class ManualDialog(QDialog):
             edit_color = "#1b5e20" if self._is_light_theme() else "#a5d6a7"
             self.edit_btn.setStyleSheet(
                 f"QPushButton {{ color: {edit_color}; background: rgba(76,175,80,0.2);"
-                f"border: 1px solid rgba(76,175,80,0.4); border-radius: 3px; padding: 4px 12px; }}"
+                f"border: 1px solid rgba(76,175,80,0.4); border-radius: 3px; padding: 7px 14px; }}"
                 f"QPushButton:hover {{ background: rgba(76,175,80,0.3); }}"
             )
             self.insert_img_btn.setVisible(True)
@@ -9145,7 +9145,7 @@ class DmgCalculator(QMainWindow):
 
         # 存档按钮（放在主题按钮左边）
         btn_style = (
-            "QPushButton { font-size: 12px; padding: 4px 10px; border: 1px solid #555; "
+            "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #555; "
             "border-radius: 4px; background: rgba(255,255,255,0.06); color: #ccc; }"
             "QPushButton:hover { background: rgba(255,255,255,0.14); }"
         )
@@ -9183,7 +9183,7 @@ class DmgCalculator(QMainWindow):
 
         # 使用预设按钮（使用 accent 色突出）
         preset_style = (
-            "QPushButton { font-size: 12px; padding: 4px 12px; border: 1px solid #e94560; "
+            "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #e94560; "
             "border-radius: 4px; background: rgba(233,69,96,0.25); color: #ff8c9a; font-weight: 600; }"
             "QPushButton:hover { background: rgba(233,69,96,0.45); }"
         )
@@ -9258,33 +9258,33 @@ class DmgCalculator(QMainWindow):
         # 更新存档按钮主题
         if self.current_theme == "dark":
             btn_css = (
-                "QPushButton { font-size: 12px; padding: 4px 10px; border: 1px solid #3d4458; "
+                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #3d4458; "
                 "border-radius: 4px; background: rgba(255,255,255,0.05); color: #b0b6c2; }"
                 "QPushButton:hover { background: rgba(255,255,255,0.10); }"
             )
             preset_css = (
-                "QPushButton { font-size: 12px; padding: 4px 12px; border: 1px solid #e94560; "
+                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #e94560; "
                 "border-radius: 4px; background: rgba(233,69,96,0.25); color: #ff8c9a; font-weight: 600; }"
                 "QPushButton:hover { background: rgba(233,69,96,0.45); }"
             )
             builder_css = (
-                "QPushButton { font-size: 12px; padding: 4px 12px; border: 1px solid #8e44ad; "
+                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #8e44ad; "
                 "border-radius: 4px; background: rgba(142,68,173,0.20); color: #bb8fce; font-weight: 600; }"
                 "QPushButton:hover { background: rgba(142,68,173,0.35); }"
             )
         else:
             btn_css = (
-                "QPushButton { font-size: 12px; padding: 4px 10px; border: 1px solid #b0b8c4; "
+                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #b0b8c4; "
                 "border-radius: 4px; background: rgba(0,0,0,0.04); color: #3a4050; }"
                 "QPushButton:hover { background: rgba(0,0,0,0.08); }"
             )
             preset_css = (
-                "QPushButton { font-size: 12px; padding: 4px 12px; border: 1px solid #5070e8; "
+                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #5070e8; "
                 "border-radius: 4px; background: rgba(80,112,232,0.15); color: #3d5fd4; font-weight: 600; }"
                 "QPushButton:hover { background: rgba(80,112,232,0.28); }"
             )
             builder_css = (
-                "QPushButton { font-size: 12px; padding: 4px 12px; border: 1px solid #7c3aed; "
+                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #7c3aed; "
                 "border-radius: 4px; background: rgba(124,58,237,0.12); color: #6d28d9; font-weight: 600; }"
                 "QPushButton:hover { background: rgba(124,58,237,0.22); }"
             )
@@ -9356,14 +9356,14 @@ class DmgCalculator(QMainWindow):
         if active:
             if self.current_theme == "dark":
                 return (
-                    "QPushButton { font-size: 12px; padding: 4px 10px; "
+                    "QPushButton { font-size: 12px; padding: 7px 14px; "
                     "border: 1px solid #43A047; border-radius: 4px; "
                     "background: rgba(76,175,80,0.20); color: #81c784; font-weight: 600; }"
                     "QPushButton:hover { background: rgba(76,175,80,0.30); }"
                 )
             else:
                 return (
-                    "QPushButton { font-size: 12px; padding: 4px 10px; "
+                    "QPushButton { font-size: 12px; padding: 7px 14px; "
                     "border: 1px solid #388E3C; border-radius: 4px; "
                     "background: rgba(76,175,80,0.12); color: #2e7d32; font-weight: 600; }"
                     "QPushButton:hover { background: rgba(76,175,80,0.22); }"
@@ -9371,14 +9371,14 @@ class DmgCalculator(QMainWindow):
         else:
             if self.current_theme == "dark":
                 return (
-                    "QPushButton { font-size: 12px; padding: 4px 10px; "
+                    "QPushButton { font-size: 12px; padding: 7px 14px; "
                     "border: 1px solid #555; border-radius: 4px; "
                     "background: rgba(255,255,255,0.06); color: #ccc; }"
                     "QPushButton:hover { background: rgba(255,255,255,0.14); }"
                 )
             else:
                 return (
-                    "QPushButton { font-size: 12px; padding: 4px 10px; "
+                    "QPushButton { font-size: 12px; padding: 7px 14px; "
                     "border: 1px solid #bbb; border-radius: 4px; "
                     "background: rgba(0,0,0,0.04); color: #333; }"
                     "QPushButton:hover { background: rgba(0,0,0,0.08); }"

@@ -76,7 +76,7 @@ def build_stylesheet(theme):
     QPushButton#startButton:pressed {{ background-color: {c["btn_pressed"]}; }}
     QPushButton#themeButton {{
         background-color: transparent; border: 1px solid {c["border"]};
-        color: {c["text_secondary"]}; padding: 6px 14px; border-radius: 6px; font-size: 13px;
+        color: {c["text_secondary"]}; padding: 8px 18px; border-radius: 6px; font-size: 13px;
     }}
     QPushButton#themeButton:hover {{ border-color: {c["accent"]}; color: {c["accent"]}; }}
     QWidget#MainScreen {{ background-color: {c["bg"]}; }}
@@ -163,7 +163,7 @@ def build_stylesheet(theme):
     QFormLayout {{ spacing: 10px; }}
     QPushButton#backButton {{
         background-color: transparent; border: 1px solid {c["border"]};
-        color: {c["text_secondary"]}; padding: 6px 16px; border-radius: 6px; font-size: 13px;
+        color: {c["text_secondary"]}; padding: 8px 18px; border-radius: 6px; font-size: 13px;
     }}
     QPushButton#backButton:hover {{ border-color: {c["accent"]}; color: {c["accent"]}; }}
     QPushButton#backButton[active="true"] {{
@@ -171,7 +171,7 @@ def build_stylesheet(theme):
     }}
     QPushButton#addButton {{
         background-color: {c["btn_bg"]}; color: white; border: none;
-        padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600;
+        padding: 7px 16px; border-radius: 4px; font-size: 12px; font-weight: 600;
     }}
     QPushButton#addButton:hover {{ background-color: {c["btn_hover"]}; }}
     QPushButton#itemAddBtn {{
@@ -191,20 +191,20 @@ def build_stylesheet(theme):
     QPushButton#itemLockBtn {{
         background-color: {c["input_border"]}; color: {c["text"]};
         border: none; border-radius: 4px; font-size: 12px;
-        padding: 4px 8px;
+        padding: 7px 12px;
     }}
     QPushButton#itemLockBtn:hover {{ background-color: {c["accent"]}; color: white; }}
     QPushButton#itemDeleteBtn {{
         background-color: #c0392b; color: white;
         border: none; border-radius: 4px; font-size: 12px;
-        padding: 4px 8px;
+        padding: 7px 12px;
     }}
     QPushButton#itemDeleteBtn:hover {{ background-color: #e74c3c; }}
     QPushButton#itemDeleteBtn:disabled {{ background-color: {c["input_border"]}; color: {c["text_secondary"]}; }}
     QDoubleSpinBox#itemValueSpin:disabled {{ color: {c["text_secondary"]}; }}
     QLineEdit#nameEdit {{
         border: 1px solid {c["input_border"]}; border-radius: 4px;
-        background: {c["input_bg"]}; font-size: 14px; padding: 4px 8px; color: {c["text"]};
+        background: {c["input_bg"]}; font-size: 14px; padding: 6px 10px; color: {c["text"]};
     }}
     QLineEdit#nameEdit:focus {{ border: 1px solid {c["input_focus"]}; }}
     QLabel#seqLabel {{
@@ -246,7 +246,7 @@ def build_stylesheet(theme):
     QPushButton#processCopyBtn {{
         color: {c["text_secondary"]}; font-size: 12px; font-weight: 400;
         background-color: {c["input_bg"]}; border: 1px solid {c["border"]};
-        border-radius: 4px; padding: 2px 10px;
+        border-radius: 4px; padding: 6px 12px;
     }}
     QPushButton#processCopyBtn:hover {{ color: {c["accent"]}; border-color: {c["accent"]}; }}
     QLabel#processLabel {{
@@ -328,7 +328,7 @@ def build_stylesheet(theme):
 
     QComboBox#algorithmCombo {{
         font-size: 12px;
-        padding: 2px 4px;
+        padding: 4px 8px;
         text-align: center;
         border: 1px solid {c["input_border"]};
         border-radius: 4px;
@@ -449,7 +449,7 @@ def build_stylesheet(theme):
         color: {c["text"]};
         border: 1px solid {c["border"]};
         border-radius: 4px;
-        padding: 4px 8px;
+        padding: 6px 10px;
     }}
     QFileDialog QPushButton {{
         background-color: {c["input_bg"]};
@@ -481,7 +481,7 @@ def build_stylesheet(theme):
         color: {c["text"]};
         border: 1px solid {c["border"]};
         border-radius: 4px;
-        padding: 4px 8px;
+        padding: 6px 10px;
     }}
     QFileDialog QComboBox QAbstractItemView {{
         background-color: {c["input_bg"]};
