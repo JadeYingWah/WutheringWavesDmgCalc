@@ -146,7 +146,7 @@ pip install PyQt6 rapidocr-onnxruntime opencv-python numpy Pillow pytest
 
 ```
 CharBasePage ──────────┐
-CombinedEntryPage × 2 ─┤
+CombinedEntryPage × 2 ─┤  ← 共鸣链效果自动同步到此
 EchoPage × N ──────────┘
         │
         ▼ _collect_all_items() → [(name, value, src, nav_key, seq), ...]
@@ -163,7 +163,7 @@ EchoPage × N ──────────┘
 
 ### 回调链
 
-任意来源页变更 → `_on_change_cb` →
+任意来源页变更（含共鸣链同步） → `_on_change_cb` →
 1. `EnemyDefensePage.recalc()` + `EnemyResistancePage._recalc()`
 2. 四个 `SummaryPage.recalc()`
 3. `ResultPage.auto_compute()`（受自动计算开关控制）
@@ -994,9 +994,13 @@ _resonanceChainEditDialog._save()
          ├── CombinedEntryPage.remove_effects_by_source_and_names(source, names, chain_num)
          │   └── 按来源 + 名称 + chain_num 精确匹配并移除
          │
-         └── 若启用 → 重新添加效果到综合填写 + 关键词关联页
-              ├── _add_row_with_source(name, value, seq, source, chain_num=chain_num)
-              └── add_effect(name, value, type, source, sub_name, keywords, chain_prefix)
+         ├── 若启用 → 重新添加效果到综合填写 + 关键词关联页
+         │    ├── _add_row_with_source(name, value, seq, source, chain_num=chain_num)
+         │    └── add_effect(name, value, type, source, sub_name, keywords, chain_prefix)
+         │
+         └── 触发下游重算（_on_change_cb）
+              ├── 综合填写回调 → 数值总结 → 计算结果 → 结果列表
+              └── 关键词关联回调 → 数值总结 → 计算结果 → 结果列表
 ```
 
 ### 代码质量（v0.9 优化）
