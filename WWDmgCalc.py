@@ -4607,7 +4607,12 @@ class ResonanceChainEditDialog(QDialog):
     def _load_existing_data(self):
         for eff in self._item.get("effects", []):
             eff_type = eff.get("type", "常驻")
-            table = self._perm_table if eff_type == "常驻" else self._trig_table
+            if eff_type == "常驻":
+                table = self._perm_table
+            elif eff_type == "触发":
+                table = self._trig_table
+            else:
+                table = self._spec_table
             self._add_table_row(table, eff.get("name", ""), eff.get("value", 0.0),
                                eff.get("source", "共鸣链效果"), eff_type)
 
@@ -4617,7 +4622,7 @@ class ResonanceChainEditDialog(QDialog):
         self._item["name"] = f"{self._prefix}的共鸣链{self._chain_num}"
 
         effects = []
-        for table, eff_type in [(self._perm_table, "常驻"), (self._trig_table, "触发")]:
+        for table, eff_type in [(self._perm_table, "常驻"), (self._trig_table, "触发"), (self._spec_table, "特定")]:
             for row in range(table.rowCount()):
                 name_edit = table.cellWidget(row, 0)
                 sub_name = table.cellWidget(row, 1)

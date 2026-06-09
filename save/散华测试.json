@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "WWDmgCalc",
-  "timestamp": "2026-06-09T19:51:52.190568",
+  "timestamp": "2026-06-09T19:58:16.964913",
   "name": "",
   "theme": "dark",
   "pages": {
@@ -45,7 +45,7 @@
           "sub_name": "散华固有技能1"
         }
       ],
-      "counter": 1
+      "counter": 2
     },
     "enemy_defense": {
       "rows": [],
@@ -312,37 +312,53 @@
       "items": [
         {
           "id": 1,
-          "name": "共鸣链1",
+          "name": "散华的共鸣链1",
           "enabled": false,
-          "effects": []
+          "effects": [
+            {
+              "name": "暴击率加成",
+              "value": 15.0,
+              "type": "触发",
+              "source": "共鸣链效果",
+              "sub_name": ""
+            }
+          ]
         },
         {
           "id": 2,
-          "name": "共鸣链2",
+          "name": "散华的共鸣链2",
           "enabled": false,
           "effects": []
         },
         {
           "id": 3,
-          "name": "共鸣链3",
+          "name": "散华的共鸣链3",
           "enabled": false,
-          "effects": []
+          "effects": [
+            {
+              "name": "伤害提升",
+              "value": 35.0,
+              "type": "触发",
+              "source": "共鸣链效果",
+              "sub_name": ""
+            }
+          ]
         },
         {
           "id": 4,
-          "name": "共鸣链4",
+          "name": "散华的共鸣链4",
           "enabled": false,
           "effects": []
         },
         {
           "id": 5,
-          "name": "共鸣链5",
+          "name": "散华的共鸣链5",
           "enabled": false,
           "effects": []
         },
         {
           "id": 6,
-          "name": "共鸣链6",
+          "name": "散华的共鸣链6",
           "enabled": false,
           "effects": []
         }
