@@ -4549,7 +4549,7 @@ class ResonanceChainEditDialog(QDialog):
         self._spec_combo.lineEdit().clear()
         self._spec_value.setValue(0)
 
-    def _add_table_row(self, table, name, value, source, eff_type):
+    def _add_table_row(self, table, name, value, source, eff_type, sub_name_text=""):
         row_idx = table.rowCount()
         table.insertRow(row_idx)
         table.setRowHeight(row_idx, 42)
@@ -4559,7 +4559,7 @@ class ResonanceChainEditDialog(QDialog):
         name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         table.setCellWidget(row_idx, 0, name_edit)
 
-        sub_name = QLineEdit()
+        sub_name = QLineEdit(sub_name_text)
         sub_name.setObjectName("nameEdit")
         sub_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub_name.setPlaceholderText("（备注）")
@@ -4614,7 +4614,8 @@ class ResonanceChainEditDialog(QDialog):
             else:
                 table = self._spec_table
             self._add_table_row(table, eff.get("name", ""), eff.get("value", 0.0),
-                               eff.get("source", "共鸣链效果"), eff_type)
+                               eff.get("source", "共鸣链效果"), eff_type,
+                               sub_name_text=eff.get("sub_name", ""))
 
 
     def _save(self):
