@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "type": "preset",
+  "name": "绯雪-预设",
+  "category": "character",
+  "character": {
+    "name": "绯雪",
+    "element": "冷凝",
+    "effect": "霜渐",
+    "base_hp": 6566.0,
+    "base_atk": 555.0,
+    "base_def": 66.0,
+    "resonance_chain": [
+      {
+        "effects": [
+          {
+            "name": "攻击力加成",
+            "value": 0.0,
+            "source": "共鸣链效果",
+            "sub_name": "",
+            "default_hidden": false,
+            "type": "常驻"
+          },
+          {
+            "name": "防御力加成",
+            "value": 0.0,
+            "source": "共鸣链效果",
+            "sub_name": "",
+            "default_hidden": false,
+            "type": "常驻"
+          }
+        ],
+        "indep_zones": []
+      },
+      {
+        "effects": [
+          {
+            "name": "防御力加成",
+            "value": 2.0,
+            "source": "共鸣链效果",
+            "sub_name": "",
+            "default_hidden": false,
+            "type": "常驻"
+          }
+        ],
+        "indep_zones": []
+      },
+      {
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "effects": [],
+        "indep_zones": []
+      }
+    ]
+  }
+}

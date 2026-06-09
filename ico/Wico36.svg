@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="256" y2="256" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#050c1a"/>
+      <stop offset="100%" stop-color="#0b1a30"/>
+    </linearGradient>
+    <linearGradient id="wg" x1="28" y1="28" x2="228" y2="228" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#BBDEFB"/>
+      <stop offset="40%" stop-color="#64B5F6"/>
+      <stop offset="75%" stop-color="#2196F3"/>
+      <stop offset="100%" stop-color="#0D47A1"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="url(#bg)"/>
+  <circle cx="128" cy="128" r="108" fill="none" stroke="#4a8cb8" stroke-width="13"/>
+  <text x="128" y="194" text-anchor="middle" fill="url(#wg)" font-family="'Century Gothic','Futura','Trebuchet MS',sans-serif" font-weight="700" font-size="160">W</text>
+  <path d="M8 210 Q48 192 88 210 Q128 228 168 210 Q208 192 248 210" stroke="#5cb8f5" stroke-width="10" fill="none" opacity="0.7" stroke-linecap="round"/>
+  <path d="M8 226 Q54 212 100 226 Q146 240 192 226 Q220 218 248 226" stroke="#3a9dea" stroke-width="7" fill="none" opacity="0.5" stroke-linecap="round"/>
+</svg>
