@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "WWDmgCalc",
-  "timestamp": "2026-06-09T20:10:02.788848",
+  "timestamp": "2026-06-09T23:06:02.794750",
   "name": "",
   "theme": "dark",
   "pages": {
@@ -65,9 +65,41 @@
           "seq": 4,
           "source": "共鸣链效果",
           "sub_name": "1"
+        },
+        {
+          "name": "伤害提升",
+          "value": 120.0,
+          "locked": false,
+          "seq": 5,
+          "source": "共鸣链效果",
+          "sub_name": "施放共鸣解放后5秒内的下次 重击 爆裂 伤害提升 120%"
+        },
+        {
+          "name": "暴击伤害加成",
+          "value": 100.0,
+          "locked": false,
+          "seq": 6,
+          "source": "共鸣链效果",
+          "sub_name": "共鸣回路 冰绽 的 暴击伤害提升 100%"
+        },
+        {
+          "name": "攻击力加成",
+          "value": 20.0,
+          "locked": false,
+          "seq": 7,
+          "source": "共鸣链效果",
+          "sub_name": "第一层：引爆 冰棱 或 冰川 后，所有角色攻击提升10%，持续20秒，可叠加2层"
+        },
+        {
+          "name": "攻击力加成",
+          "value": 20.0,
+          "locked": false,
+          "seq": 8,
+          "source": "共鸣链效果",
+          "sub_name": "第二层：引爆 冰棱 或 冰川 后，所有角色攻击提升10%，持续20秒，可叠加2层"
         }
       ],
-      "counter": 6
+      "counter": 80
     },
     "enemy_defense": {
       "rows": [],
@@ -376,21 +408,44 @@
               "value": 120.0,
               "type": "特定",
               "source": "共鸣链效果",
-              "sub_name": "1"
+              "sub_name": "施放共鸣解放后5秒内的下次 重击 爆裂 伤害提升 120%"
             }
           ]
         },
         {
           "id": 5,
           "name": "散华的共鸣链5",
-          "enabled": false,
-          "effects": []
+          "enabled": true,
+          "effects": [
+            {
+              "name": "暴击伤害加成",
+              "value": 100.0,
+              "type": "特定",
+              "source": "共鸣链效果",
+              "sub_name": "共鸣回路 冰绽 的 暴击伤害提升 100%"
+            }
+          ]
         },
         {
           "id": 6,
           "name": "散华的共鸣链6",
-          "enabled": false,
-          "effects": []
+          "enabled": true,
+          "effects": [
+            {
+              "name": "攻击力加成",
+              "value": 10.0,
+              "type": "特定",
+              "source": "共鸣链效果",
+              "sub_name": "第一层：引爆 冰棱 或 冰川 后，所有角色攻击提升10%，持续20秒，可叠加2层"
+            },
+            {
+              "name": "攻击力加成",
+              "value": 0.0,
+              "type": "特定",
+              "source": "共鸣链效果",
+              "sub_name": "第二层：引爆 冰棱 或 冰川 后，所有角色攻击提升10%，持续20秒，可叠加2层"
+            }
+          ]
         }
       ]
     },
@@ -402,7 +457,8 @@
           "eff_type": "百分比",
           "source": "关联效果",
           "sub_name": "散华固有技能2",
-          "keywords": "冰川爆炸伤害, 冰凌爆炸伤害, 冰棘爆炸伤害"
+          "keywords": "冰川爆炸伤害, 冰凌爆炸伤害, 冰棘爆炸伤害",
+          "seq": "关联2"
         },
         {
           "name": "伤害提升",
@@ -410,7 +466,8 @@
           "eff_type": "百分比",
           "source": "共鸣链效果",
           "sub_name": "",
-          "keywords": ""
+          "keywords": "",
+          "seq": "共鸣链关联1"
         },
         {
           "name": "暴击率加成",
@@ -418,7 +475,8 @@
           "eff_type": "百分比",
           "source": "共鸣链效果",
           "sub_name": "",
-          "keywords": ""
+          "keywords": "",
+          "seq": "共鸣链关联2"
         },
         {
           "name": "伤害提升",
@@ -426,11 +484,48 @@
           "eff_type": "百分比",
           "source": "共鸣链效果",
           "sub_name": "1",
-          "keywords": ""
+          "keywords": "",
+          "seq": "共鸣链关联3"
+        },
+        {
+          "name": "伤害提升",
+          "value": 120.0,
+          "eff_type": "百分比",
+          "source": "共鸣链效果",
+          "sub_name": "施放共鸣解放后5秒内的下次 重击 爆裂 伤害提升 120%",
+          "keywords": "",
+          "seq": "共鸣链4关联1"
+        },
+        {
+          "name": "暴击伤害加成",
+          "value": 100.0,
+          "eff_type": "百分比",
+          "source": "共鸣链效果",
+          "sub_name": "共鸣回路 冰绽 的 暴击伤害提升 100%",
+          "keywords": "",
+          "seq": "共鸣链5关联1"
+        },
+        {
+          "name": "攻击力加成",
+          "value": 10.0,
+          "eff_type": "百分比",
+          "source": "共鸣链效果",
+          "sub_name": "第一层：引爆 冰棱 或 冰川 后，所有角色攻击提升10%，持续20秒，可叠加2层",
+          "keywords": "",
+          "seq": "共鸣链6关联1"
+        },
+        {
+          "name": "攻击力加成",
+          "value": 0.0,
+          "eff_type": "百分比",
+          "source": "共鸣链效果",
+          "sub_name": "第二层：引爆 冰棱 或 冰川 后，所有角色攻击提升10%，持续20秒，可叠加2层",
+          "keywords": "",
+          "seq": "共鸣链6关联2"
         }
       ],
       "counter": 2,
-      "chain_counter": 3
+      "chain_counter": 0
     },
     "result_list": {
       "items": [],
@@ -445,6 +540,12 @@
       "角色效果",
       "combined_trigger",
       "触发1"
+    ],
+    [
+      "攻击力加成",
+      "共鸣链效果",
+      "combined_trigger",
+      "触发7"
     ]
   ],
   "locked_items": [],

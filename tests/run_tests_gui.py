@@ -30,8 +30,10 @@ PYTHON = sys.executable
 # ---- 测试任务定义 ----
 CATEGORIES = [
     ("全部测试", f'"{TESTS_DIR}" -v --tb=short --color=no'),
-    ("伤害公式 (61)", f'"{TESTS_DIR}\\test_damage_formula.py" -v --tb=short --color=no'),
-    ("存档格式 (16)", f'"{TESTS_DIR}\\test_save_format.py" -v --tb=short --color=no'),
+    ("伤害公式 (71)", f'"{TESTS_DIR}\\test_damage_formula.py" -v --tb=short --color=no'),
+    ("存档格式 (14)", f'"{TESTS_DIR}\\test_save_format.py" -v --tb=short --color=no'),
+    ("同步链路 (9)", f'"{TESTS_DIR}\\test_sync_chain.py" -v --tb=short --color=no'),
+    ("数据流 (91)", f'"{TESTS_DIR}\\test_data_flow.py" -v --tb=short --color=no'),
     ("防御乘区", f'"{TESTS_DIR}\\test_damage_formula.py::TestDefenseZone" -v --tb=short --color=no'),
     ("抗性乘区", f'"{TESTS_DIR}\\test_damage_formula.py::TestResistanceZone" -v --tb=short --color=no'),
     ("独立乘区", f'"{TESTS_DIR}\\test_damage_formula.py::TestIndepZone" -v --tb=short --color=no'),
@@ -454,7 +456,7 @@ class TestRunnerWindow(QMainWindow):
 </ul>
 <p><b>有测试后：</b></p>
 <ul>
-  <li>改完代码 → 点一下按钮 → 0.2 秒后看到结果</li>
+  <li>改完代码 → 点一下按钮 → 2 秒后看到结果</li>
   <li><span style='color:{c['green']};'>全绿</span> = 放心，没搞坏任何东西</li>
   <li><span style='color:{c['red']};'>有红色</span> = 精确告诉你哪个公式、哪个边界条件出问题了</li>
 </ul>
@@ -483,7 +485,7 @@ class TestRunnerWindow(QMainWindow):
 <tr><td style='padding:3px 8px; width:90px;'><b>顶部标题栏</b></td>
     <td style='padding:3px 8px;'>左侧标题，右侧实时状态 — 就绪/正在运行/通过/失败</td></tr>
 <tr><td style='padding:3px 8px;'><b>按钮区</b></td>
-    <td style='padding:3px 8px;'>12 个分类按钮 + 可滚动（最大高度 150px），鼠标滚轮翻阅</td></tr>
+    <td style='padding:3px 8px;'>14 个分类按钮 + 可滚动（最大高度 150px），鼠标滚轮翻阅</td></tr>
 <tr><td style='padding:3px 8px;'><b>进度条</b></td>
     <td style='padding:3px 8px;'>运行时显示红色滚动条，测试结束自动隐藏</td></tr>
 <tr><td style='padding:3px 8px;'><b>输出区</b></td>
@@ -501,16 +503,18 @@ class TestRunnerWindow(QMainWindow):
 <tr><td style='padding:3px 8px;'><span style='color:{c['red']};'>■ 红色加粗</span></td>
     <td style='padding:3px 8px;'>FAILED / ERROR — 测试失败或异常</td></tr>
 <tr><td style='padding:3px 8px;'><span style='color:{c['yellow']};'>■ 黄色加粗</span></td>
-    <td style='padding:3px 8px;'>汇总行 — 如 "85 passed in 0.20s"</td></tr>
+    <td style='padding:3px 8px;'>汇总行 — 如 "186 passed in 2.9s"</td></tr>
 <tr><td style='padding:3px 8px;'><span style='color:{c['text2']};'>■ 灰色</span></td>
     <td style='padding:3px 8px;'>分隔线、框架信息</td></tr>
 </table>
 
-<h4 style='color:{c['text']}; margin-bottom:4px;'>4.3 按钮区 — 12 个快捷按钮</h4>
+<h4 style='color:{c['text']}; margin-bottom:4px;'>4.3 按钮区 — 14 个快捷按钮</h4>
 <table style='width:100%; border-collapse:collapse; color:{c['text']}; font-size:12px;'>
-<tr><td style='padding:3px 8px;'><b>全部测试</b></td><td style='padding:3px 8px;'>跑 tests\ 下所有 85 个用例</td></tr>
+<tr><td style='padding:3px 8px;'><b>全部测试</b></td><td style='padding:3px 8px;'>跑 tests\ 下所有 186 个用例</td></tr>
 <tr><td style='padding:3px 8px;'><b>伤害公式</b></td><td style='padding:3px 8px;'>仅 test_damage_formula.py（71 个）</td></tr>
-<tr><td style='padding:3px 8px;'><b>存档格式</b></td><td style='padding:3px 8px;'>仅 test_save_format.py（16 个）</td></tr>
+<tr><td style='padding:3px 8px;'><b>存档格式</b></td><td style='padding:3px 8px;'>仅 test_save_format.py（14 个）</td></tr>
+<tr><td style='padding:3px 8px;'><b>同步链路</b></td><td style='padding:3px 8px;'>仅 test_sync_chain.py（9 个）— 共鸣链同步测试</td></tr>
+<tr><td style='padding:3px 8px;'><b>数据流</b></td><td style='padding:3px 8px;'>仅 test_data_flow.py（91 个）— 上中下游端到端验证</td></tr>
 <tr><td style='padding:3px 8px;'><b>防御乘区</b></td><td style='padding:3px 8px;'>TestDefenseZone — 等级/无视/截断</td></tr>
 <tr><td style='padding:3px 8px;'><b>抗性乘区</b></td><td style='padding:3px 8px;'>TestResistanceZone — 6元素/预设/clamp</td></tr>
 <tr><td style='padding:3px 8px;'><b>独立乘区</b></td><td style='padding:3px 8px;'>TestIndepZone — 组加法×组间乘法</td></tr>

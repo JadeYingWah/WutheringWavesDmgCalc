@@ -34,8 +34,13 @@ def _get_kw_sub_name(ms, name):
     for row in range(ms.page_keyword_assoc._table.rowCount()):
         w = ms.page_keyword_assoc._table.cellWidget(row, 0)
         if w and hasattr(w, 'text') and w.text() == name:
-            sub = ms.page_keyword_assoc._table.cellWidget(row, 1)
-            return sub.text() if sub and hasattr(sub, 'text') else ""
+            sub_widget = ms.page_keyword_assoc._table.cellWidget(row, 1)
+            if sub_widget is None:
+                return ""
+            if isinstance(sub_widget, QLineEdit):
+                return sub_widget.text()
+            le = sub_widget.findChild(QLineEdit)
+            return le.text() if le else ""
     return None
 
 

@@ -28,13 +28,14 @@ _collect_all_items = None
 _PropTable = None
 _cell_center = None
 _CONSTANT_ATTRS = set()
+_make_sub_name_cell = None
 
 
-def inject_dependencies(fix_table_height_fn, place_hl_fn, hidden_set, locked_set, combined_cls, collect_fn, prop_table_cls, cell_center_fn, constant_attrs):
+def inject_dependencies(fix_table_height_fn, place_hl_fn, hidden_set, locked_set, combined_cls, collect_fn, prop_table_cls, cell_center_fn, constant_attrs, make_sub_name_cell_fn=None):
     """由主编在 import 后调用，注入共享依赖"""
     global _fix_table_height, _place_highlight_overlay
     global _HIDDEN_ITEMS, _LOCKED_SUMMARY_ITEMS, _CombinedEntryPage, _collect_all_items
-    global _PropTable, _cell_center, _CONSTANT_ATTRS
+    global _PropTable, _cell_center, _CONSTANT_ATTRS, _make_sub_name_cell
     _fix_table_height = fix_table_height_fn
     _place_highlight_overlay = place_hl_fn
     _HIDDEN_ITEMS = hidden_set
@@ -44,6 +45,13 @@ def inject_dependencies(fix_table_height_fn, place_hl_fn, hidden_set, locked_set
     _PropTable = prop_table_cls
     _cell_center = cell_center_fn
     _CONSTANT_ATTRS = constant_attrs
+    _make_sub_name_cell = make_sub_name_cell_fn
+
+
+def set_make_sub_name_cell(fn):
+    """延迟注入 _make_sub_name_cell（用于函数定义在 inject 之后的情况）"""
+    global _make_sub_name_cell
+    _make_sub_name_cell = fn
 
 
 class SummaryBasePage(QWidget):
@@ -162,7 +170,14 @@ class SummaryBasePage(QWidget):
             sub_edit.editingFinished.connect(
                 lambda n=name, sl=src_label, nk=nav_key, sq=seq_label, se=sub_edit:
                 self._on_summary_sub_name_changed(n, sl, nk, sq, se))
-            table.setCellWidget(r, 1, sub_edit)
+            # textChanged 轻量同步到综合填写（不触发重算）
+            sub_edit.textChanged.connect(
+                lambda t, n=name, sl=src_label, nk=nav_key, sq=seq_label:
+                self._push_sub_name_to_source(n, sl, nk, sq, t))
+            if _make_sub_name_cell:
+                table.setCellWidget(r, 1, _make_sub_name_cell(sub_edit, lambda: name))
+            else:
+                table.setCellWidget(r, 1, sub_edit)
 
             # 序列号（常驻/触发 + 序号）
             si = QTableWidgetItem(seq_label)
@@ -267,6 +282,23 @@ class SummaryBasePage(QWidget):
             type_label = "常驻" if page.page_key == "combined_perm" else "触发"
             return f"{type_label}{idx + 1}"
         return ""
+
+    def _push_sub_name_to_source(self, name, src_label, nav_key, seq_label, text):
+        """轻量同步：仅将副名称文本推送到综合填写页（不触发重算）。"""
+        for _, page, nk in self._external_sources:
+            if not isinstance(page, _CombinedEntryPage):
+                continue
+            for i, rd in enumerate(page._rows):
+                type_label = "常驻" if page.page_key == "combined_perm" else "触发"
+                rd_seq = f"{type_label}{i + 1}"
+                if (rd['name_edit'].text() == name and
+                        rd.get('source', '') == src_label and
+                        rd_seq == seq_label and
+                        'sub_name_edit' in rd):
+                    rd['sub_name_edit'].blockSignals(True)
+                    rd['sub_name_edit'].setText(text)
+                    rd['sub_name_edit'].blockSignals(False)
+                    return
 
     def _on_summary_sub_name_changed(self, name, src_label, nav_key, seq_label, sub_edit):
         """副名称在总结页被编辑后，同步回 CombinedEntryPage 并触发全局重算。"""

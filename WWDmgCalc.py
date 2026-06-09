@@ -847,7 +847,7 @@ class CombinedEntryPage(BaseTableAttrPage):
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub_name_edit.setPlaceholderText("（备注）")
         sub_name_edit.editingFinished.connect(self._on_item_value_changed)
-        self.table.setCellWidget(row, 1, sub_name_edit)
+        self.table.setCellWidget(row, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
         seq_label = QLabel(str(seq_num))
         seq_label.setObjectName("seqLabel")
@@ -897,14 +897,14 @@ class CombinedEntryPage(BaseTableAttrPage):
         ops_layout.setContentsMargins(2, 0, 2, 0)
         ops_layout.setSpacing(3)
 
-        # 隐藏按钮 — 联动 HIDDEN_ITEMS
+        # 隐藏按钮 — 联动 HIDDEN_ITEMS（动态读取 seq_label 避免重序列后失效）
         hide_btn = QPushButton("隐藏中" if is_hidden else "隐藏")
         hide_btn.setObjectName("itemDeleteBtn" if is_hidden else "itemLockBtn")
         hide_btn.setFixedSize(48, 28)
         hide_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         hide_btn.clicked.connect(
-            lambda _, n=name, s=source, btn=hide_btn, sq=seq_num:
-            self._toggle_combined_hide(n, s, btn, sq))
+            lambda _, n=name, s=source, btn=hide_btn, rd=row_data:
+            self._toggle_combined_hide(n, s, btn, rd['seq_label'].text()))
         ops_layout.addWidget(hide_btn)
 
         # 锁定按钮 — 联动 LOCKED_SUMMARY_ITEMS
@@ -913,8 +913,8 @@ class CombinedEntryPage(BaseTableAttrPage):
         lock_btn.setFixedSize(48, 28)
         lock_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         lock_btn.clicked.connect(
-            lambda _, n=name, s=source, rd=row_data, btn=lock_btn, sq=seq_num:
-            self._toggle_combined_lock(n, s, rd, btn, sq))
+            lambda _, n=name, s=source, rd=row_data, btn=lock_btn:
+            self._toggle_combined_lock(n, s, rd, btn, rd['seq_label'].text()))
         ops_layout.addWidget(lock_btn)
 
         # 查看总结按钮（跳转到对应数值总结页面并高亮）
@@ -923,8 +923,8 @@ class CombinedEntryPage(BaseTableAttrPage):
         view_btn.setFixedSize(60, 28)
         view_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         view_btn.clicked.connect(
-            lambda _, n=name, s=source, nk=self.page_key, sq=f"{'常驻' if self.page_key == 'combined_perm' else '触发'}{seq_num}":
-            self._navigate_to_summary(n, s, nk, sq))
+            lambda _, n=name, s=source, nk=self.page_key, rd=row_data:
+            self._navigate_to_summary(n, s, nk, f"{'常驻' if self.page_key == 'combined_perm' else '触发'}{rd['seq_label'].text()}"))
         ops_layout.addWidget(view_btn)
 
         # 删除按钮
@@ -934,8 +934,8 @@ class CombinedEntryPage(BaseTableAttrPage):
         del_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         del_btn.setEnabled(not is_locked)
         del_btn.clicked.connect(
-            lambda _, n=name, s=source, rd=row_data, sq=seq_num:
-            self._delete_combined_row(n, s, rd, sq))
+            lambda _, n=name, s=source, rd=row_data:
+            self._delete_combined_row(n, s, rd, rd['seq_label'].text()))
         ops_layout.addWidget(del_btn)
 
         self.table.setCellWidget(row, 6, ops_widget)
@@ -1216,7 +1216,7 @@ class KeywordAssociationPage(QWidget):
         sub_name_edit.setObjectName("nameEdit")
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub_name_edit.setPlaceholderText("（备注）")
-        self._table.setCellWidget(row_idx, 1, sub_name_edit)
+        self._table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
         # 序列号
         seq_label = QLabel(f"关联{self._counter}")
@@ -1276,9 +1276,16 @@ class KeywordAssociationPage(QWidget):
             self._on_change_cb()
 
     def _remove_row(self, row_idx):
+        # 动态查找行：闭包捕获的 row_idx 可能因中间删行而失效
+        sender = self.sender()
+        if sender:
+            for r in range(self._table.rowCount()):
+                ops = self._table.cellWidget(r, 7)
+                if ops and sender in ops.findChildren(QPushButton):
+                    row_idx = r
+                    break
         if 0 <= row_idx < self._table.rowCount():
             self._table.removeRow(row_idx)
-            self._rows.pop(row_idx) if row_idx < len(self._rows) else None
             if self._on_change_cb:
                 self._on_change_cb()
 
@@ -1394,7 +1401,72 @@ class KeywordAssociationPage(QWidget):
         sub_name_edit.setObjectName("nameEdit")
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub_name_edit.setPlaceholderText("（备注）")
-        self._table.setCellWidget(row_idx, 1, sub_name_edit)
+        self._table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
+
+        seq_label = QLabel(seq_text)
+        seq_label.setObjectName("seqLabel")
+        seq_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._table.setCellWidget(row_idx, 2, seq_label)
+
+        value_spin = QDoubleSpinBox()
+        value_spin.setObjectName("itemValueSpin")
+        value_spin.setRange(0, 9999)
+        value_spin.setDecimals(4)
+        value_spin.setValue(value)
+        value_spin.setFixedWidth(100)
+        value_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._table.setCellWidget(row_idx, 3, value_spin)
+
+        unit_label = QLabel("百分比")
+        unit_label.setObjectName("unitLabel")
+        unit_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._table.setCellWidget(row_idx, 4, unit_label)
+
+        source_label = QLabel(source)
+        source_label.setObjectName("seqLabel")
+        source_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._table.setCellWidget(row_idx, 5, source_label)
+
+        kw_btn = QPushButton(keywords if keywords else "点击编辑")
+        kw_btn.setObjectName("itemLockBtn")
+        kw_btn.setFixedSize(110, 35)
+        kw_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        kw_btn.clicked.connect(lambda _, r=row_idx: self._edit_keywords(r))
+        self._table.setCellWidget(row_idx, 6, kw_btn)
+
+        ops = QWidget()
+        ops_layout = QHBoxLayout(ops)
+        ops_layout.setContentsMargins(2, 0, 2, 0)
+        ops_layout.setSpacing(3)
+
+        del_btn = QPushButton("删除")
+        del_btn.setObjectName("itemDeleteBtn")
+        del_btn.setFixedSize(55, 28)
+        del_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        del_btn.clicked.connect(lambda: self._remove_row(row_idx))
+        ops_layout.addWidget(del_btn)
+
+        self._table.setCellWidget(row_idx, 7, ops)
+
+        if self._on_change_cb:
+            self._on_change_cb()
+
+    def add_effect_with_seq(self, name, value, eff_type, source, sub_name="", keywords="", seq_text=""):
+        """从外部添加效果，使用指定的序列号（用于共鸣链同步，避免计数器递增）"""
+        row_idx = self._table.rowCount()
+        self._table.insertRow(row_idx)
+        self._table.setRowHeight(row_idx, 50)
+
+        name_edit = QLineEdit(name)
+        name_edit.setObjectName("nameEdit")
+        name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._table.setCellWidget(row_idx, 0, name_edit)
+
+        sub_name_edit = QLineEdit(sub_name)
+        sub_name_edit.setObjectName("nameEdit")
+        sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sub_name_edit.setPlaceholderText("（备注）")
+        self._table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
         seq_label = QLabel(seq_text)
         seq_label.setObjectName("seqLabel")
@@ -1450,6 +1522,7 @@ class KeywordAssociationPage(QWidget):
         for row in range(self._table.rowCount()):
             name_edit = self._table.cellWidget(row, 0)
             sub_name_edit = self._table.cellWidget(row, 1)
+            seq_label = self._table.cellWidget(row, 2)
             value_spin = self._table.cellWidget(row, 3)
             unit_label = self._table.cellWidget(row, 4)
             source_label = self._table.cellWidget(row, 5)
@@ -1457,7 +1530,8 @@ class KeywordAssociationPage(QWidget):
             if name_edit and value_spin:
                 kw_text = kw_btn.text() if kw_btn and kw_btn.text() != "点击编辑" else ""
                 eff_type = unit_label.text() if unit_label else "百分比"
-                sub_name = sub_name_edit.text().strip() if sub_name_edit else ""
+                sub_name = _get_sub_name_text(sub_name_edit)
+                seq = seq_label.text() if seq_label and hasattr(seq_label, 'text') else ""
                 items.append({
                     "name": name_edit.text().strip(),
                     "value": value_spin.value(),
@@ -1465,6 +1539,7 @@ class KeywordAssociationPage(QWidget):
                     "source": source_label.text() if source_label else "共鸣链效果",
                     "sub_name": sub_name,
                     "keywords": kw_text,
+                    "seq": seq,
                 })
         return items
 
@@ -1861,12 +1936,14 @@ class OCRConfirmDialog(QDialog):
         if sub is None:
             sub = {"name": "", "value": 0.0, "is_percent": False}
         row_widget = QWidget()
+        row_widget.setMinimumHeight(60)
         row = QHBoxLayout(row_widget)
-        row.setContentsMargins(0, 0, 0, 0)
+        row.setContentsMargins(0, 2, 0, 2)
         row.setSpacing(6)
 
         name_combo = SearchCombo(ECHO_SUB_STATS)
         name_combo.setMinimumWidth(84)
+        name_combo.setMinimumHeight(40)
         if sub.get("name"):
             name_combo.setCurrentText(sub["name"])
         row.addWidget(name_combo, stretch=3)
@@ -1875,17 +1952,20 @@ class OCRConfirmDialog(QDialog):
         value_spin.setRange(0, 9999)
         value_spin.setDecimals(4)
         value_spin.setValue(sub.get("value", 0.0))
+        value_spin.setMinimumHeight(40)
         row.addWidget(value_spin, stretch=1)
 
         is_pct = sub.get("is_percent", False)
         unit_label = QLabel("百分比" if is_pct else "常数")
         unit_label.setFixedWidth(52)
+        unit_label.setMinimumHeight(40)
         unit_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         unit_label.setStyleSheet("font-weight:bold;color:#888;font-size:11px;")
         row.addWidget(unit_label)
 
         del_btn = QPushButton("删除")
         del_btn.setFixedWidth(75)
+        del_btn.setMinimumHeight(40)
         del_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         del_btn.setStyleSheet("color:#e55;font-weight:bold;")
         row.addWidget(del_btn)
@@ -2065,7 +2145,7 @@ class DamageMultConfirmDialog(QDialog):
             f"QTableWidget {{ background: {c['bg']}; border: 1px solid {c['border']}; border-radius: 6px; }}"
             f"QHeaderView::section {{"
             f"  background: {c['header_bg']}; color: {c['accent']}; font-weight: 600;"
-            f"  font-size: 13px; border: none; padding: 6px 8px;"
+            f"  font-size: 13px; border: none; padding: 4px 6px;"
             f"}}"
         )
 
@@ -2073,7 +2153,7 @@ class DamageMultConfirmDialog(QDialog):
         wide_style = (
             f"background: {c['input_bg']}; color: {c['text']};"
             f"border: 1px solid {c['input_border']}; border-radius: 4px;"
-            f"padding: 6px 8px; font-size: 13px;"
+            f"padding: 4px 6px; font-size: 13px;"
         )
         # 样式：窄列（基础数值/倍率/技能/元素/效应）
         narrow_style = (
@@ -3373,7 +3453,7 @@ def _collect_all_items(external_sources, echo_pages=None):
                     ("角色基础防御力", data['base_def']),
                 ] + ([("武器附加" + data['weapon_bonus'][0], data['weapon_bonus'][1])]
                      if data.get('weapon_bonus') else []):
-                    items.append((n, v, src_label, nav_key, ""))
+                    items.append((n, v, src_label, nav_key, "", ""))
             elif 'main_stat' in data:
                 ms_name, ms_val = data['main_stat']
                 fs_name, fs_val = data['fixed_stat']
@@ -3381,7 +3461,7 @@ def _collect_all_items(external_sources, echo_pages=None):
                              (f"[声骸]固定词条-{fs_name}", fs_val)] + \
                              [(f"[声骸]副词条-{ss_name}", ss_val)
                               for ss_name, ss_val, *_ in data['sub_stats']]:
-                    items.append((n, v, src_label, nav_key, ""))
+                    items.append((n, v, src_label, nav_key, "", ""))
     if echo_pages:
         for ei, (eid, scroll) in enumerate(echo_pages.items(), 1):
             if eid in HIDDEN_ECHO_IDS:
@@ -3711,15 +3791,38 @@ class SaveManager:
         # 9b. 恢复关键词关联页面
         kw_data = pages.get("keyword_assoc", {})
         if kw_data:
-            ms.page_keyword_assoc._counter = kw_data.get("counter", 0)
-            ms.page_keyword_assoc._chain_counter = kw_data.get("chain_counter", 0)
-            for item in kw_data.get("items", []):
-                ms.page_keyword_assoc.add_effect(
-                    item.get("name", ""), item.get("value", 0),
-                    item.get("eff_type", "常驻"),
-                    item.get("source", "关联效果"),
-                    item.get("sub_name", ""), item.get("keywords", ""),
-                )
+            items = kw_data.get("items", [])
+            # 只统计无 seq 的条目（这些会走 add_effect 递增计数器）
+            no_seq_items = [it for it in items if not it.get("seq", "")]
+            no_seq_manual = sum(1 for it in no_seq_items if it.get("source", "关联效果") != "共鸣链效果")
+            no_seq_chain = len(no_seq_items) - no_seq_manual
+            ms.page_keyword_assoc._counter = max(0, kw_data.get("counter", 0) - no_seq_manual)
+            ms.page_keyword_assoc._chain_counter = max(0, kw_data.get("chain_counter", 0) - no_seq_chain)
+            for item in items:
+                seq = item.get("seq", "")
+                source = item.get("source", "关联效果")
+                if seq:
+                    ms.page_keyword_assoc.add_effect_with_seq(
+                        item.get("name", ""), item.get("value", 0),
+                        item.get("eff_type", "常驻"),
+                        source,
+                        item.get("sub_name", ""), item.get("keywords", ""),
+                        seq_text=seq)
+                elif source == "共鸣链效果":
+                    # 旧存档无 seq，来源为共鸣链，用 chain_prefix 生成正确格式
+                    ms.page_keyword_assoc.add_effect(
+                        item.get("name", ""), item.get("value", 0),
+                        item.get("eff_type", "常驻"),
+                        source,
+                        item.get("sub_name", ""), item.get("keywords", ""),
+                        chain_prefix="共鸣链")
+                else:
+                    ms.page_keyword_assoc.add_effect(
+                        item.get("name", ""), item.get("value", 0),
+                        item.get("eff_type", "常驻"),
+                        source,
+                        item.get("sub_name", ""), item.get("keywords", ""),
+                    )
 
         # 9c. 恢复共鸣链增益页面
         cb_data = pages.get("chain_buff", {})
@@ -3731,6 +3834,7 @@ class SaveManager:
                         existing["name"] = item.get("name", existing["name"])
                         existing["enabled"] = item.get("enabled", True)
                         existing["effects"] = item.get("effects", [])
+                        existing["intro"] = item.get("intro", "")
                         break
             ms.page_resonance_buff._refresh_cards()
 
@@ -4050,6 +4154,7 @@ class QuickLoadDialog(QDialog):
 from summary_pages import SummaryBaseZonePage, SummaryBonusZonePage, SummaryDeepenZonePage, SummaryCritZonePage
 from summary_pages import inject_dependencies as _inject_summary_deps
 _inject_summary_deps(fix_table_height, _place_highlight_overlay, HIDDEN_ITEMS, LOCKED_SUMMARY_ITEMS, CombinedEntryPage, _collect_all_items, PropTable, cell_center, CONSTANT_ATTRS)
+# _make_sub_name_cell 在下方定义，通过 setter 延迟注入
 
 from indep_zone import IndepZonePage
 from preset_manager import PresetManager
@@ -4080,7 +4185,7 @@ class ResonanceBuffPage(QWidget):
 
     _BTN_STYLE = (
         "QPushButton {{ color: {}; background: {}; "
-        "border: 1px solid {}; border-radius: 4px; padding: 8px 18px; font-size: 14px; }}"
+        "border: 1px solid {}; border-radius: 4px; padding: 3px 8px; font-size: 14px; }}"
         "QPushButton:hover {{ background: {}; }}"
     )
 
@@ -4098,6 +4203,7 @@ class ResonanceBuffPage(QWidget):
                 "name": f"共鸣链{i}",
                 "enabled": False,
                 "effects": [],
+                "intro": "",
             })
 
         layout = QVBoxLayout(self)
@@ -4128,9 +4234,9 @@ class ResonanceBuffPage(QWidget):
         scroll.setFrameShape(QFrame.Shape.NoFrame)
 
         self._cards_container = QWidget()
-        self._cards_layout = QGridLayout(self._cards_container)
+        self._cards_layout = QVBoxLayout(self._cards_container)
         self._cards_layout.setSpacing(12)
-        self._cards_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        self._cards_layout.setContentsMargins(0, 0, 0, 0)
 
         scroll.setWidget(self._cards_container)
         layout.addWidget(scroll, stretch=1)
@@ -4152,41 +4258,74 @@ class ResonanceBuffPage(QWidget):
             child = self._cards_layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
+            elif child.layout():
+                # 清理 QHBoxLayout 行
+                while child.layout().count():
+                    sub = child.layout().takeAt(0)
+                    if sub.widget():
+                        sub.widget().deleteLater()
         self._cards.clear()
 
         cols = 2
-        for i, item in enumerate(self._items):
-            card = self._build_card(item)
-            self._cards.append(card)
-            row, col = divmod(i, cols)
-            self._cards_layout.addWidget(card, row, col,
-                                         Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        for i in range(0, len(self._items), cols):
+            row_layout = QHBoxLayout()
+            row_layout.setSpacing(12)
+            for j in range(cols):
+                idx = i + j
+                if idx < len(self._items):
+                    card = self._build_card(self._items[idx])
+                    self._cards.append(card)
+                    row_layout.addWidget(card, stretch=1)
+                else:
+                    row_layout.addStretch(1)
+            self._cards_layout.addLayout(row_layout)
 
-        last_row = (len(self._items) - 1) // cols if self._items else 0
-        self._cards_layout.setRowStretch(last_row + 1, 1)
+        self._cards_layout.addStretch(1)
 
     def _build_card(self, item):
         card = QFrame()
         card.setObjectName("resultCard")
         card.setFrameShape(QFrame.Shape.StyledPanel)
-        card.setMinimumWidth(480)
-        card.setMaximumWidth(600)
-        card.setMinimumHeight(195)
+        card.setMinimumHeight(280)
+        card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         layout = QVBoxLayout(card)
         layout.setContentsMargins(12, 10, 12, 10)
-        layout.setSpacing(8)
+        layout.setSpacing(6)
 
         # 第一行：标题
         name_lbl = QLabel(item["name"])
         name_lbl.setObjectName("resultHeader")
         layout.addWidget(name_lbl)
 
-        # 第二行：副标题
-        eff_count = len(item.get("effects", []))
-        info_lbl = QLabel(f"{eff_count} 条效果")
-        info_lbl.setObjectName("labelSecondary")
-        layout.addWidget(info_lbl)
+        # 第二行：通用增益数量（常驻 + 触发）
+        effects = item.get("effects", [])
+        general_count = sum(1 for e in effects if e.get("type") in ("常驻", "触发"))
+        general_lbl = QLabel(f"通用增益：{general_count} 条")
+        general_lbl.setObjectName("labelSecondary")
+        layout.addWidget(general_lbl)
+
+        # 第三行：特定增益数量
+        specific_count = sum(1 for e in effects if e.get("type") == "特定")
+        specific_lbl = QLabel(f"特定增益：{specific_count} 条")
+        specific_lbl.setObjectName("labelSecondary")
+        layout.addWidget(specific_lbl)
+
+        # 第四到七行：介绍文本框（只读，可选中复制，上下滚动）
+        intro_text = item.get("intro", "")
+        intro_edit = QTextEdit()
+        intro_edit.setObjectName("nameEdit")
+        intro_edit.setReadOnly(True)
+        intro_edit.setPlainText(intro_text if intro_text else "（暂无介绍，点击展开编辑）")
+        intro_edit.setMinimumHeight(80)
+        intro_edit.setMaximumHeight(120)
+        intro_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        intro_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        intro_edit.setStyleSheet(
+            "QTextEdit { font-size: 12px; color: #aaa; background: transparent; "
+            "border: 1px solid rgba(128,128,128,0.2); border-radius: 4px; padding: 4px; }"
+        )
+        layout.addWidget(intro_edit, stretch=1)
 
         # 第三行：按钮
         btn_row = QHBoxLayout()
@@ -4218,9 +4357,18 @@ class ResonanceBuffPage(QWidget):
         return card
 
     def _expand_chain(self, item):
+        # 复用已打开的弹窗
+        existing = getattr(self, '_open_chain_dlg', None)
+        if existing and existing.isVisible():
+            existing.raise_()
+            existing.activateWindow()
+            return
         dlg = ResonanceChainEditDialog(item, self, main_screen=self._main_screen)
-        dlg.exec()
-        self._refresh_cards()
+        dlg.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        dlg.destroyed.connect(lambda: setattr(self, '_open_chain_dlg', None))
+        self._open_chain_dlg = dlg
+        dlg.finished.connect(self._refresh_cards)
+        dlg.show()
 
     def _toggle_enable(self, item, btn):
         """切换启用/关闭状态"""
@@ -4264,11 +4412,14 @@ class ResonanceBuffPage(QWidget):
                 if 'sub_name_edit' in last:
                     last['sub_name_edit'].setText(eff["sub_name"])
 
-        for eff in effects:
-            self._main_screen.page_keyword_assoc.add_effect(
+        # 关键词关联：按共鸣链内效果顺序生成序号（共鸣链X关联1, 2, 3...）
+        kw_page = self._main_screen.page_keyword_assoc
+        for idx, eff in enumerate(effects, 1):
+            seq_text = f"共鸣链{chain_num}关联{idx}"
+            kw_page.add_effect_with_seq(
                 eff["name"], eff["value"], eff.get("type", "常驻"),
                 eff.get("source", "共鸣链效果"), eff.get("sub_name", ""), "",
-                chain_prefix=f"共鸣链{chain_num}")
+                seq_text)
 
         # 触发下游重算（综合填写→数值总结→计算结果→结果列表）
         if self._main_screen.page_combined_perm._on_change_cb:
@@ -4279,6 +4430,509 @@ class ResonanceBuffPage(QWidget):
     def get_items(self):
         return self._items
 
+
+# ==================== 数据流调试器 ====================
+
+class _ColorLabel(QLabel):
+    """带描边彩色文字的 QLabel，用于数据流 ID 列"""
+
+    def __init__(self, text="", fill=None, stroke=None, parent=None):
+        super().__init__(text, parent)
+        self._fill = fill
+        self._stroke = stroke
+        self.setStyleSheet("background: transparent; border: none; font-size: 13px; padding-left: 4px;")
+
+    def paintEvent(self, event):
+        if not self._fill or not self._stroke:
+            super().paintEvent(event)
+            return
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setFont(self.font())
+        text_rect = self.rect().adjusted(4, 0, 0, 0)
+        x = text_rect.x()
+        y = text_rect.y() + text_rect.height() * 0.75
+        # 用 QPainterPath 画柔和描边
+        path = QPainterPath()
+        path.addText(x, y, self.font(), self.text())
+        painter.setPen(QPen(self._stroke, 1.2, Qt.PenStyle.SolidLine,
+                            Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawPath(path)
+        # 主体
+        painter.fillPath(path, self._fill)
+        painter.end()
+
+
+# ==================== 数据流调试器主类 ====================
+
+class DataFlowViewerDialog(QDialog):
+    """数据流调试器 —— 显示每条数据从上游→中游→下游的完整路径"""
+
+    @staticmethod
+    def _gen_colors(n):
+        """生成 n 个视觉上可区分的颜色（HSV 均匀分布）"""
+        colors = []
+        for i in range(n):
+            h = (i * 137.508) % 360  # 黄金角旋转，避免相邻色接近
+            s = 180 + (i * 37) % 76  # 饱和度 180~255，保证鲜艳
+            v = 200 + (i * 53) % 56  # 明度 200~255，保证暗色主题可见
+            colors.append(QColor.fromHsv(int(h), int(s), int(v)))
+        return colors
+
+    def __init__(self, main_screen, parent=None):
+        super().__init__(parent)
+        self._ms = main_screen
+        self.setWindowTitle("数据流调试器")
+        self.setMinimumSize(1200, 700)
+        self.resize(1200, 700)
+        self.setModal(False)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        _center_window(self)
+        theme = "dark"
+        w = parent
+        while w:
+            if hasattr(w, 'current_theme'):
+                theme = w.current_theme
+                break
+            w = w.parent() if hasattr(w, 'parent') else None
+        self.setStyleSheet(build_stylesheet(theme))
+
+        root = QVBoxLayout(self)
+        root.setContentsMargins(10, 10, 10, 10)
+
+        # 标题栏
+        top = QHBoxLayout()
+        title = QLabel("每条数据从上游 → 中游 → 下游的完整路径")
+        title.setObjectName("sectionTitle")
+        top.addWidget(title)
+        top.addStretch()
+        refresh_btn = QPushButton("刷新")
+        refresh_btn.setObjectName("addButton")
+        refresh_btn.setFixedWidth(70)
+        refresh_btn.clicked.connect(self.refresh)
+        top.addWidget(refresh_btn)
+        close_btn = QPushButton("关闭")
+        close_btn.setObjectName("backButton")
+        close_btn.setFixedWidth(70)
+        close_btn.clicked.connect(self.close)
+        top.addWidget(close_btn)
+        root.addLayout(top)
+
+        # 树形视图
+        self._tree = QTreeWidget()
+        self._tree.setObjectName("dataFlowTree")
+        self._tree.setHeaderLabels(["项目", "数值/条数", "分类", "序列号", "副名称"])
+        self._tree.setColumnCount(5)
+        self._tree.header().setStretchLastSection(True)
+        self._tree.header().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._tree.header().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self._tree.header().resizeSection(0, 250)  # 项目
+        self._tree.header().resizeSection(1, 200)  # 数值/条数
+        self._tree.header().resizeSection(2, 200)  # 分类
+        self._tree.header().resizeSection(3, 200)  # 序列号
+        # 第 4 列（副名称）自动撑满剩余空间
+        self._tree.setAnimated(True)
+        self._tree.setAllColumnsShowFocus(True)
+        self._tree.itemClicked.connect(self._on_item_clicked)
+        self._tree.itemDoubleClicked.connect(self._on_item_double_clicked)
+
+        self._id_colors = {}
+        self._stroke = QColor(255, 255, 255) if theme == "dark" else QColor(0, 0, 0)
+
+        root.addWidget(self._tree)
+
+        self.refresh()
+
+    # 分类英文→中文
+    _CAT_CN = {
+        "base": "基础", "bonus": "加成", "deepen": "加深",
+        "crit": "暴击", "crit_rate": "暴击率", "crit_dmg": "暴击伤害",
+        "defense": "防御", "resistance": "抗性", "other": "其他",
+    }
+
+    def refresh(self):
+        self._tree.clear()
+        ms = self._ms
+
+        _counter = [0]
+        def _nid():
+            _counter[0] += 1
+            return f"#{_counter[0]:03d}"
+
+        self._id_colors = {}
+
+        def _mk(parent, cols, uid=None):
+            """创建 5 列节点，若有 uid 则给第 0 列设置带描边的彩色标签"""
+            text0 = cols[0]
+            if uid and uid in self._id_colors:
+                cols[0] = ""
+            it = QTreeWidgetItem(parent, cols)
+            if uid and uid in self._id_colors:
+                lbl = _ColorLabel(text0, self._id_colors[uid], self._stroke)
+                self._tree.setItemWidget(it, 0, lbl)
+            return it
+
+        # 统一结构: (uid, name, value, source, nav_key, seq, sub_name, category)
+        all_items = []
+
+        # 角色武器
+        char_data = ms.page_char_base.collect_data()
+        for n, v in [
+            ("角色基础攻击力", char_data.get('base_atk', 0)),
+            ("武器基础攻击力", char_data.get('weapon_base_atk', 0)),
+            ("角色基础生命值", char_data.get('base_hp', 0)),
+            ("角色基础防御力", char_data.get('base_def', 0)),
+        ] + ([("武器附加" + char_data['weapon_bonus'][0], char_data['weapon_bonus'][1])]
+             if char_data.get('weapon_bonus') else []):
+            all_items.append((_nid(), n, v, "角色武器", "char_base", "", "",
+                              damage_calc.classify_item_category(n)))
+
+        # 综合填写（常驻 + 触发）
+        for page, key in [(ms.page_combined_perm, "combined_perm"),
+                          (ms.page_combined_trigger, "combined_trigger")]:
+            tp = "常驻" if key == "combined_perm" else "触发"
+            for entry in page.collect_data():
+                name, val = entry[0], entry[1]
+                src = entry[3] if len(entry) >= 4 else ""
+                seq = f"{tp}{entry[4]}" if len(entry) >= 5 else ""
+                sub = entry[5] if len(entry) >= 6 and entry[5] else ""
+                all_items.append((_nid(), name, val, src, key, seq, sub,
+                                  damage_calc.classify_item_category(name)))
+
+        # 声骸
+        echo_pages = ms._echo_pages if hasattr(ms, '_echo_pages') else {}
+        for eid, scroll in echo_pages.items():
+            if eid in HIDDEN_ECHO_IDS:
+                continue
+            ep = scroll.widget()
+            data = ep.collect_data()
+            src = f"声骸{ep.cost}费"
+            nk = f"echo_{eid}"
+            ms_n, ms_v = data['main_stat']
+            nm = f"[声骸]主词条-{ms_n}"
+            all_items.append((_nid(), nm, ms_v, src, nk, "", "",
+                              damage_calc.classify_item_category(nm)))
+            fs_n, fs_v = data['fixed_stat']
+            nm = f"[声骸]固定词条-{fs_n}"
+            all_items.append((_nid(), nm, fs_v, src, nk, "", "",
+                              damage_calc.classify_item_category(nm)))
+            for si, (ss_n, ss_v, *_) in enumerate(data['sub_stats'], 1):
+                nm = f"[声骸]副词条-{ss_n}"
+                all_items.append((_nid(), nm, ss_v, src, nk, f"{eid}号副词{si}", "",
+                                  damage_calc.classify_item_category(nm)))
+
+        # 共鸣链效果（上游来源）
+        chain_effect_map = {}
+        if hasattr(ms, 'page_resonance_buff'):
+            for it in ms.page_resonance_buff._items:
+                if not it.get("enabled"):
+                    continue
+                for eff in it.get("effects", []):
+                    uid = _nid()
+                    chain = f"共鸣链{it['id']}"
+                    tp = eff.get('type', '')
+                    cat = damage_calc.classify_item_category(eff['name'])
+                    all_items.append((uid, eff['name'], eff['value'],
+                                      "共鸣", f"resonance_{it['id']}",
+                                      f"{chain}-{tp}", "", cat))
+                    chain_effect_map[(eff['name'], round(eff['value'], 4), chain)] = uid
+
+        # 关键词关联（中间层）
+        kw_items = ms.page_keyword_assoc.get_items()
+        kw_uid_map = {}
+        for ki in kw_items:
+            uid = _nid()
+            cat = damage_calc.classify_item_category(ki['name'])
+            all_items.append((uid, ki['name'], ki['value'],
+                              ki.get('source', '关联'), "keyword_assoc",
+                              ki.get('seq', ''), ki.get('sub_name', ''), cat))
+            kw_uid_map[uid] = ki
+
+        # ---- 按乘区分组（暴击拆分为暴击率和暴击伤害）----
+        zones = {"base": [], "bonus": [], "deepen": [],
+                 "crit_rate": [], "crit_dmg": [],
+                 "defense": [], "resistance": [], "other": []}
+        for item in all_items:
+            cat = item[7]
+            if cat == "crit":
+                if any(kw in item[1] for kw in damage_calc.CRIT_DMG_KEYWORDS):
+                    zones["crit_dmg"].append(item)
+                else:
+                    zones["crit_rate"].append(item)
+            elif cat in zones:
+                zones[cat].append(item)
+            else:
+                zones["other"].append(item)
+
+        # ---- 为每个 ID 生成唯一颜色 ----
+        palette = self._gen_colors(len(all_items))
+        for i, item in enumerate(all_items):
+            self._id_colors[item[0]] = palette[i]
+
+        CN = self._CAT_CN
+
+        # ========== 上游 ==========
+        upstream = _mk(self._tree, ["上游：数据来源", "", "", "", ""])
+        upstream.setExpanded(True)
+
+        src_groups = {}
+        for item in all_items:
+            src = item[3]
+            if src not in src_groups:
+                src_groups[src] = []
+            src_groups[src].append(item)
+
+        src_order = ["角色武器", "声骸4费", "声骸3费", "声骸1费", "共鸣"]
+        for src in sorted(src_groups.keys(),
+                          key=lambda s: src_order.index(s) if s in src_order else 99):
+            items = src_groups[src]
+            grp = _mk(upstream, [f"{src}（{len(items)} 条）", "", "", "", ""])
+            for uid, name, val, _, _, seq, sub, cat in items:
+                # 暴击细分
+                if cat == "crit":
+                    if any(kw in name for kw in damage_calc.CRIT_DMG_KEYWORDS):
+                        cat_cn = "暴击伤害"
+                    else:
+                        cat_cn = "暴击率"
+                else:
+                    cat_cn = CN.get(cat, cat)
+                _mk(grp, [f"  {uid} {name}", f"{val}", cat_cn, seq, sub], uid)
+
+        upstream.setText(1, f"共 {len(all_items)} 条")
+
+        # ========== 中间层：关键词关联 ==========
+        middle = _mk(self._tree, ["中间层：关键词关联", "", "", "", ""])
+        middle.setExpanded(True)
+
+        chain_kw = []
+        manual_kw = []
+        for ki in kw_items:
+            seq = ki.get('seq', '')
+            uid = [u for u, k in kw_uid_map.items() if k is ki][0]
+            if '共鸣链' in seq:
+                chain_kw.append((uid, ki))
+            else:
+                manual_kw.append((uid, ki))
+
+        if chain_kw:
+            grp = _mk(middle,
+                [f"共鸣链同步（{len(chain_kw)} 条）", "", "来自上游共鸣链效果", "", ""])
+            for uid, ki in chain_kw:
+                seq = ki.get('seq', '')
+                cat = CN.get(damage_calc.classify_item_category(ki['name']), "")
+                up_ref = ""
+                for (n, v, c), up_uid in chain_effect_map.items():
+                    if n == ki['name'] and abs(v - ki['value']) < 0.01:
+                        up_ref = f"← {up_uid}"
+                        break
+                _mk(grp, [f"  {uid} {ki['name']}", f"{ki['value']}",
+                     f"{cat}  {up_ref}", seq, ki.get('sub_name', '')], uid)
+
+        if manual_kw:
+            grp = _mk(middle,
+                [f"手动添加（{len(manual_kw)} 条）", "", "用户直接输入", "", ""])
+            for uid, ki in manual_kw:
+                cat = CN.get(damage_calc.classify_item_category(ki['name']), "")
+                _mk(grp, [f"  {uid} {ki['name']}", f"{ki['value']}",
+                     cat, ki.get('seq', ''), ki.get('sub_name', '')], uid)
+
+        if not chain_kw and not manual_kw:
+            _mk(middle, ["  （无数据）", "", "", "", ""])
+
+        # ========== 中游：乘区汇总 ==========
+        midstream = _mk(self._tree, ["中游：乘区汇总", "", "", "", ""])
+        midstream.setExpanded(True)
+
+        zone_labels = {
+            "base": ("基础乘区", "攻/生/防 百分比+固定值"),
+            "bonus": ("加成乘区", "伤害加成/伤害提升"),
+            "deepen": ("加深乘区", "伤害加深"),
+            "crit_rate": ("暴击率", "基础5% + Σ暴击率"),
+            "crit_dmg": ("暴击伤害", "基础150% + Σ暴击伤害"),
+            "defense": ("防御乘区", "无视防御"),
+            "resistance": ("抗性乘区", "抗性减少/无视"),
+        }
+        for key in ["base", "bonus", "deepen", "crit_rate", "crit_dmg", "defense", "resistance"]:
+            items = zones[key]
+            label, desc = zone_labels[key]
+            if not items:
+                _mk(midstream, [f"{label}", "0 条", desc, "", ""])
+                continue
+            grp = _mk(midstream, [f"{label}", f"{len(items)} 条", desc, "", ""])
+            for uid, name, val, src, _, seq, sub, cat in items:
+                _mk(grp, [f"  {uid} {name}", f"{val}",
+                     CN.get(cat, cat), seq, sub], uid)
+
+        # ========== 下游：计算结果 ==========
+        downstream = _mk(self._tree, ["下游：计算结果", "", "", "", ""])
+        downstream.setExpanded(True)
+
+        rp = ms.page_result
+        for label_text, attr in [("元素", "element_combo"), ("技能", "skill_combo"),
+                                  ("效应", "effect_combo"), ("基准", "base_type_combo")]:
+            if hasattr(rp, attr):
+                _mk(downstream, [f"  {label_text}: {getattr(rp, attr).currentText()}",
+                     "", "", "", ""])
+
+        for key in ["base", "bonus", "deepen", "crit_rate", "crit_dmg"]:
+            items = zones[key]
+            label, _ = zone_labels[key]
+            total = sum(it[2] for it in items)
+            cnt = f"{len(items)} 条"
+            if label == "基础乘区":
+                _mk(downstream, [f"  {label}", f"{total:.1f}", cnt, "", ""])
+            elif label in ("加成乘区", "加深乘区"):
+                _mk(downstream, [f"  {label}",
+                    f"{1 + total / 100:.4f} ({total:+.1f}%)", cnt, "", ""])
+            elif label == "暴击率":
+                _mk(downstream, [f"  {label}", f"5% + {total:.1f}% = {5 + total:.1f}%",
+                    cnt, "", ""])
+            elif label == "暴击伤害":
+                _mk(downstream, [f"  {label}", f"150% + {total:.1f}% = {150 + total:.1f}%",
+                    cnt, "", ""])
+
+        for key, lbl in [("defense", "防御乘区"), ("resistance", "抗性乘区")]:
+            if zones[key]:
+                parts = "  ".join(f"{uid} {name}={val}%"
+                                  for uid, name, val, *_ in zones[key])
+                _mk(downstream, [f"  {lbl}", parts, "", "", ""])
+
+        _mk(downstream, ["  独立乘区", "（见独立乘区页）", "", "", ""])
+
+    def _on_item_clicked(self, item, column):
+        """单击三角形文字 → 展开/收起"""
+        if item.childCount() > 0 and column == 0:
+            item.setExpanded(not item.isExpanded())
+
+    def _on_item_double_clicked(self, item, column):
+        """双击任意列 → 展开/收起"""
+        if item.childCount() > 0:
+            item.setExpanded(not item.isExpanded())
+
+
+# ==================== 副名称展开编辑弹窗 ====================
+
+class SubNameEditDialog(QDialog):
+    """副名称长文本编辑弹窗（非模式，实时同步到源 QLineEdit）"""
+    text_changed = pyqtSignal(str)
+
+    def __init__(self, text="", name="", parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(f"编辑副名称 — {name}" if name else "编辑副名称")
+        self.setMinimumSize(420, 300)
+        self.resize(460, 340)
+        self.setModal(False)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        _center_window(self)
+
+        # 继承主题
+        theme = "dark"
+        w = parent
+        while w:
+            if hasattr(w, 'current_theme'):
+                theme = w.current_theme
+                break
+            w = w.parent() if hasattr(w, 'parent') else None
+        self.setStyleSheet(build_stylesheet(theme))
+
+        layout = QVBoxLayout(self)
+        layout.setSpacing(8)
+        layout.setContentsMargins(12, 12, 12, 12)
+
+        hint = QLabel("输入副名称内容（支持多行）：")
+        hint.setObjectName("labelSecondary")
+        layout.addWidget(hint)
+
+        self.text_edit = QTextEdit()
+        self.text_edit.setPlainText(text)
+        self.text_edit.setMinimumHeight(160)
+        self.text_edit.textChanged.connect(lambda: self.text_changed.emit(self.get_text()))
+        layout.addWidget(self.text_edit, stretch=1)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        close_btn = QPushButton("关闭")
+        close_btn.setObjectName("backButton")
+        close_btn.clicked.connect(self.close)
+        btn_row.addWidget(close_btn)
+        layout.addLayout(btn_row)
+
+    def get_text(self):
+        return self.text_edit.toPlainText().strip()
+
+
+def _make_sub_name_cell(line_edit, get_name_cb=None):
+    """将 QLineEdit + '…' 按钮包装成容器，放入表格 cellWidget。
+    get_name_cb: 可选回调，返回当前行名称（用于弹窗标题）。
+    非模式弹窗，实时同步到 line_edit。"""
+    container = QWidget()
+    row = QHBoxLayout(container)
+    row.setContentsMargins(0, 0, 0, 0)
+    row.setSpacing(2)
+    row.addWidget(line_edit, stretch=1)
+
+    expand_btn = QPushButton("…")
+    expand_btn.setFixedWidth(24)
+    expand_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+    expand_btn.setToolTip("展开编辑")
+
+    def _open():
+        # 如果已有弹窗，复用
+        existing = getattr(line_edit, '_sub_name_dlg', None)
+        if existing and existing.isVisible():
+            existing.raise_()
+            existing.activateWindow()
+            return
+        name = get_name_cb() if get_name_cb else ""
+        dlg = SubNameEditDialog(line_edit.text(), name, container)
+
+        # 双向同步（防循环）
+        syncing = [False]
+
+        def _from_dlg(t):
+            if syncing[0]:
+                return
+            syncing[0] = True
+            line_edit.setText(t)
+            syncing[0] = False
+
+        def _from_input():
+            if syncing[0]:
+                return
+            syncing[0] = True
+            dlg.text_edit.setPlainText(line_edit.text())
+            syncing[0] = False
+
+        dlg.text_changed.connect(_from_dlg)
+        line_edit.textChanged.connect(_from_input)
+        dlg.destroyed.connect(lambda: (setattr(line_edit, '_sub_name_dlg', None),
+                                        line_edit.textChanged.disconnect(_from_input)))
+        line_edit._sub_name_dlg = dlg
+        dlg.show()
+
+    expand_btn.clicked.connect(_open)
+    row.addWidget(expand_btn)
+    return container
+
+
+# 延迟注入 _make_sub_name_cell 到 summary_pages
+from summary_pages import set_make_sub_name_cell as _set_smnc
+_set_smnc(_make_sub_name_cell)
+
+
+def _get_sub_name_text(widget):
+    """从 cellWidget 中提取副名称文本（兼容 QLineEdit 或容器）"""
+    if widget is None:
+        return ""
+    if isinstance(widget, QLineEdit):
+        return widget.text().strip()
+    # 容器：找内部 QLineEdit
+    le = widget.findChild(QLineEdit)
+    return le.text().strip() if le else ""
+
+
+# ==================== 共鸣链编辑弹窗 ====================
 
 class ResonanceChainEditDialog(QDialog):
     """共鸣链编辑弹窗 —— 2 页分页设计"""
@@ -4309,36 +4963,56 @@ class ResonanceChainEditDialog(QDialog):
         self._tabs = QTabWidget()
         layout.addWidget(self._tabs, stretch=1)
 
+        self._build_intro_tab()
         self._build_general_tab()
         self._build_specific_tab()
+
+        # 实时同步防抖（300ms 内多次变更只同步一次）
+        self._sync_timer = QTimer(self)
+        self._sync_timer.setSingleShot(True)
+        self._sync_timer.setInterval(300)
+        self._sync_timer.timeout.connect(self._collect_and_sync)
 
         self._load_existing_data()
 
         bottom = QHBoxLayout()
         bottom.addStretch()
-        cancel_btn = QPushButton("取消")
-        cancel_btn.setObjectName("backButton")
-        cancel_btn.setFixedSize(80, 32)
-        cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        cancel_btn.clicked.connect(self.reject)
-        bottom.addWidget(cancel_btn)
-        save_btn = QPushButton("保存")
-        save_btn.setFixedSize(80, 32)
-        save_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        save_btn.clicked.connect(self._save)
-        # 使用内联样式确保显示正确
-        save_btn.setStyleSheet(
-            "QPushButton { background-color: #e94560; color: white; border: none; "
-            "padding: 8px 18px; font-size: 14px; font-weight: 600; border-radius: 4px; }"
-            "QPushButton:hover { background-color: #ff6b81; }"
-        )
-        bottom.addWidget(save_btn)
+        close_btn = QPushButton("关闭")
+        close_btn.setObjectName("backButton")
+        close_btn.setFixedSize(80, 32)
+        close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        close_btn.clicked.connect(self.close)
+        bottom.addWidget(close_btn)
         layout.addLayout(bottom)
 
     def _center(self):
         from PyQt6.QtGui import QGuiApplication
         screen = QGuiApplication.primaryScreen().availableGeometry()
         self.move(screen.center() - self.rect().center())
+
+    def _build_intro_tab(self):
+        """共鸣链介绍标签页 —— 可编辑文本"""
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.setContentsMargins(12, 12, 12, 12)
+
+        lbl = QLabel(f"编辑 {self._item['name']} 的介绍信息：")
+        lbl.setObjectName("sectionTitle")
+        lbl.setStyleSheet("font-size: 16px; font-weight: 600;")
+        layout.addWidget(lbl)
+
+        self._intro_edit = QTextEdit()
+        self._intro_edit.setObjectName("nameEdit")
+        self._intro_edit.setPlaceholderText("在此输入共鸣链的介绍文本...")
+        self._intro_edit.setPlainText(self._item.get("intro", ""))
+        self._intro_edit.textChanged.connect(self._on_intro_changed)
+        layout.addWidget(self._intro_edit, stretch=1)
+
+        self._tabs.addTab(tab, "共鸣链介绍")
+
+    def _on_intro_changed(self):
+        """介绍文本变更 → 实时保存到 item"""
+        self._item["intro"] = self._intro_edit.toPlainText()
 
     def _build_general_tab(self):
         tab = QWidget()
@@ -4535,6 +5209,7 @@ class ResonanceChainEditDialog(QDialog):
                            self._perm_source.currentText(), "常驻")
         self._perm_combo.lineEdit().clear()
         self._perm_value.setValue(0)
+        self._debounced_sync()
 
     def _add_trig_row(self):
         name = self._trig_combo.currentText().strip()
@@ -4544,6 +5219,7 @@ class ResonanceChainEditDialog(QDialog):
                            self._trig_source.currentText(), "触发")
         self._trig_combo.lineEdit().clear()
         self._trig_value.setValue(0)
+        self._debounced_sync()
 
     def _add_spec_row(self):
         name = self._spec_combo.currentText().strip()
@@ -4553,6 +5229,7 @@ class ResonanceChainEditDialog(QDialog):
                            self._spec_source.currentText(), "特定")
         self._spec_combo.lineEdit().clear()
         self._spec_value.setValue(0)
+        self._debounced_sync()
 
     def _add_table_row(self, table, name, value, source, eff_type, sub_name_text=""):
         row_idx = table.rowCount()
@@ -4562,13 +5239,15 @@ class ResonanceChainEditDialog(QDialog):
         name_edit = QLineEdit(name)
         name_edit.setObjectName("nameEdit")
         name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        name_edit.textChanged.connect(lambda: self._debounced_sync())
         table.setCellWidget(row_idx, 0, name_edit)
 
         sub_name = QLineEdit(sub_name_text)
         sub_name.setObjectName("nameEdit")
         sub_name.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub_name.setPlaceholderText("（备注）")
-        table.setCellWidget(row_idx, 1, sub_name)
+        sub_name.textChanged.connect(lambda: self._debounced_sync())
+        table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name, lambda: name))
 
         chain_num = self._item['name'].replace('共鸣链', '')
         seq = QLabel(f"共鸣链{chain_num}-{eff_type[:1]}{row_idx + 1}")
@@ -4583,6 +5262,7 @@ class ResonanceChainEditDialog(QDialog):
         value_spin.setValue(value)
         value_spin.setFixedWidth(120)
         value_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        value_spin.valueChanged.connect(lambda: self._debounced_sync())
         table.setCellWidget(row_idx, 3, value_spin)
 
         unit = QLabel("百分比")
@@ -4604,7 +5284,15 @@ class ResonanceChainEditDialog(QDialog):
         del_btn.setObjectName("itemDeleteBtn")
         del_btn.setFixedSize(55, 28)
         del_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        del_btn.clicked.connect(lambda: table.removeRow(row_idx))
+        def _del_this():
+            sender = self.sender()
+            for r in range(table.rowCount()):
+                ops = table.cellWidget(r, 6)
+                if ops and sender in ops.findChildren(QPushButton):
+                    table.removeRow(r)
+                    self._debounced_sync()
+                    return
+        del_btn.clicked.connect(_del_this)
         ops_layout.addWidget(del_btn)
 
         table.setCellWidget(row_idx, 6, ops)
@@ -4623,7 +5311,12 @@ class ResonanceChainEditDialog(QDialog):
                                sub_name_text=eff.get("sub_name", ""))
 
 
-    def _save(self):
+    def _debounced_sync(self):
+        """防抖：300ms 内多次变更只同步一次"""
+        self._sync_timer.start()
+
+    def _collect_and_sync(self):
+        """收集所有表格数据，更新 item，同步到下游页面"""
         # 保持名称格式：绯雪的共鸣链1
         self._item["name"] = f"{self._prefix}的共鸣链{self._chain_num}"
 
@@ -4640,16 +5333,14 @@ class ResonanceChainEditDialog(QDialog):
                         "value": value_spin.value(),
                         "type": eff_type,
                         "source": source_lbl.text() if source_lbl else "共鸣链效果",
-                        "sub_name": sub_name.text().strip() if sub_name else "",
+                        "sub_name": _get_sub_name_text(sub_name),
                     })
         self._item["effects"] = effects
 
-        # 同步效果到综合填写页和关键词关联页面（父组件 ResonanceBuffPage 处理）
+        # 同步效果到综合填写页和关键词关联页面
         parent_page = self.parent()
         if hasattr(parent_page, '_sync_chain_to_pages'):
             parent_page._sync_chain_to_pages(self._item)
-
-        self.accept()
 
 
 # ==================== 结果列表页面 ====================
@@ -5223,7 +5914,7 @@ class ResultListPage(QWidget):
         sr_bd = "#b8c4d6" if light else "#555"
         sr_focus = "#5070e8" if light else "#e94560"
         self._search_input.setStyleSheet(
-            f"QLineEdit#resultSearchInput {{ padding: 8px 12px; border: 1px solid {sr_bd}; border-radius: 6px;"
+            f"QLineEdit#resultSearchInput {{ padding: 4px 6px; border: 1px solid {sr_bd}; border-radius: 6px;"
             f"font-size: 14px; background: {sr_bg}; color: {sr_fg}; }}"
             f"QLineEdit#resultSearchInput:focus {{ border-color: {sr_focus}; }}"
         )
@@ -5674,7 +6365,7 @@ class ResultListPage(QWidget):
         light = self._is_light_theme()
         _btn_base = (
             "QPushButton {{ color: {}; background: {}; "
-            "border: 1px solid {}; border-radius: 3px; padding: 6px 10px; }}"
+            "border: 1px solid {}; border-radius: 3px; padding: 4px 6px; }}"
             "QPushButton:hover {{ background: {}; }}"
         )
 
@@ -5812,7 +6503,7 @@ class ResultListPage(QWidget):
         if self._auto_update:
             self.auto_update_btn.setText("关闭全部自动更新")
             self.auto_update_btn.setStyleSheet(
-                "QPushButton { font-size: 13px; padding: 7px 16px; "
+                "QPushButton { font-size: 13px; padding: 3px 8px; "
                 "background: #4CAF50; color: #fff; border: 1px solid #388E3C; "
                 "border-radius: 4px; font-weight: bold; }"
                 "QPushButton:hover { background: #43A047; }"
@@ -5827,7 +6518,7 @@ class ResultListPage(QWidget):
         if self._auto_update:
             self.auto_update_btn.setText("关闭全部自动更新")
             self.auto_update_btn.setStyleSheet(
-                "QPushButton { font-size: 13px; padding: 7px 16px; "
+                "QPushButton { font-size: 13px; padding: 3px 8px; "
                 "background: #4CAF50; color: #fff; border: 1px solid #388E3C; "
                 "border-radius: 4px; font-weight: bold; }"
                 "QPushButton:hover { background: #43A047; }"
@@ -6460,7 +7151,7 @@ class ResultPage(QWidget):
         if self._auto_compute:
             self.auto_compute_btn.setText("关闭自动计算")
             self.auto_compute_btn.setStyleSheet(
-                "QPushButton { font-size: 13px; padding: 7px 16px; "
+                "QPushButton { font-size: 13px; padding: 3px 8px; "
                 "background: #4CAF50; color: #fff; border: 1px solid #388E3C; "
                 "border-radius: 4px; font-weight: bold; }"
                 "QPushButton:hover { background: #43A047; }"
@@ -7304,7 +7995,7 @@ class ManualDialog(QDialog):
         self.section_list.setStyleSheet(
             f"QListWidget {{ border: 1px solid {self._section_border}; border-radius: 4px;"
             f" background: {self._section_bg}; color: {self._section_color}; }}"
-            f"QListWidget::item {{ padding: 6px 8px; }}"
+            f"QListWidget::item {{ padding: 4px 6px; }}"
             f"QListWidget::item:hover {{ background: {self._section_hover}; }}"
             f"QListWidget::item:selected {{ background: {self._section_select}; }}"
         )
@@ -7678,7 +8369,7 @@ class ManualDialog(QDialog):
             edit_color = "#1b5e20" if self._is_light_theme() else "#a5d6a7"
             self.edit_btn.setStyleSheet(
                 f"QPushButton {{ color: {edit_color}; background: rgba(76,175,80,0.2);"
-                f"border: 1px solid rgba(76,175,80,0.4); border-radius: 3px; padding: 7px 14px; }}"
+                f"border: 1px solid rgba(76,175,80,0.4); border-radius: 3px; padding: 3px 8px; }}"
                 f"QPushButton:hover {{ background: rgba(76,175,80,0.3); }}"
             )
             self.insert_img_btn.setVisible(True)
@@ -8270,6 +8961,12 @@ class MainScreen(QWidget):
         nav_top_layout.addWidget(self.error_log_btn)
         self._update_error_log_btn()
 
+        self.data_flow_btn = QPushButton("数据流")
+        self.data_flow_btn.setObjectName("backButton")
+        self.data_flow_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.data_flow_btn.clicked.connect(self._open_data_flow_viewer)
+        nav_top_layout.addWidget(self.data_flow_btn)
+
         # 注册新错误回调：滚动侧边栏到错误日志按钮 + 颜色闪烁
         _set_new_error_callback(lambda: self._on_new_error())
         self._error_flash_anim = None
@@ -8279,7 +8976,7 @@ class MainScreen(QWidget):
         # 把按钮区包在固定高度的 QScrollArea 里，按钮再多也不挤占导航树空间
         self._nav_scroll = QScrollArea()
         self._nav_scroll.setWidgetResizable(True)
-        self._nav_scroll.setFixedHeight(160)
+        self._nav_scroll.setFixedHeight(190)
         self._nav_scroll.setFrameShape(QFrame.Shape.NoFrame)
         self._nav_scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
         self._nav_scroll.setWidget(nav_top)
@@ -8762,6 +9459,10 @@ class MainScreen(QWidget):
         self.error_log_btn.setStyleSheet("")
         self._update_error_log_btn()
 
+    def _open_data_flow_viewer(self):
+        dlg = DataFlowViewerDialog(self, parent=self)
+        dlg.show()
+
     def _update_error_log_btn(self):
         """更新错误日志按钮：有未读错误时显示计数和红色。"""
         if not _log_entries or _new_error_count[0] <= 0:
@@ -9156,7 +9857,7 @@ class DmgCalculator(QMainWindow):
 
         # 存档按钮（放在主题按钮左边）
         btn_style = (
-            "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #555; "
+            "QPushButton { font-size: 12px; padding: 3px 8px; border: 1px solid #555; "
             "border-radius: 4px; background: rgba(255,255,255,0.06); color: #ccc; }"
             "QPushButton:hover { background: rgba(255,255,255,0.14); }"
         )
@@ -9183,7 +9884,7 @@ class DmgCalculator(QMainWindow):
 
         # 预设构建器按钮（放在使用预设左边）
         builder_style = (
-            "QPushButton { font-size: 12px; padding: 4px 12px; border: 1px solid #8e44ad; "
+            "QPushButton { font-size: 12px; padding: 2px 8px; border: 1px solid #8e44ad; "
             "border-radius: 4px; background: rgba(142,68,173,0.20); color: #bb8fce; font-weight: 600; }"
             "QPushButton:hover { background: rgba(142,68,173,0.35); }"
         )
@@ -9194,7 +9895,7 @@ class DmgCalculator(QMainWindow):
 
         # 使用预设按钮（使用 accent 色突出）
         preset_style = (
-            "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #e94560; "
+            "QPushButton { font-size: 12px; padding: 3px 8px; border: 1px solid #e94560; "
             "border-radius: 4px; background: rgba(233,69,96,0.25); color: #ff8c9a; font-weight: 600; }"
             "QPushButton:hover { background: rgba(233,69,96,0.45); }"
         )
@@ -9269,33 +9970,33 @@ class DmgCalculator(QMainWindow):
         # 更新存档按钮主题
         if self.current_theme == "dark":
             btn_css = (
-                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #3d4458; "
+                "QPushButton { font-size: 12px; padding: 3px 8px; border: 1px solid #3d4458; "
                 "border-radius: 4px; background: rgba(255,255,255,0.05); color: #b0b6c2; }"
                 "QPushButton:hover { background: rgba(255,255,255,0.10); }"
             )
             preset_css = (
-                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #e94560; "
+                "QPushButton { font-size: 12px; padding: 3px 8px; border: 1px solid #e94560; "
                 "border-radius: 4px; background: rgba(233,69,96,0.25); color: #ff8c9a; font-weight: 600; }"
                 "QPushButton:hover { background: rgba(233,69,96,0.45); }"
             )
             builder_css = (
-                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #8e44ad; "
+                "QPushButton { font-size: 12px; padding: 3px 8px; border: 1px solid #8e44ad; "
                 "border-radius: 4px; background: rgba(142,68,173,0.20); color: #bb8fce; font-weight: 600; }"
                 "QPushButton:hover { background: rgba(142,68,173,0.35); }"
             )
         else:
             btn_css = (
-                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #b0b8c4; "
+                "QPushButton { font-size: 12px; padding: 3px 8px; border: 1px solid #b0b8c4; "
                 "border-radius: 4px; background: rgba(0,0,0,0.04); color: #3a4050; }"
                 "QPushButton:hover { background: rgba(0,0,0,0.08); }"
             )
             preset_css = (
-                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #5070e8; "
+                "QPushButton { font-size: 12px; padding: 3px 8px; border: 1px solid #5070e8; "
                 "border-radius: 4px; background: rgba(80,112,232,0.15); color: #3d5fd4; font-weight: 600; }"
                 "QPushButton:hover { background: rgba(80,112,232,0.28); }"
             )
             builder_css = (
-                "QPushButton { font-size: 12px; padding: 7px 14px; border: 1px solid #7c3aed; "
+                "QPushButton { font-size: 12px; padding: 3px 8px; border: 1px solid #7c3aed; "
                 "border-radius: 4px; background: rgba(124,58,237,0.12); color: #6d28d9; font-weight: 600; }"
                 "QPushButton:hover { background: rgba(124,58,237,0.22); }"
             )
@@ -9325,7 +10026,7 @@ class DmgCalculator(QMainWindow):
             sr_bd = "#b8c4d6" if light else "#555"
             sr_focus = "#5070e8" if light else "#e94560"
             rl._search_input.setStyleSheet(
-                f"QLineEdit#resultSearchInput {{ padding: 8px 12px; border: 1px solid {sr_bd}; "
+                f"QLineEdit#resultSearchInput {{ padding: 4px 6px; border: 1px solid {sr_bd}; "
                 f"border-radius: 6px; font-size: 14px; background: {sr_bg}; color: {sr_fg}; }}"
                 f"QLineEdit#resultSearchInput:focus {{ border-color: {sr_focus}; }}"
             )
@@ -9367,14 +10068,14 @@ class DmgCalculator(QMainWindow):
         if active:
             if self.current_theme == "dark":
                 return (
-                    "QPushButton { font-size: 12px; padding: 7px 14px; "
+                    "QPushButton { font-size: 12px; padding: 3px 8px; "
                     "border: 1px solid #43A047; border-radius: 4px; "
                     "background: rgba(76,175,80,0.20); color: #81c784; font-weight: 600; }"
                     "QPushButton:hover { background: rgba(76,175,80,0.30); }"
                 )
             else:
                 return (
-                    "QPushButton { font-size: 12px; padding: 7px 14px; "
+                    "QPushButton { font-size: 12px; padding: 3px 8px; "
                     "border: 1px solid #388E3C; border-radius: 4px; "
                     "background: rgba(76,175,80,0.12); color: #2e7d32; font-weight: 600; }"
                     "QPushButton:hover { background: rgba(76,175,80,0.22); }"
@@ -9382,14 +10083,14 @@ class DmgCalculator(QMainWindow):
         else:
             if self.current_theme == "dark":
                 return (
-                    "QPushButton { font-size: 12px; padding: 7px 14px; "
+                    "QPushButton { font-size: 12px; padding: 3px 8px; "
                     "border: 1px solid #555; border-radius: 4px; "
                     "background: rgba(255,255,255,0.06); color: #ccc; }"
                     "QPushButton:hover { background: rgba(255,255,255,0.14); }"
                 )
             else:
                 return (
-                    "QPushButton { font-size: 12px; padding: 7px 14px; "
+                    "QPushButton { font-size: 12px; padding: 3px 8px; "
                     "border: 1px solid #bbb; border-radius: 4px; "
                     "background: rgba(0,0,0,0.04); color: #333; }"
                     "QPushButton:hover { background: rgba(0,0,0,0.08); }"

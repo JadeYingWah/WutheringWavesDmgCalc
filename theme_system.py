@@ -76,7 +76,7 @@ def build_stylesheet(theme):
     QPushButton#startButton:pressed {{ background-color: {c["btn_pressed"]}; }}
     QPushButton#themeButton {{
         background-color: transparent; border: 1px solid {c["border"]};
-        color: {c["text_secondary"]}; padding: 8px 18px; border-radius: 6px; font-size: 13px;
+        color: {c["text_secondary"]}; padding: 3px 8px; border-radius: 6px; font-size: 13px;
     }}
     QPushButton#themeButton:hover {{ border-color: {c["accent"]}; color: {c["accent"]}; }}
     QWidget#MainScreen {{ background-color: {c["bg"]}; }}
@@ -86,7 +86,7 @@ def build_stylesheet(theme):
         color: {c["text"]}; font-size: 14px;
     }}
     QTreeWidget#navTree::item {{
-        padding: 8px 12px; border-radius: 6px; margin: 2px 8px;
+        padding: 4px 6px; border-radius: 6px; margin: 2px 8px;
     }}
     QTreeWidget#navTree::item:hover {{ background-color: {c["sidebar_hover"]}; }}
     QTreeWidget#navTree::item:selected {{
@@ -98,6 +98,30 @@ def build_stylesheet(theme):
     QTreeWidget#navTree::branch:has-children:closed {{ border: none; image: none; }}
     QTreeWidget#navTree::branch:has-children:open {{ border: none; image: none; }}
     QTreeWidget#navTree::branch:!has-children {{ border: none; image: none; width: 0; }}
+    QTreeWidget#dataFlowTree {{
+        background-color: {c["input_bg"]}; border: 1px solid {c["border"]};
+        border-radius: 6px; color: {c["text"]}; font-size: 13px;
+        outline: none;
+    }}
+    QTreeWidget#dataFlowTree::item {{
+        padding: 3px 6px;
+        border-left: 1px solid {c["border"]};
+        border-right: 1px solid {c["border"]};
+        border-bottom: 1px solid {c["border"]};
+    }}
+    QTreeWidget#dataFlowTree::item:hover {{
+        background-color: {c["sidebar_hover"]};
+    }}
+    QTreeWidget#dataFlowTree::item:selected {{
+        background-color: {c["nav_selected_bg"]}; color: {c["accent"]};
+    }}
+    QTreeWidget#dataFlowTree QHeaderView::section {{
+        background-color: {c["bg_card"]}; color: {c["text"]};
+        border-right: 1px solid {c["border"]};
+        border-bottom: 2px solid {c["border"]};
+        padding: 4px 8px; font-weight: 600;
+        text-align: center;
+    }}
     QWidget#contentArea {{ background-color: {c["bg_secondary"]}; }}
     QLabel#sectionTitle {{ color: {c["text"]}; font-size: 22px; font-weight: 600; padding: 4px 0; }}
     QGroupBox {{
@@ -118,12 +142,12 @@ def build_stylesheet(theme):
         min-width: 1px; max-width: 1px;
     }}
     QDoubleSpinBox, QSpinBox {{
-        padding: 8px; border: 1px solid {c["input_border"]}; border-radius: 6px;
+        padding: 2px 4px; border: 1px solid {c["input_border"]}; border-radius: 6px;
         background: {c["input_bg"]}; color: {c["text"]}; min-width: 120px; font-size: 14px;
     }}
     QDoubleSpinBox:focus, QSpinBox:focus {{ border-color: {c["input_focus"]}; }}
     QDoubleSpinBox#itemValueSpin {{
-        padding: 4px; padding-right: 36px; border: 1px solid {c["input_border"]};
+        padding: 1px 2px; padding-right: 36px; border: 1px solid {c["input_border"]};
         border-radius: 6px; background: {c["input_bg"]}; color: {c["text"]}; font-size: 13px;
     }}
     QDoubleSpinBox#itemValueSpin:focus {{ border-color: {c["input_focus"]}; border-width: 1px; }}
@@ -134,7 +158,7 @@ def build_stylesheet(theme):
     QDoubleSpinBox::up-arrow, QDoubleSpinBox::down-arrow,
     QSpinBox::up-arrow, QSpinBox::down-arrow {{ image: none; border: none; width: 0; height: 0; }}
     QComboBox {{
-        padding: 8px; border: 1px solid {c["input_border"]}; border-radius: 6px;
+        padding: 2px 4px; border: 1px solid {c["input_border"]}; border-radius: 6px;
         background: {c["input_bg"]}; color: {c["text"]}; min-width: 120px; font-size: 14px;
     }}
     QComboBox:focus {{ border-color: {c["input_focus"]}; }}
@@ -163,7 +187,7 @@ def build_stylesheet(theme):
     QFormLayout {{ spacing: 10px; }}
     QPushButton#backButton {{
         background-color: transparent; border: 1px solid {c["border"]};
-        color: {c["text_secondary"]}; padding: 8px 18px; border-radius: 6px; font-size: 13px;
+        color: {c["text_secondary"]}; padding: 2px 8px; border-radius: 6px; font-size: 13px;
     }}
     QPushButton#backButton:hover {{ border-color: {c["accent"]}; color: {c["accent"]}; }}
     QPushButton#backButton[active="true"] {{
@@ -171,12 +195,12 @@ def build_stylesheet(theme):
     }}
     QPushButton#addButton {{
         background-color: {c["btn_bg"]}; color: white; border: none;
-        padding: 7px 16px; border-radius: 4px; font-size: 12px; font-weight: 600;
+        padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;
     }}
     QPushButton#addButton:hover {{ background-color: {c["btn_hover"]}; }}
     QPushButton#itemAddBtn {{
         background-color: {c["btn_bg"]}; color: white; border: none;
-        padding: 6px 18px; border-radius: 6px; font-size: 14px; font-weight: 600;
+        padding: 2px 8px; border-radius: 6px; font-size: 14px; font-weight: 600;
     }}
     QPushButton#itemAddBtn:hover {{ background-color: {c["btn_hover"]}; }}
     QListWidget#attrList {{
@@ -191,29 +215,35 @@ def build_stylesheet(theme):
     QPushButton#itemLockBtn {{
         background-color: {c["input_border"]}; color: {c["text"]};
         border: none; border-radius: 4px; font-size: 12px;
-        padding: 7px 12px;
+        padding: 3px 6px;
     }}
     QPushButton#itemLockBtn:hover {{ background-color: {c["accent"]}; color: white; }}
     QPushButton#itemDeleteBtn {{
         background-color: #c0392b; color: white;
         border: none; border-radius: 4px; font-size: 12px;
-        padding: 7px 12px;
+        padding: 3px 6px;
     }}
     QPushButton#itemDeleteBtn:hover {{ background-color: #e74c3c; }}
     QPushButton#itemDeleteBtn:disabled {{ background-color: {c["input_border"]}; color: {c["text_secondary"]}; }}
     QDoubleSpinBox#itemValueSpin:disabled {{ color: {c["text_secondary"]}; }}
     QLineEdit#nameEdit {{
         border: 1px solid {c["input_border"]}; border-radius: 4px;
-        background: {c["input_bg"]}; font-size: 14px; padding: 6px 10px; color: {c["text"]};
+        background: {c["input_bg"]}; font-size: 14px; padding: 2px 4px; color: {c["text"]};
     }}
     QLineEdit#nameEdit:focus {{ border: 1px solid {c["input_focus"]}; }}
+    QTextEdit {{
+        border: 1px solid {c["input_border"]}; border-radius: 6px;
+        background: {c["input_bg"]}; color: {c["text"]}; font-size: 14px;
+        padding: 6px;
+    }}
+    QTextEdit:focus {{ border-color: {c["input_focus"]}; }}
     QLabel#seqLabel {{
         border: 1px solid {c["input_border"]}; border-radius: 4px; padding: 4px;
         color: {c["accent"]}; font-size: 12px; font-weight: 600;
     }}
     QPushButton#calcBtn {{
         background-color: {c["btn_bg"]}; color: white; border: none;
-        padding: 10px 40px; font-size: 16px; font-weight: 600; border-radius: 8px;
+        padding: 6px 24px; font-size: 16px; font-weight: 600; border-radius: 8px;
     }}
     QPushButton#calcBtn:hover {{ background-color: {c["btn_hover"]}; }}
     QLabel#resultValue {{ color: {c["accent"]}; font-size: 14px; font-weight: 700; padding: 4px 0px; }}
@@ -223,7 +253,7 @@ def build_stylesheet(theme):
     }}
     QFrame#resultCard {{
         background-color: {c["bg_card"]}; border: 1px solid {c["border"]};
-        border-radius: 6px; padding: 8px 12px;
+        border-radius: 6px; padding: 4px 6px;
     }}
     QFrame#resultCard:hover {{
         border-color: {c["accent"]}; background-color: rgba(128,128,144,0.04);
@@ -246,7 +276,7 @@ def build_stylesheet(theme):
     QPushButton#processCopyBtn {{
         color: {c["text_secondary"]}; font-size: 12px; font-weight: 400;
         background-color: {c["input_bg"]}; border: 1px solid {c["border"]};
-        border-radius: 4px; padding: 6px 12px;
+        border-radius: 4px; padding: 2px 6px;
     }}
     QPushButton#processCopyBtn:hover {{ color: {c["accent"]}; border-color: {c["accent"]}; }}
     QLabel#processLabel {{
@@ -262,17 +292,17 @@ def build_stylesheet(theme):
     QTableWidget#attrTable::item:alternate {{ background-color: {c["alt_row"]}; }}
     QTableWidget#attrTable QLineEdit {{
         border: 1px solid {c["border"]}; border-radius: 3px;
-        padding: 2px 4px; background: transparent; color: {c["text"]};
+        padding: 1px 2px; background: transparent; color: {c["text"]};
         margin: 1px 2px;
     }}
     QTableWidget#attrTable QDoubleSpinBox {{
         border: 1px solid {c["border"]}; border-radius: 3px;
-        padding: 2px 4px; background: transparent; color: {c["text"]};
+        padding: 1px 2px; background: transparent; color: {c["text"]};
         margin: 1px 2px;
     }}
     QTableWidget#attrTable QComboBox {{
         border: 1px solid {c["border"]}; border-radius: 3px;
-        padding: 2px 4px; background: transparent; color: {c["text"]};
+        padding: 1px 2px; background: transparent; color: {c["text"]};
         margin: 1px 2px;
     }}
     QTableWidget#defTable {{
@@ -328,7 +358,7 @@ def build_stylesheet(theme):
 
     QComboBox#algorithmCombo {{
         font-size: 12px;
-        padding: 4px 8px;
+        padding: 3px 6px;
         text-align: center;
         border: 1px solid {c["input_border"]};
         border-radius: 4px;
@@ -366,7 +396,7 @@ def build_stylesheet(theme):
         background-color: {c["input_bg"]};
         color: {c["text"]};
         border: 1px solid {c["border"]};
-        padding: 6px 18px;
+        padding: 3px 8px;
         border-radius: 4px;
         font-size: 13px;
     }}
@@ -411,7 +441,7 @@ def build_stylesheet(theme):
         background-color: {c["input_bg"]};
         color: {c["text"]};
         border: 1px solid {c["border"]};
-        padding: 6px 18px;
+        padding: 3px 8px;
         border-radius: 4px;
         font-size: 13px;
     }}
@@ -429,7 +459,7 @@ def build_stylesheet(theme):
         background-color: {c["input_bg"]};
         color: {c["text"]};
         border: 1px solid {c["border"]};
-        padding: 6px 18px;
+        padding: 3px 8px;
         border-radius: 4px;
         font-size: 13px;
         min-width: 80px;
@@ -455,7 +485,7 @@ def build_stylesheet(theme):
         background-color: {c["input_bg"]};
         color: {c["text"]};
         border: 1px solid {c["border"]};
-        padding: 6px 18px;
+        padding: 3px 8px;
         border-radius: 4px;
         font-size: 13px;
     }}
@@ -523,7 +553,7 @@ def build_stylesheet(theme):
     }}
     QPushButton#addGreenBtn {{
         background-color: {c["add_btn"]}; color: white; border: none;
-        padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600;
+        padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;
     }}
     QPushButton#addGreenBtn:hover {{ background-color: {c["btn_hover"]}; }}
     QPushButton#delRedBtn {{
@@ -533,7 +563,7 @@ def build_stylesheet(theme):
     QPushButton#delRedBtn:hover {{ background-color: {c["btn_hover"]}; }}
     QPushButton#presetSaveBtn {{
         background-color: {c["btn_bg"]}; color: white; border: none;
-        padding: 10px 40px; font-size: 14px; font-weight: 600; border-radius: 8px;
+        padding: 6px 16px; font-size: 14px; font-weight: 600; border-radius: 8px;
     }}
     QPushButton#presetSaveBtn:hover {{ background-color: {c["btn_hover"]}; }}
     QDialog QPushButton#presetSaveBtn {{
