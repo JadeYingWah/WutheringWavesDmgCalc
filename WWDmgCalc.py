@@ -771,18 +771,18 @@ class BaseTableAttrPage(QWidget):
 
 class CombinedEntryPage(BaseTableAttrPage):
     """综合填写页 —— 在一个页面中统一添加属性，并通过「来源」下拉框
-    自动分发到对应的子页面（武器谐振/合鸣效果/技能效果/角色效果/其他效果/共鸣链效果）。
+    自动分发到对应的子页面（武器谐振/合鸣效果/技能效果/角色效果/其他效果/共鸣链效果/首位声骸效果）。
 
     表格列: 名称 | 副名称 | 序列号 | 数值 | 取值 | 来源 | 操作
     输入行: SearchCombo(属性名) + QDoubleSpinBox(数值) + QLabel(单位) + QComboBox(来源) + 添加按钮
     """
-    SOURCES = ["武器谐振", "合鸣效果", "技能效果", "角色效果", "其他效果", "共鸣链效果", "关联效果"]
+    SOURCES = ["武器谐振", "合鸣效果", "技能效果", "角色效果", "其他效果", "共鸣链效果", "关联效果", "首位声骸效果"]
 
     def _resequence(self):
         super()._resequence()
         fix_table_height(self.table)
 
-    def __init__(self, title_text, desc_text="搜索选择属性后点击添加\n请选择词条来源（武器谐振/合鸣效果/技能效果/角色效果/其他效果/共鸣链效果）"):
+    def __init__(self, title_text, desc_text="搜索选择属性后点击添加\n请选择词条来源（武器谐振/合鸣效果/技能效果/角色效果/其他效果/共鸣链效果/首位声骸效果）"):
         super().__init__(title_text, desc_text)
         self.page_key = ""  # 由 MainScreen 设置为 "combined_perm" 或 "combined_trigger"
 
@@ -4065,6 +4065,7 @@ class SaveManager:
         ms.page_result.set_defense_page(ms.page_enemy_defense)
         ms.page_result.set_resistance_page(ms.page_enemy_resistance)
         ms.page_result.set_indep_zone_page(ms.page_indep_zone)
+        ms.page_result.set_keyword_assoc_page(ms.page_keyword_assoc)
         ms.page_result._navigate = ms._navigate_to_key
         ms.page_result._summary_pages = {
             "summary_base": ms.page_summary_base,
@@ -4316,7 +4317,7 @@ class ResonanceBuffPage(QWidget):
         intro_edit = QTextEdit()
         intro_edit.setObjectName("nameEdit")
         intro_edit.setReadOnly(True)
-        intro_edit.setPlainText(intro_text if intro_text else "（暂无介绍，点击展开编辑）")
+        intro_edit.setPlainText(intro_text if intro_text else "（暂无介绍，点击展开按钮进行编辑）")
         intro_edit.setMinimumHeight(80)
         intro_edit.setMaximumHeight(120)
         intro_edit.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -4484,8 +4485,8 @@ class DataFlowViewerDialog(QDialog):
         super().__init__(parent)
         self._ms = main_screen
         self.setWindowTitle("数据流调试器")
-        self.setMinimumSize(1200, 700)
-        self.resize(1200, 700)
+        self.setMinimumSize(1350, 800)
+        self.resize(1350, 800)
         self.setModal(False)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         _center_window(self)
@@ -4512,6 +4513,11 @@ class DataFlowViewerDialog(QDialog):
         refresh_btn.setFixedWidth(70)
         refresh_btn.clicked.connect(self.refresh)
         top.addWidget(refresh_btn)
+        copy_btn = QPushButton("复制报告")
+        copy_btn.setObjectName("addButton")
+        copy_btn.setFixedWidth(80)
+        copy_btn.clicked.connect(self._copy_report)
+        top.addWidget(copy_btn)
         close_btn = QPushButton("关闭")
         close_btn.setObjectName("backButton")
         close_btn.setFixedWidth(70)
@@ -4522,27 +4528,59 @@ class DataFlowViewerDialog(QDialog):
         # 树形视图
         self._tree = QTreeWidget()
         self._tree.setObjectName("dataFlowTree")
-        self._tree.setHeaderLabels(["项目", "数值/条数", "分类", "序列号", "副名称"])
+        self._tree.setHeaderLabels(["项目", "数值/条数", "分类", "序列号", "副名称/状态"])
         self._tree.setColumnCount(5)
-        self._tree.header().setStretchLastSection(True)
+        self._tree.header().setStretchLastSection(False)
         self._tree.header().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
         self._tree.header().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-        self._tree.header().resizeSection(0, 250)  # 项目
-        self._tree.header().resizeSection(1, 200)  # 数值/条数
-        self._tree.header().resizeSection(2, 200)  # 分类
-        self._tree.header().resizeSection(3, 200)  # 序列号
-        # 第 4 列（副名称）自动撑满剩余空间
+        # 默认列宽（溢出视口时可水平滚动）
+        _default_widths = [350, 200, 160, 200, 200]
+        for i, w in enumerate(_default_widths):
+            self._tree.header().resizeSection(i, w)
         self._tree.setAnimated(True)
         self._tree.setAllColumnsShowFocus(True)
+        self._tree.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self._tree.itemClicked.connect(self._on_item_clicked)
         self._tree.itemDoubleClicked.connect(self._on_item_double_clicked)
+        self._tree.viewport().installEventFilter(self)
 
         self._id_colors = {}
         self._stroke = QColor(255, 255, 255) if theme == "dark" else QColor(0, 0, 0)
 
-        root.addWidget(self._tree)
+        root.addWidget(self._tree, stretch=3)
 
+        # 文本报告区（可复制，用于反馈不一致问题）
+        self._report = QTextEdit()
+        self._report.setReadOnly(True)
+        self._report.setPlaceholderText('数据流报告（点击"复制报告"可复制全部内容）')
+        self._report.setMaximumHeight(180)
+        root.addWidget(self._report, stretch=1)
+
+        self._report_lines = []  # collect plain-text lines during refresh
         self.refresh()
+
+    # 列宽比例：项目/数值条数/分类/序列号/副名称状态
+    _COL_RATIOS = [0.30, 0.20, 0.15, 0.20, 0.20]
+
+    def _fit_columns(self):
+        """窗口变宽时按比例扩展列宽；窗口窄时保持默认宽度（可水平滚动）"""
+        avail = self._tree.header().width()
+        if avail < 100:
+            return
+        # 当前列总宽
+        cur_total = sum(self._tree.header().sectionSize(i) for i in range(5))
+        # 仅当表头比当前列总宽更宽时才扩展
+        if avail <= cur_total:
+            return
+        used = 0
+        n = len(self._COL_RATIOS)
+        for i, r in enumerate(self._COL_RATIOS):
+            if i < n - 1:
+                w = max(self._tree.header().sectionSize(i), int(avail * r))
+                used += w
+            else:
+                w = max(self._tree.header().sectionSize(i), avail - used)
+            self._tree.header().resizeSection(i, w)
 
     # 分类英文→中文
     _CAT_CN = {
@@ -4564,6 +4602,8 @@ class DataFlowViewerDialog(QDialog):
 
         def _mk(parent, cols, uid=None):
             """创建 5 列节点，若有 uid 则给第 0 列设置带描边的彩色标签"""
+            while len(cols) < 5:
+                cols.append("")
             text0 = cols[0]
             if uid and uid in self._id_colors:
                 cols[0] = ""
@@ -4601,7 +4641,7 @@ class DataFlowViewerDialog(QDialog):
                                   damage_calc.classify_item_category(name)))
 
         # 声骸
-        echo_pages = ms._echo_pages if hasattr(ms, '_echo_pages') else {}
+        echo_pages = ms.echo_pages if hasattr(ms, 'echo_pages') else {}
         for eid, scroll in echo_pages.items():
             if eid in HIDDEN_ECHO_IDS:
                 continue
@@ -4764,41 +4804,285 @@ class DataFlowViewerDialog(QDialog):
                 _mk(grp, [f"  {uid} {name}", f"{val}",
                      CN.get(cat, cat), seq, sub], uid)
 
-        # ========== 下游：计算结果 ==========
+        # 独立乘区（来自独立乘区页，真实数据）
+        if hasattr(ms, 'page_indep_zone'):
+            indep_page = ms.page_indep_zone
+            indep_groups = indep_page.group_factors
+            indep_zone_val = getattr(indep_page, 'independent_zone', 1.0)
+            if indep_groups:
+                grp = _mk(midstream, [f"独立乘区", f"乘积={indep_zone_val:.4f}",
+                                      f"{len(indep_groups)} 组", "", ""])
+                for gname, gfactor in indep_groups:
+                    _mk(grp, [f"    {gname}", f"{gfactor:.4f}", "", "", ""])
+            else:
+                _mk(midstream, ["独立乘区", "1.0000 (无组)", "", "", ""])
+
+        # ========== 下游：计算结果（真实 vs 独立对比）==========
         downstream = _mk(self._tree, ["下游：计算结果", "", "", "", ""])
         downstream.setExpanded(True)
 
         rp = ms.page_result
+
+        # 显示当前筛选条件
         for label_text, attr in [("元素", "element_combo"), ("技能", "skill_combo"),
                                   ("效应", "effect_combo"), ("基准", "base_type_combo")]:
             if hasattr(rp, attr):
                 _mk(downstream, [f"  {label_text}: {getattr(rp, attr).currentText()}",
                      "", "", "", ""])
 
-        for key in ["base", "bonus", "deepen", "crit_rate", "crit_dmg"]:
-            items = zones[key]
-            label, _ = zone_labels[key]
-            total = sum(it[2] for it in items)
-            cnt = f"{len(items)} 条"
-            if label == "基础乘区":
-                _mk(downstream, [f"  {label}", f"{total:.1f}", cnt, "", ""])
-            elif label in ("加成乘区", "加深乘区"):
-                _mk(downstream, [f"  {label}",
-                    f"{1 + total / 100:.4f} ({total:+.1f}%)", cnt, "", ""])
-            elif label == "暴击率":
-                _mk(downstream, [f"  {label}", f"5% + {total:.1f}% = {5 + total:.1f}%",
-                    cnt, "", ""])
-            elif label == "暴击伤害":
-                _mk(downstream, [f"  {label}", f"150% + {total:.1f}% = {150 + total:.1f}%",
-                    cnt, "", ""])
+        # 触发真实计算并读取结果
+        rp.compute()
+        real = getattr(rp, '_last_computed', None)
 
-        for key, lbl in [("defense", "防御乘区"), ("resistance", "抗性乘区")]:
-            if zones[key]:
-                parts = "  ".join(f"{uid} {name}={val}%"
-                                  for uid, name, val, *_ in zones[key])
-                _mk(downstream, [f"  {lbl}", parts, "", "", ""])
+        # 独立计算（使用与 ResultPage.compute 相同的数据源 + 筛选条件）
+        basis = real.get("basis", "攻击力") if real else "攻击力"
+        rp_ext = getattr(rp, '_external_sources', [])
+        rp_echo = getattr(rp, '_echo_pages', {})
+        deduped_items = _collect_all_items(rp_ext, rp_echo)
 
-        _mk(downstream, ["  独立乘区", "（见独立乘区页）", "", "", ""])
+        # 同步筛选条件
+        sel_elem = rp.filter_element.currentText() if hasattr(rp, 'filter_element') else "(无)"
+        sel_skill = rp.filter_skill.currentText() if hasattr(rp, 'filter_skill') else "(无)"
+        sel_effect = rp.filter_effect.currentText() if hasattr(rp, 'filter_effect') else "(无)"
+        sel_elem = sel_elem if sel_elem != "(无)" else None
+        sel_skill = sel_skill if sel_skill != "(无)" else None
+        sel_effect = sel_effect if sel_effect != "(无)" else None
+        def _norm6(t):
+            """补齐到 6 元组 (name, value, source, nav_key, seq, sub_name)"""
+            return t if len(t) >= 6 else (*t, *[""] * (6 - len(t)))
+        deduped_items = [_norm6(t) for t in deduped_items
+                         if _matches_filter(t[0], sel_elem, sel_skill, sel_effect)
+                         and (t[0], t[2], t[3], t[4] if len(t) > 4 else "") not in HIDDEN_ITEMS]
+
+        # 关键词关联注入（与 compute() 相同逻辑）
+        kw_text = ",".join(getattr(rp, '_keywords', []))
+        if kw_text and getattr(rp, '_keyword_assoc_page', None):
+            item_kws = set(k.strip() for k in kw_text.split(",") if k.strip())
+            if item_kws:
+                for kw_item in rp._keyword_assoc_page.get_items():
+                    kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
+                    if item_kws & kw_entry_kws:
+                        deduped_items.append((
+                            kw_item["name"], kw_item["value"],
+                            kw_item.get("source", "关键词关联"), "keyword_assoc", "", "",
+                        ))
+
+        if basis == "攻击力":
+            base_value = sum(v for n, v, *_ in deduped_items if n == "角色基础攻击力")
+            weapon_base = sum(v for n, v, *_ in deduped_items if n == "武器基础攻击力")
+            total_pct = sum(v for n, v, *_ in deduped_items
+                           if "攻击力" in n and "固定" not in n and "基础" not in n)
+            total_flat = sum(v for n, v, *_ in deduped_items if "固定攻击" in n)
+        elif basis == "生命值":
+            base_value = sum(v for n, v, *_ in deduped_items if n == "角色基础生命值")
+            weapon_base = 0.0
+            total_pct = sum(v for n, v, *_ in deduped_items
+                           if "生命值" in n and "固定" not in n and "基础" not in n)
+            total_flat = sum(v for n, v, *_ in deduped_items if "固定生命" in n)
+        else:  # 防御力
+            base_value = sum(v for n, v, *_ in deduped_items if n == "角色基础防御力")
+            weapon_base = 0.0
+            total_pct = sum(v for n, v, *_ in deduped_items
+                           if "防御力" in n and "固定" not in n and "基础" not in n)
+            total_flat = sum(v for n, v, *_ in deduped_items if "固定防御" in n)
+
+        indep_base_zone = (base_value + weapon_base) * (1.0 + total_pct / 100.0) + total_flat
+        indep_bonus = sum(v for n, v, *_ in deduped_items
+                         if any(s in n for s in BONUS_SUFFIX)
+                         and not any(kw in n for kw in CRIT_DMG_KEYWORDS))
+        indep_bonus_zone = 1.0 + indep_bonus / 100.0
+        indep_deepen = sum(v for n, v, *_ in deduped_items if DEEPEN_SUFFIX in n)
+        indep_deepen_zone = 1.0 + indep_deepen / 100.0
+        indep_crit_rate = 5.0 + sum(v for n, v, *_ in deduped_items
+                                    if any(kw in n for kw in CRIT_RATE_KEYWORDS)
+                                    and not any(kw in n for kw in CRIT_DMG_KEYWORDS))
+        indep_crit_dmg = 150.0 + sum(v for n, v, *_ in deduped_items
+                                     if any(kw in n for kw in CRIT_DMG_KEYWORDS))
+        indep_crit_zone = indep_crit_dmg / 100.0
+
+        # 防御/抗性/独立乘区：从真实页面读取（无法从 items 独立推算）
+        real_def = getattr(ms.page_enemy_defense, 'def_multiplier', 1.0) if hasattr(ms, 'page_enemy_defense') else 1.0
+        real_res = 1.0
+        if hasattr(ms, 'page_enemy_resistance'):
+            sel_elem = rp.filter_element.currentText() if hasattr(rp, 'filter_element') else None
+            if sel_elem == "(无)":
+                sel_elem = None
+            real_res = ms.page_enemy_resistance.get_resistance_multiplier(sel_elem)
+        real_indep = getattr(ms.page_indep_zone, 'independent_zone', 1.0) if hasattr(ms, 'page_indep_zone') else 1.0
+
+        # 倍率乘区：从 ResultPage 的 UI 控件读取
+        base_m = rp.base_mult.value() if hasattr(rp, 'base_mult') else 1.0
+        mult_inc = rp.mult_increase.value() if hasattr(rp, 'mult_increase') else 0.0
+        indep_mult = base_m + mult_inc
+        if hasattr(rp, 'mult_boosts'):
+            for boost in rp.mult_boosts:
+                indep_mult *= (1.0 + boost.value() / 100.0)
+
+        # 独立最终伤害
+        indep_base_dmg = (indep_base_zone * indep_bonus_zone * indep_deepen_zone
+                          * real_def * real_res * real_indep * indep_mult / 100.0)
+        indep_final_crit = indep_base_dmg * indep_crit_zone
+        indep_final_no_crit = indep_base_dmg
+
+        # 收集真实值
+        rz = real.get("zones", {}) if real else {}
+
+        def _fmt_real_vs_indep(real_val, indep_val, fmt=".4f"):
+            """格式化真实值 vs 独立值，返回 (显示文本, 是否一致)"""
+            if real_val is None:
+                return f"{indep_val:{fmt}} (无真实值)", False
+            match = abs(real_val - indep_val) < 0.001
+            if match:
+                return f"{real_val:{fmt}}", True
+            else:
+                diff = real_val - indep_val
+                return f"真实 {real_val:{fmt}} ≠ 独立 {indep_val:{fmt}} (差 {diff:+{fmt}})", False
+
+        # 逐乘区对比
+        compare_items = [
+            ("基础乘区", rz.get("atk_zone"), indep_base_zone, f"基础{base_value:.0f}+武器{weapon_base:.0f} 百分比{total_pct:+.1f}% 固定{total_flat:+.1f}"),
+            ("加成乘区", rz.get("bonus_zone"), indep_bonus_zone, f"Σ加成={indep_bonus:+.1f}%"),
+            ("加深乘区", rz.get("deepen_zone"), indep_deepen_zone, f"Σ加深={indep_deepen:+.1f}%"),
+            ("暴击率", rz.get("crit_rate"), indep_crit_rate, f"5% + Σ={indep_crit_rate:.1f}%"),
+            ("暴击伤害", rz.get("crit_zone"), indep_crit_zone, f"(150+Σ)/100={indep_crit_zone:.4f}"),
+            ("防御乘区", rz.get("def_zone"), real_def, "来自敌人防御页"),
+            ("抗性乘区", rz.get("res_zone"), real_res, "来自敌人抗性页"),
+            ("独立乘区", rz.get("indep_zone"), real_indep, "来自独立乘区页"),
+            ("倍率乘区", rz.get("mult_zone"), indep_mult, f"({base_m}+{mult_inc})*boost"),
+        ]
+
+        conflict_count = 0
+        for label, real_val, indep_val, desc in compare_items:
+            text, match = _fmt_real_vs_indep(real_val, indep_val)
+            status = "✅ 一致" if match else "⚠️ 不一致"
+            if not match:
+                conflict_count += 1
+            _mk(downstream, [f"  {label}", text, desc, "", status])
+
+        # 最终伤害对比
+        real_fc = rz.get("final_crit")
+        real_fn = rz.get("final_no_crit")
+        for lbl, rv, iv in [("暴击伤害", real_fc, indep_final_crit),
+                             ("非暴击伤害", real_fn, indep_final_no_crit)]:
+            text, match = _fmt_real_vs_indep(rv, iv, ".2f")
+            status = "✅ 一致" if match else "⚠️ 不一致"
+            if not match:
+                conflict_count += 1
+            _mk(downstream, [f"  {lbl}", text, "", "", status])
+
+        # 总结
+        if conflict_count == 0:
+            _mk(downstream, ["  ✅ 全部一致", "", "真实计算与独立计算完全匹配", "", "✅"])
+        else:
+            _mk(downstream, [f"  ⚠️ 发现 {conflict_count} 处不一致",
+                 "", "请检查数据源或筛选条件", "", "⚠️"])
+
+        # ---- 构建文本报告 ----
+        lines = []
+        lines.append("=== 数据流调试器报告 ===")
+        lines.append("")
+
+        # 上游
+        lines.append("【上游：数据来源】")
+        for item in all_items:
+            uid, name, val, src, _, seq, sub, cat = item
+            cat_cn = CN.get(cat, cat)
+            if cat == "crit":
+                cat_cn = "暴击伤害" if any(kw in name for kw in damage_calc.CRIT_DMG_KEYWORDS) else "暴击率"
+            lines.append(f"  {uid} {name} = {val}  [{cat_cn}]  来源:{src}  {seq}  {sub}")
+        lines.append(f"  共 {len(all_items)} 条")
+        lines.append("")
+
+        # 中间层
+        lines.append("【中间层：关键词关联】")
+        for ki in kw_items:
+            seq = ki.get('seq', '')
+            src = ki.get('source', '关联')
+            lines.append(f"  {ki['name']} = {ki['value']}  来源:{src}  {seq}")
+        if not kw_items:
+            lines.append("  （无数据）")
+        lines.append("")
+
+        # 中游
+        lines.append("【中游：乘区汇总】")
+        for key in ["base", "bonus", "deepen", "crit_rate", "crit_dmg", "defense", "resistance"]:
+            items_z = zones[key]
+            label, desc = zone_labels[key]
+            total = sum(it[2] for it in items_z)
+            lines.append(f"  {label}: {len(items_z)} 条, 合计={total:.4f}  ({desc})")
+            for uid, name, val, *_ in items_z:
+                lines.append(f"    {uid} {name} = {val}")
+        # 独立乘区
+        if hasattr(ms, 'page_indep_zone'):
+            indep_page = ms.page_indep_zone
+            indep_groups = indep_page.group_factors
+            indep_zone_val = getattr(indep_page, 'independent_zone', 1.0)
+            lines.append(f"  独立乘区: 乘积={indep_zone_val:.4f}  ({len(indep_groups)} 组)")
+            for gname, gfactor in indep_groups:
+                lines.append(f"    {gname} = {gfactor:.4f}")
+        lines.append("")
+
+        # 下游
+        lines.append("【下游：计算结果（真实 vs 独立对比）】")
+        sel_elem = rp.filter_element.currentText() if hasattr(rp, 'filter_element') else "?"
+        sel_skill = rp.filter_skill.currentText() if hasattr(rp, 'filter_skill') else "?"
+        sel_effect = rp.filter_effect.currentText() if hasattr(rp, 'filter_effect') else "?"
+        sel_basis = basis
+        sel_kw = ",".join(getattr(rp, '_keywords', []))
+        lines.append(f"  筛选: 基准={sel_basis} 元素={sel_elem} 技能={sel_skill} 效应={sel_effect} 关键词={sel_kw or '(无)'}")
+        lines.append("")
+        for label, real_val, indep_val, desc in compare_items:
+            if real_val is None:
+                lines.append(f"  {label}: 无真实值, 独立={indep_val:.4f}  ({desc})  ⚠️")
+            elif abs(real_val - indep_val) < 0.001:
+                lines.append(f"  {label}: {real_val:.4f}  ({desc})  ✅")
+            else:
+                diff = real_val - indep_val
+                lines.append(f"  {label}: 真实={real_val:.4f} ≠ 独立={indep_val:.4f} (差{diff:+.4f})  ({desc})  ⚠️")
+        # 最终伤害
+        for lbl, rv, iv in [("暴击伤害", real_fc, indep_final_crit),
+                             ("非暴击伤害", real_fn, indep_final_no_crit)]:
+            if rv is None:
+                lines.append(f"  {lbl}: 无真实值, 独立={iv:.2f}  ⚠️")
+            elif abs(rv - iv) < 0.001:
+                lines.append(f"  {lbl}: {rv:.2f}  ✅")
+            else:
+                diff = rv - iv
+                lines.append(f"  {lbl}: 真实={rv:.2f} ≠ 独立={iv:.2f} (差{diff:+.2f})  ⚠️")
+        lines.append("")
+        if conflict_count == 0:
+            lines.append("结论: ✅ 全部一致")
+        else:
+            lines.append(f"结论: ⚠️ 发现 {conflict_count} 处不一致")
+
+        self._report_lines = lines
+        self._report.setPlainText("\n".join(lines))
+        self._fit_columns()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        QTimer.singleShot(0, self._fit_columns)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._fit_columns()
+
+    def eventFilter(self, obj, event):
+        """Shift+滚轮 → 水平滚动"""
+        if obj is self._tree.viewport() and event.type() == event.Type.Wheel:
+            if event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+                hbar = self._tree.horizontalScrollBar()
+                delta = event.angleDelta().y()
+                hbar.setValue(hbar.value() - delta)
+                return True
+        return super().eventFilter(obj, event)
+
+    def _copy_report(self):
+        """复制文本报告到剪贴板"""
+        text = self._report.toPlainText()
+        if not text.strip():
+            return
+        QApplication.clipboard().setText(text)
 
     def _on_item_clicked(self, item, column):
         """单击三角形文字 → 展开/收起"""
@@ -5650,6 +5934,7 @@ class ResultDetailDialog(QDialog):
         self._item["effect"] = None if self.filter_effect.currentText() == "(无)" else self.filter_effect.currentText()
         items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
         self._page._recalc_one(self._item, items_data)
+        self._patch_process_html()
         self._update_result_labels()
         self._page._refresh_cards()
 
@@ -5660,6 +5945,7 @@ class ResultDetailDialog(QDialog):
         if not self._item["locked"]:
             items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
             self._page._recalc_one(self._item, items_data)
+            self._patch_process_html()
         else:
             z = self._item["zones"]
             base_m = self._item["base_mult"]
@@ -5671,16 +5957,37 @@ class ResultDetailDialog(QDialog):
             z["mult_zone"] = mult_zone
             z["final_crit"] = base_dmg * z["crit_zone"]
             z["final_no_crit"] = base_dmg
+        self._patch_process_html()
         self._update_result_labels()
         self._page._refresh_cards()
 
+    def _patch_process_html(self):
+        """重新生成与 ResultPage 相同格式的计算过程 HTML"""
+        items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
+        filtered = [(n, v, s, nk) for n, v, s, nk, *_ in items_data
+                    if _matches_filter(n, self._item.get("element"), self._item.get("skill"), self._item.get("effect"))
+                    and (n, s, nk, "") not in HIDDEN_ITEMS]
+        # 关键词注入
+        if hasattr(self._page, '_keyword_assoc_page') and self._page._keyword_assoc_page:
+            item_kws = set(k.strip() for k in self._item.get("keywords", []))
+            if item_kws:
+                for kw_item in self._page._keyword_assoc_page.get_items():
+                    kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
+                    if item_kws & kw_entry_kws:
+                        filtered.append((
+                            kw_item["name"], kw_item["value"],
+                            kw_item.get("source", "关键词关联"), "keyword_assoc",
+                        ))
+        self._item["process_html"] = self._page._build_card_process_html(filtered, self._item)
+
     def _update_result_labels(self):
-        """更新计算过程显示 — 从 item 当前 zones 实时生成 HTML"""
+        """更新计算过程显示 — 优先使用 item 中已有的详细 process_html"""
         if not hasattr(self, '_detail_process_label'):
             return
-        html = self._rebuild_process_html()
+        html = self._item.get("process_html", "")
+        if not html:
+            html = self._rebuild_process_html()
         self._detail_process_label.setText(html)
-        self._item["process_html"] = html
 
     def _rebuild_process_html(self):
         """从 item 的 zones 实时构建计算过程 HTML"""
@@ -5742,6 +6049,7 @@ class ResultDetailDialog(QDialog):
             return
         items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
         self._page._recalc_one(self._item, items_data)
+        self._patch_process_html()
         self._update_result_labels()
         self._page._refresh_cards()
 
@@ -5769,11 +6077,13 @@ class ResultDetailDialog(QDialog):
     def update_results(self, item):
         """外部数据变更时更新当前详情窗口的显示（由 ResultListPage.recalc 调用）"""
         self._item = item
-        # 实时重新生成计算过程 HTML
-        if hasattr(self, '_rebuild_process_html') and hasattr(self, '_detail_process_label'):
-            html = self._rebuild_process_html()
-            self._detail_process_label.setText(html)
-            item["process_html"] = html
+        # 保留已有的详细 process_html，仅更新显示
+        if hasattr(self, '_detail_process_label'):
+            html = item.get("process_html", "")
+            if not html and hasattr(self, '_rebuild_process_html'):
+                html = self._rebuild_process_html()
+            if html:
+                self._detail_process_label.setText(html)
 
 
 # ==================== 走马灯标签 ====================
@@ -5948,9 +6258,10 @@ class ResultListPage(QWidget):
         self.batch_delete_btn.clicked.connect(lambda: self._enter_selection("delete"))
         toolbar.addWidget(self.batch_delete_btn)
 
-        self.auto_update_btn = QPushButton("开启全部自动更新")
+        self.auto_update_btn = QPushButton("开启自动更新")
         self.auto_update_btn.setObjectName("backButton")
         self.auto_update_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.auto_update_btn.setStyleSheet(self._AUTO_OFF_STYLE)
         self.auto_update_btn.clicked.connect(self._toggle_auto_update)
         toolbar.addWidget(self.auto_update_btn)
 
@@ -6082,6 +6393,21 @@ class ResultListPage(QWidget):
             if item["locked"]:
                 continue
             self._recalc_one(item, items_data)
+            # 自动更新时同步重新生成计算过程 HTML
+            filtered = [(n, v, s, nk) for n, v, s, nk, *_ in items_data
+                        if _matches_filter(n, item.get("element"), item.get("skill"), item.get("effect"))
+                        and (n, s, nk, "") not in HIDDEN_ITEMS]
+            if self._keyword_assoc_page:
+                item_kws = set(k.strip() for k in item.get("keywords", []))
+                if item_kws:
+                    for kw_item in self._keyword_assoc_page.get_items():
+                        kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
+                        if item_kws & kw_entry_kws:
+                            filtered.append((
+                                kw_item["name"], kw_item["value"],
+                                kw_item.get("source", "关键词关联"), "keyword_assoc",
+                            ))
+            item["process_html"] = self._build_card_process_html(filtered, item)
         self._refresh_cards()
         # 如果详情弹窗打开着，同步更新它
         open_dlg = getattr(self, '_open_detail', None)
@@ -6161,6 +6487,68 @@ class ResultListPage(QWidget):
             "mult_zone": mult_zone, "final_crit": base_dmg * crit_zone, "final_no_crit": base_dmg,
             "computed_base_zone": computed_base_zone,
         }
+
+    def _build_card_process_html(self, filtered, item):
+        """从 filtered 词条列表生成与 ResultPage 相同格式的计算过程 HTML"""
+        z = item.get("zones", {})
+        if not z:
+            return ""
+        basis = item.get("basis", "攻击力")
+        base_m = item.get("base_mult", 100)
+        mult_inc = item.get("mult_increase", 0)
+        mult_boosts = item.get("mult_boosts", [])
+
+        # 从 filtered 提取各乘区词条
+        if basis == "攻击力":
+            zone_label = "攻击力"
+            pct_names = {"攻击力加成", "攻击力", "攻击"}
+        elif basis == "生命值":
+            zone_label = "生命值"
+            pct_names = {"生命值"}
+        else:
+            zone_label = "防御力"
+            pct_names = {"防御力"}
+
+        base_value = sum(v for n, v, s, nk in filtered if n == "角色基础攻击力")
+        weapon_base = sum(v for n, v, s, nk in filtered if n == "武器基础攻击力")
+        if basis == "生命值":
+            base_value = sum(v for n, v, s, nk in filtered if n == "角色基础生命值")
+        elif basis == "防御力":
+            base_value = sum(v for n, v, s, nk in filtered if n == "角色基础防御力")
+
+        pct_items = [(n, v, s, nk) for n, v, s, nk in filtered
+                     if any(kw in n for kw in pct_names)
+                     and "固定" not in n and "基础" not in n and "伤害" not in n]
+        flat_items = [(n, v, s, nk) for n, v, s, nk in filtered
+                      if ("固定攻击" in n if basis == "攻击力" else
+                          "固定生命" in n if basis == "生命值" else "固定防御" in n)]
+        total_pct = sum(v for _, v, _, _ in pct_items)
+        total_flat = sum(v for _, v, _, _ in flat_items)
+        bonus_items = [(n, v, s, nk) for n, v, s, nk in filtered
+                       if any(sfx in n for sfx in BONUS_SUFFIX)
+                       and not any(kw in n for kw in CRIT_DMG_KEYWORDS)]
+        total_bonus = sum(v for _, v, _, _ in bonus_items)
+        deepen_items = [(n, v, s, nk) for n, v, s, nk in filtered if DEEPEN_SUFFIX in n]
+        total_deepen = sum(v for _, v, _, _ in deepen_items)
+        rate_items = [(n, v, s, nk) for n, v, s, nk in filtered
+                      if any(kw in n for kw in CRIT_RATE_KEYWORDS)
+                      and not any(kw in n for kw in CRIT_DMG_KEYWORDS)]
+        total_crit_rate = z.get("crit_rate", 5.0)
+        dmg_items = [(n, v, s, nk) for n, v, s, nk in filtered
+                     if any(kw in n for kw in CRIT_DMG_KEYWORDS)]
+        total_crit_dmg = 150.0 + sum(v for _, v, _, _ in dmg_items)
+
+        return _render_process_html(
+            basis, zone_label, base_value, weapon_base,
+            pct_items, flat_items, total_pct, total_flat, z.get("atk_zone", 0),
+            bonus_items, total_bonus, z.get("bonus_zone", 1),
+            deepen_items, total_deepen, z.get("deepen_zone", 1),
+            rate_items, dmg_items, total_crit_rate, total_crit_dmg, z.get("crit_zone", 1.5),
+            z.get("def_zone", 1), z.get("res_zone", 1), z.get("indep_zone", 1), [],
+            base_m, mult_inc, mult_boosts, z.get("mult_zone", 100),
+            z.get("final_crit", 0), z.get("final_no_crit", 0),
+            is_light=False,
+        )
 
     # —— 添加条目 ——
     def add_item(self, settings):
@@ -6498,31 +6886,34 @@ class ResultListPage(QWidget):
         self._cancel_selection()
         self._refresh_cards()
 
+    _AUTO_ON_STYLE = (
+        "QPushButton { font-size: 13px; padding: 3px 8px; min-width: 100px; "
+        "background: rgba(76,175,80,0.25); color: #81c784; border: 1px solid rgba(76,175,80,0.5); "
+        "border-radius: 4px; font-weight: bold; }"
+        "QPushButton:hover { background: rgba(76,175,80,0.40); }"
+    )
+    _AUTO_OFF_STYLE = (
+        "QPushButton { font-size: 13px; padding: 3px 8px; min-width: 100px; "
+        "background: rgba(158,158,158,0.15); color: #9e9e9e; border: 1px solid rgba(158,158,158,0.3); "
+        "border-radius: 4px; font-weight: bold; }"
+        "QPushButton:hover { background: rgba(158,158,158,0.25); }"
+    )
+
     def _toggle_auto_update(self):
         self._auto_update = not self._auto_update
         if self._auto_update:
-            self.auto_update_btn.setText("关闭全部自动更新")
-            self.auto_update_btn.setStyleSheet(
-                "QPushButton { font-size: 13px; padding: 3px 8px; "
-                "background: #4CAF50; color: #fff; border: 1px solid #388E3C; "
-                "border-radius: 4px; font-weight: bold; }"
-                "QPushButton:hover { background: #43A047; }"
-            )
+            self.auto_update_btn.setText("关闭自动更新")
+            self.auto_update_btn.setStyleSheet(self._AUTO_ON_STYLE)
             self.recalc()
         else:
-            self.auto_update_btn.setText("开启全部自动更新")
-            self.auto_update_btn.setStyleSheet("")
+            self.auto_update_btn.setText("开启自动更新")
+            self.auto_update_btn.setStyleSheet(self._AUTO_OFF_STYLE)
 
     def _apply_auto_update_button_style(self):
         """仅更新按钮外观（用于从存档恢复 _auto_update 状态后）"""
         if self._auto_update:
-            self.auto_update_btn.setText("关闭全部自动更新")
-            self.auto_update_btn.setStyleSheet(
-                "QPushButton { font-size: 13px; padding: 3px 8px; "
-                "background: #4CAF50; color: #fff; border: 1px solid #388E3C; "
-                "border-radius: 4px; font-weight: bold; }"
-                "QPushButton:hover { background: #43A047; }"
-            )
+            self.auto_update_btn.setText("关闭自动更新")
+            self.auto_update_btn.setStyleSheet(self._AUTO_ON_STYLE)
 
     def _update_all(self):
         """全部更新：对所有条目从数值来源同步数据并重新计算"""
@@ -6823,6 +7214,215 @@ class FlowLayout(QLayout):
         return y + line_height - rect.y() + m.bottom()
 
 
+# ==================== 计算过程 HTML 渲染（ResultPage 和卡片弹窗共用） ====================
+
+def _render_process_html(
+    basis, zone_label, base_value, weapon_base,
+    pct_items, flat_items, total_pct, total_flat, base_zone,
+    bonus_items, total_bonus, bonus_zone,
+    deepen_items, total_deepen, deepen_zone,
+    rate_items, dmg_items, total_crit_rate, total_crit_dmg, crit_zone,
+    def_zone, res_zone, indep_zone, indep_groups,
+    base_m, mult_inc, mult_boosts_vals, mult_zone, final_crit, final_no_crit,
+    is_light=False, sub_map=None, navigate_fn=None, summary_pages=None,
+    base_override_active=False, computed_base_zone=None,
+):
+    """生成计算过程 HTML。navigate_fn/summary_pages 为 None 时链接不可点击但格式一致。"""
+    text_c = "#2c3040" if is_light else "#c0c4ce"
+    accent_c = "#5070e8" if is_light else "#e94560"
+    link_c = "#7c3aed" if is_light else "#f59e42"
+
+    def _esc(s):
+        return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    def _txt(s):
+        return f'<span style="color:{text_c};font-size:14px;">{_esc(s)}</span>'
+
+    def _link(text, tooltip, nav_url):
+        t = _esc(tooltip).replace("\n", "&#10;")
+        if nav_url:
+            return f'<a href="{nav_url}\x1e{t}" style="color:{link_c};font-weight:700;text-decoration:underline;">{text}</a>'
+        return f'<span style="color:{accent_c};font-weight:700;" title="{t}">{text}</span>'
+
+    def _hl_link(text, tooltip, summary_key, name, src_label, nav_key):
+        t = _esc(tooltip).replace("\n", "&#10;")
+        href = f"hl:{summary_key}:{_esc(name)}:{_esc(src_label)}:{_esc(nav_key)}\x1e{t}"
+        return f'<a href="{href}" style="color:{link_c};font-weight:700;text-decoration:underline;">{text}</a>'
+
+    def _item_link(name, value, src_label, nav_key, summary_key=None):
+        is_const = name in CONSTANT_ATTRS or "固定" in name or "基础" in name
+        fmt = f"{value:.1f}" if is_const else f"{value:.1f}%"
+        tip = f"{name} = {fmt}\n来源: {src_label}"
+        sub_key = (name, src_label)
+        if sub_map and sub_key in sub_map:
+            tip += f"\n副名称: {sub_map[sub_key]}"
+        if summary_key and navigate_fn and summary_pages and summary_pages.get(summary_key):
+            return _hl_link(fmt, tip, summary_key, name, src_label, nav_key)
+        target = summary_key if summary_key else nav_key
+        return _link(fmt, tip, f"nav:{target}" if target else None)
+
+    def _render_items(items, joiner=" + ", summary_key=None):
+        parts = []
+        for i, (name, value, src_label, nav_key) in enumerate(items):
+            if i > 0:
+                parts.append(_txt(joiner))
+            parts.append(_item_link(name, value, src_label, nav_key, summary_key))
+        return parts
+
+    def _zone(title, parts):
+        inner = (
+            f'<span style="color:{accent_c};font-size:16px;font-weight:700;">[</span>'
+            f'<span style="color:{accent_c};font-size:14px;font-weight:600;">{_esc(title)}</span>'
+            f'<span style="color:{accent_c};font-size:16px;font-weight:700;">]</span> '
+        )
+        inner += "".join(parts)
+        return f'<div style="padding:6px 0;margin-bottom:2px;line-height:2.0;">{inner}</div>'
+
+    html = []
+
+    # ===== 基础数值 =====
+    source_tip = "来源: 角色武器"
+    nav_to = "char_base"
+    if basis == "攻击力":
+        base_parts = [
+            _txt("("),
+            _link(f"{base_value:.0f}", f"角色基础攻击力 = {base_value:.0f}\n{source_tip}", f"nav:{nav_to}"),
+            _txt(" + "),
+            _link(f"{weapon_base:.0f}", f"武器基础攻击力 = {weapon_base:.0f}\n{source_tip}", f"nav:{nav_to}"),
+            _txt(") × (1"),
+        ]
+    else:
+        base_parts = [
+            _link(f"{base_value:.0f}", f"角色基础{zone_label} = {base_value:.0f}\n{source_tip}", f"nav:{nav_to}"),
+            _txt(" × (1"),
+        ]
+    if pct_items:
+        base_parts.append(_txt(" + "))
+        base_parts.extend(_render_items(pct_items, summary_key="summary_base"))
+    elif total_pct > 0:
+        base_parts.append(_txt(" + "))
+        base_parts.append(_link(f"{total_pct:.1f}%", f"{zone_label}%合计 = {total_pct:.1f}%", "nav:summary_base"))
+    base_parts.append(_txt(")"))
+    if flat_items:
+        base_parts.append(_txt(" + "))
+        base_parts.extend(_render_items(flat_items, summary_key="summary_base"))
+    elif total_flat > 0:
+        base_parts.append(_txt(" + "))
+        base_parts.append(_link(f"{total_flat:.1f}", f"固定{zone_label}合计 = {total_flat:.1f}", "nav:summary_base"))
+    base_parts.append(_txt(" = "))
+    base_parts.append(_link(f"{base_zone:.10f}", f"基础数值结果 = {base_zone:.10f}", None))
+    if base_override_active and computed_base_zone is not None:
+        base_parts.append(
+            f'<br><span style="color:#64b5f6;font-size:13px;font-weight:600;">'
+            f'  ▸ 已启用手动填写，原本计算值: {computed_base_zone:.2f}</span>')
+    html.append(_zone("基础数值", base_parts))
+
+    # ===== 加成乘区 =====
+    bonus_parts = [_txt("1")]
+    if bonus_items:
+        bonus_parts.append(_txt(" + "))
+        bonus_parts.extend(_render_items(bonus_items, summary_key="summary_bonus"))
+    elif total_bonus > 0:
+        bonus_parts.append(_txt(" + "))
+        bonus_parts.append(_link(f"{total_bonus:.1f}%", f"伤害加成合计 = {total_bonus:.1f}%", "nav:summary_bonus"))
+    bonus_parts.append(_txt(" = "))
+    bonus_parts.append(_link(f"{bonus_zone:.10f}", f"加成乘区结果 = {bonus_zone:.10f}", None))
+    html.append(_zone("加成乘区", bonus_parts))
+
+    # ===== 加深乘区 =====
+    deepen_parts = [_txt("1")]
+    if deepen_items:
+        deepen_parts.append(_txt(" + "))
+        deepen_parts.extend(_render_items(deepen_items, summary_key="summary_deepen"))
+    elif total_deepen > 0:
+        deepen_parts.append(_txt(" + "))
+        deepen_parts.append(_link(f"{total_deepen:.1f}%", f"伤害加深合计 = {total_deepen:.1f}%", "nav:summary_deepen"))
+    deepen_parts.append(_txt(" = "))
+    deepen_parts.append(_link(f"{deepen_zone:.10f}", f"加深乘区结果 = {deepen_zone:.10f}", None))
+    html.append(_zone("加深乘区", deepen_parts))
+
+    # ===== 暴击率 =====
+    rate_parts = [_txt("(")]
+    if rate_items:
+        rate_parts.append(_txt("5% + "))
+        rate_parts.extend(_render_items(rate_items, summary_key="summary_crit"))
+    else:
+        added_rate = total_crit_rate - 5.0
+        rate_parts.append(_txt("5%" + (" + " if added_rate > 0 else "")))
+        if added_rate > 0:
+            rate_parts.append(_link(f"{added_rate:.1f}%", f"暴击率来源合计 = {added_rate:.1f}%", "nav:summary_crit"))
+    rate_parts.append(_txt(") = "))
+    rate_parts.append(_link(f"{total_crit_rate:.1f}%", f"最终暴击率 = {total_crit_rate:.1f}%", None))
+    html.append(_zone("暴击率", rate_parts))
+
+    # ===== 暴击伤害乘区 =====
+    crit_parts = [_txt("(150%")]
+    if dmg_items:
+        crit_parts.append(_txt(" + "))
+        crit_parts.extend(_render_items(dmg_items, summary_key="summary_crit"))
+    else:
+        added_crit = total_crit_dmg - 150.0
+        if added_crit > 0:
+            crit_parts.append(_txt(" + "))
+            crit_parts.append(_link(f"{added_crit:.1f}%", f"暴击伤害来源合计 = {added_crit:.1f}%", "nav:summary_crit"))
+    crit_parts.append(_txt(") = "))
+    crit_parts.append(_link(f"{total_crit_dmg:.1f}%", f"暴击伤害合计 = {total_crit_dmg:.1f}%", None))
+    crit_parts.append(_txt(" = "))
+    crit_parts.append(_link(f"{crit_zone:.10f}", f"暴击乘区结果 = {crit_zone:.10f}", None))
+    html.append(_zone("暴击乘区 (暴击时)", crit_parts))
+
+    # 防御乘区
+    html.append(_zone("防御乘区", [
+        _link(f"{def_zone:.10f}", f"防御乘数 = {def_zone:.10f}\n来源: 防御减伤", "nav:enemy_defense"),
+    ]))
+
+    # 抗性乘区
+    html.append(_zone("抗性乘区", [
+        _link(f"{res_zone:.10f}", f"抗性乘数 = {res_zone:.10f}\n来源: 抗性数值", "nav:enemy_resistance"),
+    ]))
+
+    # 独立乘区
+    indep_parts = []
+    if indep_groups:
+        for i, (name, factor) in enumerate(indep_groups):
+            if i > 0:
+                indep_parts.append(_txt(" × "))
+            dname = name if name else f"独立乘区{i+1}"
+            indep_parts.append(_link(f"{factor:.10f}", f"{dname} = {factor:.10f}\n来源: 独立乘区", "nav:summary_indep"))
+        indep_parts.append(_txt(" = "))
+        indep_parts.append(_link(f"{indep_zone:.10f}", f"独立乘区总计 = {indep_zone:.10f}\n来源: 独立乘区", "nav:summary_indep"))
+    else:
+        indep_parts.append(_link(f"{indep_zone:.10f}", f"独立乘区 = {indep_zone:.10f}\n来源: 独立乘区", "nav:summary_indep"))
+    html.append(_zone("独立乘区", indep_parts))
+
+    # 倍率乘区
+    mult_parts = [
+        _txt("("),
+        _link(f"{base_m:.1f}%", f"基础倍率 = {base_m:.1f}%\n手动输入", None),
+        _txt(" + "),
+        _link(f"{mult_inc:.1f}%", f"倍率增加 = {mult_inc:.1f}%\n手动输入", None),
+        _txt(")"),
+    ]
+    for j, bv in enumerate(mult_boosts_vals):
+        if bv > 0:
+            mult_parts.append(_txt(" × (1 + "))
+            mult_parts.append(_link(f"{bv:.1f}%", f"倍率提升{j+1} = {bv:.1f}%\n手动输入", None))
+            mult_parts.append(_txt(")"))
+    mult_parts.append(_txt(" = "))
+    mult_parts.append(_link(f"{mult_zone:.10f}%", f"倍率乘区结果 = {mult_zone:.10f}%", None))
+    html.append(_zone("倍率乘区", mult_parts))
+
+    # 最终伤害
+    html.append(_zone("无暴击最终伤害", [
+        _link(f"{final_no_crit:.10f}", f"无暴击最终伤害 = {final_no_crit:.10f}", None),
+    ]))
+    html.append(_zone("暴击后最终伤害", [
+        _link(f"{final_crit:.10f}", f"暴击后最终伤害 = {final_crit:.10f}", None),
+    ]))
+
+    return "".join(html)
+
+
 # ==================== 计算结果页面 ====================
 
 class ResultPage(QWidget):
@@ -6899,6 +7499,12 @@ class ResultPage(QWidget):
         self.filter_effect.addItems(EFFECTS)
         filter_form.addRow("效应类型:", self.filter_effect)
 
+        self._keywords = []
+        kw_row_widget = QWidget()
+        self._kw_flow = FlowLayout(kw_row_widget, margin=0, spacing_h=4, spacing_v=2)
+        self._rebuild_kw_tags()
+        filter_form.addRow("关键词:", kw_row_widget)
+
         layout.addWidget(filter_group)
 
         # 筛选条件与倍率变更时自动计算（受 _auto_compute 开关控制）
@@ -6924,50 +7530,27 @@ class ResultPage(QWidget):
         self.add_to_list_btn.clicked.connect(self._add_to_result_list)
         btn_row.addWidget(self.add_to_list_btn)
 
-        self.auto_compute_btn = QPushButton("开启自动计算")
+        self.auto_compute_btn = QPushButton("开启自动更新")
         self.auto_compute_btn.setObjectName("itemAddBtn")
         self.auto_compute_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.auto_compute_btn.setStyleSheet(self._AUTO_OFF_STYLE)
         self.auto_compute_btn.clicked.connect(self._toggle_auto_compute)
         btn_row.addWidget(self.auto_compute_btn)
 
         btn_row.addStretch()
         layout.addLayout(btn_row)
 
-        # —— 结果展示 ——
-        result_group = QGroupBox("计算结果")
-        result_form = QFormLayout(result_group)
-        result_form.setSpacing(8)
-
-        self.result_labels = {}
-        for label_text, key in [
-            ("基础数值:", "atk_zone"),
-            ("加成乘区:", "bonus_zone"),
-            ("加深乘区:", "deepen_zone"),
-            ("暴击乘区:", "crit_zone"),
-            ("防御乘区:", "def_zone"),
-            ("抗性乘区:", "res_zone"),
-            ("独立乘区:", "indep_zone"),
-            ("倍率乘区:", "mult_zone"),
-            ("无暴击伤害:", "final_no_crit"),
-            ("暴击后伤害:", "final_crit"),
-        ]:
-            lbl = QLabel("—")
-            lbl.setObjectName("resultValue")
-            self.result_labels[key] = lbl
-            result_form.addRow(label_text, lbl)
-            if key == "atk_zone":
-                self._base_override_hint = QLabel("▸ 已启用手动填写基础数值")
-                self._base_override_hint.setStyleSheet("color: #64b5f6; font-weight: 600; font-size: 12px;")
-                self._base_override_hint.setVisible(False)
-                result_form.addRow("", self._base_override_hint)
-
-        layout.addWidget(result_group)
-
         # —— 计算过程 ——
         process_group = QGroupBox("计算过程")
         process_group.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._process_layout = QVBoxLayout(process_group)
         self._process_layout.setSpacing(6)
+
+        # 基础数值覆盖提示
+        self._base_override_hint = QLabel("▸ 已启用手动填写基础数值")
+        self._base_override_hint.setStyleSheet("color: #64b5f6; font-weight: 600; font-size: 12px;")
+        self._base_override_hint.setVisible(False)
+        self._process_layout.addWidget(self._base_override_hint)
 
         # 复制按钮（计算后有内容时显示）
         copy_header = QHBoxLayout()
@@ -7146,23 +7729,31 @@ class ResultPage(QWidget):
         if self._ocr_loading_progress:
             self._ocr_loading_progress(f"识别中 {current}/{total}...")
 
+    _AUTO_ON_STYLE = (
+        "QPushButton { font-size: 13px; padding: 3px 8px; min-width: 100px; "
+        "background: rgba(76,175,80,0.25); color: #81c784; border: 1px solid rgba(76,175,80,0.5); "
+        "border-radius: 4px; font-weight: bold; }"
+        "QPushButton:hover { background: rgba(76,175,80,0.40); }"
+    )
+    _AUTO_OFF_STYLE = (
+        "QPushButton { font-size: 13px; padding: 3px 8px; min-width: 100px; "
+        "background: rgba(158,158,158,0.15); color: #9e9e9e; border: 1px solid rgba(158,158,158,0.3); "
+        "border-radius: 4px; font-weight: bold; }"
+        "QPushButton:hover { background: rgba(158,158,158,0.25); }"
+    )
+
     def _toggle_auto_compute(self):
         self._auto_compute = not self._auto_compute
         if self._auto_compute:
-            self.auto_compute_btn.setText("关闭自动计算")
-            self.auto_compute_btn.setStyleSheet(
-                "QPushButton { font-size: 13px; padding: 3px 8px; "
-                "background: #4CAF50; color: #fff; border: 1px solid #388E3C; "
-                "border-radius: 4px; font-weight: bold; }"
-                "QPushButton:hover { background: #43A047; }"
-            )
+            self.auto_compute_btn.setText("关闭自动更新")
+            self.auto_compute_btn.setStyleSheet(self._AUTO_ON_STYLE)
             self.compute()
         else:
-            self.auto_compute_btn.setText("开启自动计算")
-            self.auto_compute_btn.setStyleSheet("")
+            self.auto_compute_btn.setText("开启自动更新")
+            self.auto_compute_btn.setStyleSheet(self._AUTO_OFF_STYLE)
 
     def auto_compute(self):
-        """外部回调触发；仅当开启自动计算时才执行"""
+        """外部回调触发；仅当开启自动更新时才执行"""
         if self._auto_compute:
             self.compute()
 
@@ -7186,6 +7777,64 @@ class ResultPage(QWidget):
 
     def set_indep_zone_page(self, page):
         self._indep_zone_page = page
+
+    def set_keyword_assoc_page(self, page):
+        self._keyword_assoc_page = page
+
+    def _rebuild_kw_tags(self):
+        """重建关键词标签（每个关键词一个小标签 + × 删除按钮）"""
+        # 清除所有
+        while self._kw_flow.count():
+            item = self._kw_flow.takeAt(0)
+            w = item.widget()
+            if w:
+                w.deleteLater()
+        # 添加关键词标签
+        for kw in self._keywords:
+            tag = QWidget()
+            tl = QHBoxLayout(tag)
+            tl.setContentsMargins(0, 0, 0, 0)
+            tl.setSpacing(1)
+            tag.setStyleSheet(
+                "background: rgba(100,181,246,0.15); border: 1px solid rgba(100,181,246,0.3);"
+                "border-radius: 3px; padding: 2px 4px;"
+            )
+            lbl = QLabel(kw)
+            lbl.setStyleSheet("color: #64b5f6; font-size: 11px; border: none; background: transparent;")
+            tl.addWidget(lbl)
+            del_btn = QPushButton("×")
+            del_btn.setFixedSize(14, 14)
+            del_btn.setStyleSheet(
+                "QPushButton { color: #e94560; font-size: 9px; border: none; background: transparent; }"
+                "QPushButton:hover { color: #ff4444; }"
+            )
+            del_btn.clicked.connect(lambda checked, k=kw: self._remove_keyword(k))
+            tl.addWidget(del_btn)
+            self._kw_flow.addWidget(tag)
+        # 末尾 "+" 按钮
+        add_btn = QPushButton("+")
+        add_btn.setFixedSize(22, 22)
+        add_btn.setObjectName("addButton")
+        add_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        add_btn.clicked.connect(self._add_keyword)
+        self._kw_flow.addWidget(add_btn)
+
+    def _add_keyword(self):
+        """弹出输入框添加关键词"""
+        text, ok = QInputDialog.getText(self, "添加关键词", "输入关键词:")
+        if ok and text.strip():
+            kw = text.strip()
+            if kw not in self._keywords:
+                self._keywords.append(kw)
+                self._rebuild_kw_tags()
+                self.auto_compute()
+
+    def _remove_keyword(self, kw):
+        """移除关键词"""
+        if kw in self._keywords:
+            self._keywords.remove(kw)
+            self._rebuild_kw_tags()
+            self.auto_compute()
 
     def _update_error_log_btn_if_possible(self):
         try:
@@ -7215,6 +7864,21 @@ class ResultPage(QWidget):
         filtered_items = [(n, v, s, nk) for n, v, s, nk, sq, *_sub in items
                           if _matches_filter(n, selected_element, selected_skill, selected_effect)
                           and (n, s, nk, sq) not in HIDDEN_ITEMS]
+
+        # 关键词关联注入（与 ResultListPage._recalc_one 相同逻辑）
+        kw_text = ",".join(self._keywords)
+        if kw_text and getattr(self, '_keyword_assoc_page', None):
+            item_keywords = set(k.strip() for k in kw_text.split(",") if k.strip())
+            if item_keywords:
+                for kw_item in self._keyword_assoc_page.get_items():
+                    kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
+                    if item_keywords & kw_entry_kws:
+                        filtered_items.append((
+                            kw_item["name"],
+                            kw_item["value"],
+                            kw_item.get("source", "关键词关联"),
+                            "keyword_assoc",
+                        ))
 
         basis = self.filter_basis.currentText()  # 攻击力 / 生命值 / 防御力
 
@@ -7307,21 +7971,7 @@ class ResultPage(QWidget):
         final_crit = base_dmg * crit_zone
         final_no_crit = base_dmg
 
-        if override_active:
-            self.result_labels["atk_zone"].setText(f"{base_zone:.10f}")
-            self._base_override_hint.setVisible(True)
-        else:
-            self.result_labels["atk_zone"].setText(f"{base_zone:.10f}")
-            self._base_override_hint.setVisible(False)
-        self.result_labels["bonus_zone"].setText(f"{bonus_zone:.10f}")
-        self.result_labels["deepen_zone"].setText(f"{deepen_zone:.10f}")
-        self.result_labels["crit_zone"].setText(f"{crit_zone:.10f}")
-        self.result_labels["def_zone"].setText(f"{def_zone:.10f}")
-        self.result_labels["res_zone"].setText(f"{res_zone:.10f}")
-        self.result_labels["indep_zone"].setText(f"{indep_zone:.10f}")
-        self.result_labels["mult_zone"].setText(f"{mult_zone:.10f}%")
-        self.result_labels["final_crit"].setText(f"{final_crit:.10f}")
-        self.result_labels["final_no_crit"].setText(f"{final_no_crit:.10f}")
+        self._base_override_hint.setVisible(override_active)
 
         # 收集各乘区单个词条列表（含来源信息），供计算过程逐条展示
         pct_items = [(n, v, s, nk) for n, v, s, nk in filtered_items
@@ -7368,6 +8018,7 @@ class ResultPage(QWidget):
             "element": selected_element,
             "skill": selected_skill,
             "effect": selected_effect,
+            "keywords": list(self._keywords),
             "base_mult": base_m,
             "mult_increase": mult_inc,
             "mult_boosts": mult_boosts,
@@ -7454,222 +8105,23 @@ class ResultPage(QWidget):
         self._clear_process()
         self._process_empty_label.setVisible(False)
         self._process_copy_btn.setVisible(True)
-
-        # ——— 主题颜色 ———
-        is_light = self._is_light_theme()
-        if is_light:
-            text_c = "#2c3040"; accent_c = "#5070e8"; link_c = "#7c3aed"
-        else:
-            text_c = "#c0c4ce"; accent_c = "#e94560"; link_c = "#f59e42"
-
-        def _esc(s):
-            return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-
-        def _txt(s):
-            return f'<span style="color:{text_c};font-size:14px;">{_esc(s)}</span>'
-
-        def _link(text, tooltip, nav_url):
-            """nav_url 非空 → 可点击链接颜色；为空 → 结果数值颜色。"""
-            t = _esc(tooltip).replace("\n", "&#10;")
-            if nav_url:
-                # 可点击跳转：把 tip 编码进 href（用 \x1e 分隔），hover 时提取显示
-                return f'<a href="{nav_url}\x1e{t}" style="color:{link_c};font-weight:700;text-decoration:underline;">{text}</a>'
-            # 结果数值：accent 色 + 加粗
-            return f'<span style="color:{accent_c};font-weight:700;" title="{t}">{text}</span>'
-
-        def _hl_link(text, tooltip, summary_key, name, src_label, nav_key):
-            """带高亮跳转的链接（样式同可点击链接）。"""
-            t = _esc(tooltip).replace("\n", "&#10;")
-            href = f"hl:{summary_key}:{_esc(name)}:{_esc(src_label)}:{_esc(nav_key)}\x1e{t}"
-            return f'<a href="{href}" style="color:{link_c};font-weight:700;text-decoration:underline;">{text}</a>'
-
-        def _item_link(name, value, src_label, nav_key, summary_key=None):
-            is_const = name in CONSTANT_ATTRS or "固定" in name or "基础" in name
-            fmt = f"{value:.1f}" if is_const else f"{value:.1f}%"
-            tip = f"{name} = {fmt}\n来源: {src_label}"
-            sub_key = (name, src_label)
-            if sub_map and sub_key in sub_map:
-                tip += f"\n副名称: {sub_map[sub_key]}"
-            if summary_key and self._navigate and self._summary_pages.get(summary_key):
-                return _hl_link(fmt, tip, summary_key, name, src_label, nav_key)
-            target = summary_key if summary_key else nav_key
-            return _link(fmt, tip, f"nav:{target}" if target else None)
-
-        def _render_items(items, joiner=" + ", summary_key=None):
-            parts = []
-            for i, (name, value, src_label, nav_key) in enumerate(items):
-                if i > 0:
-                    parts.append(_txt(joiner))
-                parts.append(_item_link(name, value, src_label, nav_key, summary_key))
-            return parts
-
-        def _zone(title, parts):
-            inner = (
-                f'<span style="color:{accent_c};font-size:16px;font-weight:700;">[</span>'
-                f'<span style="color:{accent_c};font-size:14px;font-weight:600;">{_esc(title)}</span>'
-                f'<span style="color:{accent_c};font-size:16px;font-weight:700;">]</span> '
-            )
-            inner += "".join(parts)
-            return (
-                f'<div style="padding:6px 0;margin-bottom:2px;line-height:2.0;">{inner}</div>'
-            )
-
-        html = []
-
-        # ===== 基础数值 =====
-        base_name = f"角色基础{zone_label}"
-        source_tip = "来源: 角色武器"
-        nav_to = "char_base"
-        if basis == "攻击力":
-            base_parts = [
-                _txt("("),
-                _link(f"{base_value:.0f}", f"角色基础攻击力 = {base_value:.0f}\n{source_tip}", f"nav:{nav_to}"),
-                _txt(" + "),
-                _link(f"{weapon_base:.0f}", f"武器基础攻击力 = {weapon_base:.0f}\n{source_tip}", f"nav:{nav_to}"),
-                _txt(") × (1"),
-            ]
-        else:
-            base_parts = [
-                _link(f"{base_value:.0f}", f"{base_name} = {base_value:.0f}\n{source_tip}", f"nav:{nav_to}"),
-                _txt(" × (1"),
-            ]
-
-        if pct_items:
-            base_parts.append(_txt(" + "))
-            base_parts.extend(_render_items(pct_items, summary_key="summary_base"))
-        elif total_pct > 0:
-            base_parts.append(_txt(" + "))
-            base_parts.append(_link(f"{total_pct:.1f}%", f"{zone_label}%合计 = {total_pct:.1f}%", "nav:summary_base"))
-        base_parts.append(_txt(")"))
-
-        if flat_items:
-            base_parts.append(_txt(" + "))
-            base_parts.extend(_render_items(flat_items, summary_key="summary_base"))
-        elif total_flat > 0:
-            base_parts.append(_txt(" + "))
-            base_parts.append(_link(f"{total_flat:.1f}", f"固定{zone_label}合计 = {total_flat:.1f}", "nav:summary_base"))
-
-        base_parts.append(_txt(" = "))
-        base_parts.append(_link(f"{base_zone:.10f}", f"基础数值结果 = {base_zone:.10f}", None))
-        if getattr(self, '_base_override_enabled', False):
-            orig = getattr(self, '_computed_base_zone', base_zone)
-            override_note = (
-                f'<br><span style="color:#64b5f6;font-size:13px;font-weight:600;">'
-                f'  ▸ 已启用手动填写，原本计算值: {orig:.2f}</span>'
-            )
-            base_parts.append(override_note)
-        html.append(_zone("基础数值", base_parts))
-
-        # ===== 加成乘区 =====
-        bonus_parts = [_txt("1")]
-        if bonus_items:
-            bonus_parts.append(_txt(" + "))
-            bonus_parts.extend(_render_items(bonus_items, summary_key="summary_bonus"))
-        elif total_bonus > 0:
-            bonus_parts.append(_txt(" + "))
-            bonus_parts.append(_link(f"{total_bonus:.1f}%", f"伤害加成合计 = {total_bonus:.1f}%", "nav:summary_bonus"))
-        bonus_parts.append(_txt(" = "))
-        bonus_parts.append(_link(f"{bonus_zone:.10f}", f"加成乘区结果 = {bonus_zone:.10f}", None))
-        html.append(_zone("加成乘区", bonus_parts))
-
-        # ===== 加深乘区 =====
-        deepen_parts = [_txt("1")]
-        if deepen_items:
-            deepen_parts.append(_txt(" + "))
-            deepen_parts.extend(_render_items(deepen_items, summary_key="summary_deepen"))
-        elif total_deepen > 0:
-            deepen_parts.append(_txt(" + "))
-            deepen_parts.append(_link(f"{total_deepen:.1f}%", f"伤害加深合计 = {total_deepen:.1f}%", "nav:summary_deepen"))
-        deepen_parts.append(_txt(" = "))
-        deepen_parts.append(_link(f"{deepen_zone:.10f}", f"加深乘区结果 = {deepen_zone:.10f}", None))
-        html.append(_zone("加深乘区", deepen_parts))
-
-        # ===== 暴击率 =====
-        rate_parts = [_txt("(")]
-        if rate_items:
-            rate_parts.append(_txt("5% + "))
-            rate_parts.extend(_render_items(rate_items, summary_key="summary_crit"))
-        else:
-            added_rate = total_crit_rate - 5.0
-            rate_parts.append(_txt("5%" + (" + " if added_rate > 0 else "")))
-            if added_rate > 0:
-                rate_parts.append(_link(f"{added_rate:.1f}%", f"暴击率来源合计 = {added_rate:.1f}%", "nav:summary_crit"))
-        rate_parts.append(_txt(") = "))
-        rate_parts.append(_link(f"{total_crit_rate:.1f}%", f"最终暴击率 = {total_crit_rate:.1f}%", None))
-        html.append(_zone("暴击率", rate_parts))
-
-        # ===== 暴击伤害乘区 =====
-        crit_parts = [_txt("(150%")]
-        if dmg_items:
-            crit_parts.append(_txt(" + "))
-            crit_parts.extend(_render_items(dmg_items, summary_key="summary_crit"))
-        else:
-            added_crit = total_crit_dmg - 150.0
-            if added_crit > 0:
-                crit_parts.append(_txt(" + "))
-                crit_parts.append(_link(f"{added_crit:.1f}%", f"暴击伤害来源合计 = {added_crit:.1f}%", "nav:summary_crit"))
-        crit_parts.append(_txt(") = "))
-        crit_parts.append(_link(f"{total_crit_dmg:.1f}%", f"暴击伤害合计 = {total_crit_dmg:.1f}%", None))
-        crit_parts.append(_txt(" = "))
-        crit_parts.append(_link(f"{crit_zone:.10f}", f"暴击乘区结果 = {crit_zone:.10f}", None))
-        html.append(_zone("暴击乘区 (暴击时)", crit_parts))
-
-        # 防御乘区
-        def_mult = getattr(self._defense_page, 'def_multiplier', 1.0)
-        html.append(_zone("防御乘区", [
-            _link(f"{def_mult:.10f}", f"防御乘数 = {def_mult:.10f}\n来源: 防御减伤", "nav:enemy_defense"),
-            _txt(" = "),
-            _link(f"{def_zone:.10f}", f"防御乘区结果 = {def_zone:.10f}", None),
-        ]))
-
-        # 抗性乘区
-        html.append(_zone("抗性乘区", [
-            _link(f"{res_zone:.10f}", f"抗性乘数 = {res_zone:.10f}\n来源: 抗性数值", "nav:enemy_resistance"),
-        ]))
-
-        # 独立乘区
-        indep_parts = []
-        if indep_groups:
-            for i, (name, factor) in enumerate(indep_groups):
-                if i > 0:
-                    indep_parts.append(_txt(" × "))
-                dname = name if name else f"独立乘区{i+1}"
-                indep_parts.append(_link(f"{factor:.10f}", f"{dname} = {factor:.10f}\n来源: 独立乘区", "nav:summary_indep"))
-            indep_parts.append(_txt(" = "))
-            indep_parts.append(_link(f"{indep_zone:.10f}", f"独立乘区总计 = {indep_zone:.10f}\n来源: 独立乘区", "nav:summary_indep"))
-        else:
-            indep_parts.append(_link(f"{indep_zone:.10f}", f"独立乘区 = {indep_zone:.10f}\n来源: 独立乘区", "nav:summary_indep"))
-        html.append(_zone("独立乘区", indep_parts))
-
-        # 倍率乘区
-        mult_parts = [
-            _txt("("),
-            _link(f"{base_m:.1f}%", f"基础倍率 = {base_m:.1f}%\n手动输入", None),
-            _txt(" + "),
-            _link(f"{mult_inc:.1f}%", f"倍率增加 = {mult_inc:.1f}%\n手动输入", None),
-            _txt(")"),
-        ]
-        for j, boost in enumerate(self.mult_boosts):
-            bv = boost.value()
-            if bv > 0:
-                mult_parts.append(_txt(" × (1 + "))
-                mult_parts.append(_link(f"{bv:.1f}%", f"倍率提升{j+1} = {bv:.1f}%\n手动输入", None))
-                mult_parts.append(_txt(")"))
-        mult_parts.append(_txt(" = "))
-        mult_parts.append(_link(f"{mult_zone:.10f}%", f"倍率乘区结果 = {mult_zone:.10f}%", None))
-        html.append(_zone("倍率乘区", mult_parts))
-
-        # 最终伤害
-        html.append(_zone("无暴击最终伤害", [
-            _link(f"{final_no_crit:.10f}", f"无暴击最终伤害 = {final_no_crit:.10f}", None),
-        ]))
-        html.append(_zone("暴击后最终伤害", [
-            _link(f"{final_crit:.10f}", f"暴击后最终伤害 = {final_crit:.10f}", None),
-        ]))
-
-        # 渲染到 QLabel
-        self._process_label.setText("".join(html))
+        mult_boosts_vals = [b.value() for b in self.mult_boosts]
+        html = _render_process_html(
+            basis, zone_label, base_value, weapon_base,
+            pct_items, flat_items, total_pct, total_flat, base_zone,
+            bonus_items, total_bonus, bonus_zone,
+            deepen_items, total_deepen, deepen_zone,
+            rate_items, dmg_items, total_crit_rate, total_crit_dmg, crit_zone,
+            def_zone, res_zone, indep_zone, indep_groups,
+            base_m, mult_inc, mult_boosts_vals, mult_zone, final_crit, final_no_crit,
+            is_light=self._is_light_theme(), sub_map=sub_map,
+            navigate_fn=self._navigate, summary_pages=self._summary_pages,
+            base_override_active=getattr(self, '_base_override_enabled', False),
+            computed_base_zone=getattr(self, '_computed_base_zone', None),
+        )
+        self._process_label.setText(html)
         self._process_label.setVisible(True)
+        # 以下为原 _build_process 内联代码，已迁移到 _render_process_html
 
 from char_base_page import CharBasePage
 # ==================== 使用手册弹窗 ====================
@@ -9367,6 +9819,7 @@ class MainScreen(QWidget):
         )
 
         # 关联来源页到结果列表页
+        self.page_result.set_keyword_assoc_page(self.page_keyword_assoc)
         self.page_result_list.set_external_sources(summary_source_pages)
         self.page_result_list.set_keyword_assoc_page(self.page_keyword_assoc)
         self.page_result_list.set_echo_sources(self.echo_pages)
@@ -9792,14 +10245,14 @@ class MainScreen(QWidget):
         QMessageBox.information(self, "导出成功", f"存档已导出到:\n{path}")
 
     def activate_auto_all(self):
-        """启动所有自动按钮（由全局自动按钮调用）"""
+        """开启自动更新（由全局自动按钮调用）"""
         if hasattr(self, 'page_result_list') and not self.page_result_list._auto_update:
             self.page_result_list._toggle_auto_update()
         if hasattr(self, 'page_result') and not self.page_result._auto_compute:
             self.page_result._toggle_auto_compute()
 
     def deactivate_auto_all(self):
-        """停止所有自动按钮（由全局自动按钮调用）"""
+        """关闭自动更新（由全局自动按钮调用）"""
         if hasattr(self, 'page_result_list') and self.page_result_list._auto_update:
             self.page_result_list._toggle_auto_update()
         if hasattr(self, 'page_result') and self.page_result._auto_compute:
@@ -9876,7 +10329,7 @@ class DmgCalculator(QMainWindow):
         self._auto_all_active = self._load_auto_all_config()
         auto_all_style = self._build_auto_all_style(self._auto_all_active)
         self.auto_all_btn = QPushButton(
-            "停止所有自动按钮" if self._auto_all_active else "启动所有自动按钮", self
+            "关闭自动更新" if self._auto_all_active else "开启自动更新", self
         )
         self.auto_all_btn.setStyleSheet(auto_all_style)
         self.auto_all_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -10101,10 +10554,10 @@ class DmgCalculator(QMainWindow):
         self._save_auto_all_config(self._auto_all_active)
         if self._auto_all_active:
             self.main_screen.activate_auto_all()
-            self.auto_all_btn.setText("停止所有自动按钮")
+            self.auto_all_btn.setText("关闭自动更新")
         else:
             self.main_screen.deactivate_auto_all()
-            self.auto_all_btn.setText("启动所有自动按钮")
+            self.auto_all_btn.setText("开启自动更新")
         self.auto_all_btn.setStyleSheet(
             self._build_auto_all_style(self._auto_all_active)
         )
