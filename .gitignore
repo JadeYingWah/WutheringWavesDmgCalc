@@ -20,3 +20,4 @@ config/error_log.json
 
 # 缓存
 .pytest_cache/
+.claude/
