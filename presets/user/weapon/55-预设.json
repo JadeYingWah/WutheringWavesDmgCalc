@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "type": "preset",
+  "name": "55-预设",
+  "category": "weapon",
+  "weapon": {
+    "name": "55",
+    "base_atk": 555.0,
+    "bonus_type": "生命值",
+    "bonus_value": 66.0,
+    "refinement": [
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "type": "preset",
+  "name": "4444-预设",
+  "category": "weapon",
+  "weapon": {
+    "name": "4444",
+    "base_atk": 0.0,
+    "bonus_type": "",
+    "bonus_value": 0.0,
+    "refinement": [
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      }
+    ]
+  }
+}

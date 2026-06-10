@@ -18,17 +18,22 @@ from PyQt6.QtWidgets import (
     QCheckBox, QComboBox, QGroupBox, QFrame, QScrollArea,
     QStackedWidget, QSizePolicy, QMessageBox, QInputDialog,
     QTableWidget, QHeaderView, QTableWidgetItem, QTabWidget,
-    QGridLayout,
+    QGridLayout, QListWidget, QListWidgetItem, QTextEdit,
 )
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
 from PyQt6.QtGui import QFont
 
 from preset_manager import PresetManager
+from damage_calc import BONUS_SUFFIX, DEEPEN_SUFFIX, CRIT_RATE_KEYWORDS, CRIT_DMG_KEYWORDS
 
 # 延迟导入避免循环依赖
 def _get_search_combo():
     from WWDmgCalc import SearchCombo, WEAPON_RESONANCE_ATTRS
     return SearchCombo, WEAPON_RESONANCE_ATTRS
+
+def _get_render_fn():
+    from WWDmgCalc import _render_process_html
+    return _render_process_html
 
 # ── 常量 ──
 ELEMENTS = ["冷凝", "热熔", "气动", "导电", "衍射", "湮灭"]
@@ -701,6 +706,9 @@ class _CharacterPresetWindow(QDialog):
         self._build_result_tab()
         self.tabs.addTab(self.tab_result, "结果列表")
 
+        # 切换到结果页时自动刷新预览
+        self.tabs.currentChanged.connect(self._on_tab_changed)
+
         # 保存按钮
         save_row = QHBoxLayout()
         save_row.addStretch()
@@ -714,6 +722,14 @@ class _CharacterPresetWindow(QDialog):
         # 初始化 7 个共鸣链数据
         for i in range(7):
             self._chain_data.append({"effects": [], "indep_zones": []})
+
+    def reject(self):
+        reply = QMessageBox.question(
+            self, "退出角色预设", "确定要退出角色预设窗口吗？\n未保存的更改将丢失。",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No)
+        if reply == QMessageBox.StandardButton.Yes:
+            super().reject()
 
     def _center(self):
         from PyQt6.QtGui import QGuiApplication
@@ -781,6 +797,30 @@ class _CharacterPresetWindow(QDialog):
         stats_form.addRow("基础防御力:", self.base_def)
         layout.addWidget(stats)
 
+        # 倍率设置
+        mult_group = QGroupBox("倍率设置")
+        mult_form = QFormLayout(mult_group)
+        mult_form.setSpacing(4)
+        self.mult_base = QDoubleSpinBox()
+        self.mult_base.setRange(0, 99999)
+        self.mult_base.setDecimals(4)
+        self.mult_base.setValue(100.0)
+        mult_form.addRow("基础倍率(%):", self.mult_base)
+        self.mult_increase = QDoubleSpinBox()
+        self.mult_increase.setRange(0, 99999)
+        self.mult_increase.setDecimals(4)
+        self.mult_increase.setValue(0.0)
+        mult_form.addRow("倍率增加(%):", self.mult_increase)
+        self.mult_boosts = []
+        for _i in range(3):
+            spin = QDoubleSpinBox()
+            spin.setRange(0, 99999)
+            spin.setDecimals(4)
+            spin.setValue(0.0)
+            self.mult_boosts.append(spin)
+            mult_form.addRow(f"倍率提升{_i + 1}(%):", spin)
+        layout.addWidget(mult_group)
+
         layout.addStretch()
 
     # ── 页面2: 共鸣链 ──
@@ -846,7 +886,39 @@ class _CharacterPresetWindow(QDialog):
         title.setObjectName("sectionTitle")
         layout.addWidget(title)
 
-        # 滚动区域
+        # ── 计算基点选择 + 刷新按钮 ──
+        ctrl_row = QHBoxLayout()
+        ctrl_row.setSpacing(8)
+        ctrl_row.addWidget(QLabel("计算基点:"))
+        self._result_basis = QComboBox()
+        self._result_basis.addItems(["攻击力", "生命值", "防御力"])
+        self._result_basis.setFixedWidth(100)
+        self._result_basis.currentTextChanged.connect(lambda: self._refresh_result_list())
+        ctrl_row.addWidget(self._result_basis)
+        ctrl_row.addStretch()
+        refresh_btn = QPushButton("刷新预览")
+        refresh_btn.setObjectName("addButton")
+        refresh_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        refresh_btn.setFixedWidth(90)
+        refresh_btn.clicked.connect(self._refresh_result_list)
+        ctrl_row.addWidget(refresh_btn)
+        layout.addLayout(ctrl_row)
+
+        # ── 乘区预览（HTML 渲染） ──
+        self._zone_preview = QTextEdit()
+        self._zone_preview.setReadOnly(True)
+        self._zone_preview.setMinimumHeight(200)
+        self._zone_preview.setStyleSheet(
+            "QTextEdit { border: 1px solid rgba(255,255,255,0.08); "
+            "border-radius: 6px; padding: 8px; font-size: 13px; }")
+        layout.addWidget(self._zone_preview, stretch=2)
+
+        # ── 效果明细（卡片） ──
+        detail_label = QLabel("效果明细")
+        detail_label.setObjectName("labelSecondary")
+        detail_label.setStyleSheet("font-size: 13px; font-weight: 600; margin-top: 4px;")
+        layout.addWidget(detail_label)
+
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
@@ -859,23 +931,46 @@ class _CharacterPresetWindow(QDialog):
         scroll.setWidget(self._result_container)
         layout.addWidget(scroll, stretch=1)
 
-        # 初始提示
-        self._result_empty_label = QLabel("在「共鸣链」页面添加效果后，这里会显示对应的结果卡片。")
-        self._result_empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._result_empty_label.setObjectName("labelSecondary")
-        self._result_grid.addWidget(self._result_empty_label, 0, 0, 1, 3)
+        self._result_empty_label = None
+
+    def _on_tab_changed(self, index):
+        """切换标签时，若为结果页则自动刷新乘区预览"""
+        if self.tabs.widget(index) is self.tab_result:
+            self._refresh_result_list()
 
     def _refresh_result_list(self):
-        """根据共鸣链数据刷新结果列表"""
-        # 清空旧卡片
+        """根据共鸣链数据刷新乘区预览 + 效果卡片"""
+        # ── 1. 乘区预览 ──
+        basis = self._result_basis.currentText() if hasattr(self, '_result_basis') else "攻击力"
+        zones = self._compute_preset_zones(basis)
+        try:
+            _render_fn = _get_render_fn()
+            html = _render_fn(
+                zones["basis"], zones["zone_label"],
+                zones["base_value"], zones["weapon_base"],
+                zones["pct_items"], zones["flat_items"],
+                zones["total_pct"], zones["total_flat"], zones["base_zone"],
+                zones["bonus_items"], zones["total_bonus"], zones["bonus_zone"],
+                zones["deepen_items"], zones["total_deepen"], zones["deepen_zone"],
+                zones["rate_items"], zones["dmg_items"],
+                zones["total_crit_rate"], zones["total_crit_dmg"], zones["crit_zone"],
+                zones["def_zone"], zones["res_zone"],
+                zones["indep_zone"], zones["indep_groups"],
+                zones["base_m"], zones["mult_inc"],
+                zones["mult_boosts_vals"], zones["mult_zone"],
+                zones["final_crit"], zones["final_no_crit"],
+            )
+            self._zone_preview.setHtml(html)
+        except Exception:
+            self._zone_preview.setPlainText("乘区预览计算失败，请检查数据。")
+
+        # ── 2. 效果卡片 ──
         while self._result_grid.count():
             child = self._result_grid.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
-
         self._result_cards.clear()
 
-        # 收集所有共鸣链效果
         all_effects = []
         for chain_idx, cd in enumerate(self._chain_data):
             for eff in cd["effects"]:
@@ -884,13 +979,12 @@ class _CharacterPresetWindow(QDialog):
                 all_effects.append(eff_copy)
 
         if not all_effects:
-            self._result_empty_label = QLabel("在「共鸣链」页面添加效果后，这里会显示对应的结果卡片。")
-            self._result_empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self._result_empty_label.setObjectName("labelSecondary")
-            self._result_grid.addWidget(self._result_empty_label, 0, 0, 1, 3)
+            lbl = QLabel("在「共鸣链」页面添加效果后，这里会显示对应的效果明细。")
+            lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lbl.setObjectName("labelSecondary")
+            self._result_grid.addWidget(lbl, 0, 0, 1, 3)
             return
 
-        # 生成卡片（3 列，从左到右排列）
         cols = 3
         for i, eff in enumerate(all_effects):
             card = _PresetResultCard(eff, idx=i)
@@ -901,7 +995,6 @@ class _CharacterPresetWindow(QDialog):
             self._result_grid.addWidget(card, row, col,
                                          Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
-        # 底部弹簧
         last_row = (len(all_effects) - 1) // cols if all_effects else 0
         self._result_grid.setRowStretch(last_row + 1, 1)
 
@@ -946,6 +1039,159 @@ class _CharacterPresetWindow(QDialog):
                     return
                 count += 1
 
+    # ── 乘区计算 ──
+
+    def _compute_preset_zones(self, basis="攻击力"):
+        """基于预设数据独立计算各乘区值。
+
+        Returns:
+            dict: {
+                "basis", "zone_label",
+                "base_value", "weapon_base", "pct_items", "flat_items",
+                "total_pct", "total_flat", "base_zone",
+                "bonus_items", "total_bonus", "bonus_zone",
+                "deepen_items", "total_deepen", "deepen_zone",
+                "rate_items", "dmg_items", "total_crit_rate", "total_crit_dmg", "crit_zone",
+                "def_zone", "res_zone",
+                "indep_zone", "indep_groups",
+                "base_m", "mult_inc", "mult_boosts_vals", "mult_zone",
+                "final_crit", "final_no_crit",
+            }
+        """
+        # 收集所有共鸣链效果（不筛选，全部计入）
+        all_effects = []
+        for cd in self._chain_data:
+            for eff in cd["effects"]:
+                all_effects.append(eff)
+
+        # 收集所有独立乘区
+        all_indep_groups = []
+        for cd in self._chain_data:
+            for iz in cd["indep_zones"]:
+                if iz.get("values"):
+                    all_indep_groups.append(iz)
+
+        # ── 分类各乘区 ──
+        pct_items = []
+        flat_items = []
+        bonus_items = []
+        deepen_items = []
+        rate_items = []
+        dmg_items = []
+
+        base_value = 0.0
+        weapon_base = 0.0
+
+        if basis == "攻击力":
+            base_value = self.base_atk.value()
+            zone_label = "攻击力"
+        elif basis == "生命值":
+            base_value = self.base_hp.value()
+            zone_label = "生命值"
+        else:
+            base_value = self.base_def.value()
+            zone_label = "防御力"
+
+        for eff in all_effects:
+            name = eff.get("name", "")
+            value = eff.get("value", 0.0)
+            if not name:
+                continue
+
+            # 基础值百分比
+            if basis == "攻击力":
+                if "攻击力" in name and "固定" not in name:
+                    pct_items.append((name, value))
+                    continue
+                elif "固定攻击" in name:
+                    flat_items.append((name, value))
+                    continue
+            elif basis == "生命值":
+                if "生命值" in name and "固定" not in name:
+                    pct_items.append((name, value))
+                    continue
+                elif "固定生命" in name:
+                    flat_items.append((name, value))
+                    continue
+            else:
+                if "防御力" in name and "固定" not in name:
+                    pct_items.append((name, value))
+                    continue
+                elif "固定防御" in name:
+                    flat_items.append((name, value))
+                    continue
+
+            # 暴击（先判断，因为暴伤关键词可能被 bonus 误匹配）
+            if any(kw in name for kw in CRIT_DMG_KEYWORDS):
+                dmg_items.append((name, value))
+                continue
+            if any(kw in name for kw in CRIT_RATE_KEYWORDS):
+                rate_items.append((name, value))
+                continue
+
+            # 加深
+            if DEEPEN_SUFFIX in name:
+                deepen_items.append((name, value))
+                continue
+
+            # 加成
+            if any(s in name for s in BONUS_SUFFIX):
+                bonus_items.append((name, value))
+                continue
+
+        # ── 计算各乘区 ──
+        total_pct = sum(v for _, v in pct_items)
+        total_flat = sum(v for _, v in flat_items)
+        base_zone = (base_value + weapon_base) * (1.0 + total_pct / 100.0) + total_flat
+
+        total_bonus = sum(v for _, v in bonus_items)
+        bonus_zone = 1.0 + total_bonus / 100.0
+
+        total_deepen = sum(v for _, v in deepen_items)
+        deepen_zone = 1.0 + total_deepen / 100.0
+
+        total_crit_rate = 5.0 + sum(v for _, v in rate_items)
+        total_crit_dmg = 150.0 + sum(v for _, v in dmg_items)
+        crit_zone = total_crit_dmg / 100.0
+
+        def_zone = 1.0
+        res_zone = 1.0
+
+        # 独立乘区
+        indep_zone = 1.0
+        for ig in all_indep_groups:
+            for v in ig.get("values", []):
+                indep_zone *= (1.0 + v.get("value", 0.0) / 100.0)
+
+        # 倍率乘区
+        base_m = self.mult_base.value()
+        mult_inc = self.mult_increase.value()
+        mult_zone = (base_m + mult_inc)
+        mult_boosts_vals = [s.value() for s in self.mult_boosts]
+        for bv in mult_boosts_vals:
+            mult_zone *= (1.0 + bv / 100.0)
+
+        # 最终伤害
+        base_dmg = base_zone * bonus_zone * deepen_zone * def_zone * res_zone * indep_zone * mult_zone / 100.0
+        final_crit = base_dmg * crit_zone
+        final_no_crit = base_dmg
+
+        return {
+            "basis": basis, "zone_label": zone_label,
+            "base_value": base_value, "weapon_base": weapon_base,
+            "pct_items": pct_items, "flat_items": flat_items,
+            "total_pct": total_pct, "total_flat": total_flat, "base_zone": base_zone,
+            "bonus_items": bonus_items, "total_bonus": total_bonus, "bonus_zone": bonus_zone,
+            "deepen_items": deepen_items, "total_deepen": total_deepen, "deepen_zone": deepen_zone,
+            "rate_items": rate_items, "dmg_items": dmg_items,
+            "total_crit_rate": total_crit_rate, "total_crit_dmg": total_crit_dmg, "crit_zone": crit_zone,
+            "def_zone": def_zone, "res_zone": res_zone,
+            "indep_zone": indep_zone, "indep_groups": all_indep_groups,
+            "base_m": base_m, "mult_inc": mult_inc,
+            "mult_boosts_vals": mult_boosts_vals, "mult_zone": mult_zone,
+            "final_crit": final_crit, "final_no_crit": final_no_crit,
+        }
+
     def to_dict(self):
         return {
             "name": self.char_name.text().strip(),
@@ -954,6 +1200,11 @@ class _CharacterPresetWindow(QDialog):
             "base_hp": self.base_hp.value(),
             "base_atk": self.base_atk.value(),
             "base_def": self.base_def.value(),
+            "multiplier": {
+                "base_mult": self.mult_base.value(),
+                "mult_increase": self.mult_increase.value(),
+                "mult_boosts": [s.value() for s in self.mult_boosts],
+            },
             "resonance_chain": [
                 {
                     "effects": cd["effects"],
@@ -977,6 +1228,12 @@ class _CharacterPresetWindow(QDialog):
         self.base_hp.setValue(data.get("base_hp", 1))
         self.base_atk.setValue(data.get("base_atk", 1))
         self.base_def.setValue(data.get("base_def", 1))
+        mult = data.get("multiplier", {})
+        self.mult_base.setValue(mult.get("base_mult", 100.0))
+        self.mult_increase.setValue(mult.get("mult_increase", 0.0))
+        for _i, _v in enumerate(mult.get("mult_boosts", [0, 0, 0])):
+            if _i < len(self.mult_boosts):
+                self.mult_boosts[_i].setValue(_v)
         chains = data.get("resonance_chain", [])
         for i, cd in enumerate(self._chain_data):
             if i < len(chains):
@@ -1044,6 +1301,14 @@ class _WeaponPresetWindow(QDialog):
         # 初始化 5 个等阶数据
         for i in range(5):
             self._ref_data.append({"effects": [], "indep_zones": [], "resonance_desc": ""})
+
+    def reject(self):
+        reply = QMessageBox.question(
+            self, "退出武器预设", "确定要退出武器预设窗口吗？\n未保存的更改将丢失。",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No)
+        if reply == QMessageBox.StandardButton.Yes:
+            super().reject()
 
     def _center(self):
         from PyQt6.QtGui import QGuiApplication
@@ -1239,25 +1504,29 @@ class _WeaponPresetWindow(QDialog):
 # 声骸套装编辑器（保持原有设计）
 # ═══════════════════════════════════════════════════════════════
 
-class _EchoSetEditor(QScrollArea):
-    """声骸套装预设编辑"""
+class _EchoSetEditor(QDialog):
+    """声骸套装预设编辑窗口"""
 
-    def __init__(self):
-        super().__init__()
-        self.setWidgetResizable(True)
-        self.setFrameShape(QFrame.Shape.NoFrame)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("声骸套装预设")
+        self.setMinimumSize(900, 650)
+        self.resize(950, 700)
+
+        QTimer.singleShot(0, lambda: self._center())
+        self._apply_theme()
+
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
 
         widget = QWidget()
         self._root = QVBoxLayout(widget)
         self._root.setSpacing(12)
-        self._root.setContentsMargins(8, 8, 8, 24)
-
-        back_btn = QPushButton("← 返回总界面")
-        back_btn.setObjectName("backButton")
-        back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        back_btn.setFixedWidth(140)
-        self._root.addWidget(back_btn)
-        self.back_clicked = back_btn.clicked
+        self._root.setContentsMargins(16, 16, 16, 24)
 
         title = QLabel("声骸套装预设")
         title.setObjectName("sectionTitle")
@@ -1310,9 +1579,38 @@ class _EchoSetEditor(QScrollArea):
         self.save_clicked = save_btn.clicked
 
         self._root.addStretch()
-        self.setWidget(widget)
+
+        scroll.setWidget(widget)
+        main_layout.addWidget(scroll)
 
         self._on_stage_count_changed(2)
+
+    def reject(self):
+        reply = QMessageBox.question(
+            self, "退出声骸套装预设", "确定要退出声骸套装预设窗口吗？\n未保存的更改将丢失。",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No)
+        if reply == QMessageBox.StandardButton.Yes:
+            super().reject()
+
+    def _center(self):
+        from PyQt6.QtGui import QGuiApplication
+        screen = QGuiApplication.primaryScreen().availableGeometry()
+        self.move(screen.center() - self.rect().center())
+
+    def _apply_theme(self):
+        """继承主程序主题"""
+        try:
+            from theme_system import THEMES, build_stylesheet
+            w = self.parent()
+            while w is not None:
+                if hasattr(w, 'current_theme') and w.current_theme in THEMES:
+                    self.setStyleSheet(build_stylesheet(w.current_theme))
+                    return
+                w = w.parent()
+            self.setStyleSheet(build_stylesheet("dark"))
+        except Exception:
+            pass
 
     def _on_stage_count_changed(self, count):
         while len(self._stage_data) > count:
@@ -1428,14 +1726,18 @@ class _EchoSetEditor(QScrollArea):
 # ═══════════════════════════════════════════════════════════════
 
 class PresetBuilderDialog(QDialog):
-    """预设构建器 —— 总界面 + 三类预设窗口"""
+    """预设构建器 —— 总界面 + 三类预设窗口 + 编辑已有预设"""
+
+    _PAGE_MAIN = 0
+    _PAGE_EDIT = 1
 
     def __init__(self, parent=None, edit_preset_data=None, edit_preset_path=None):
         super().__init__(parent)
         self.setWindowTitle("预设构建器")
-        self.setMinimumSize(880, 670)
-        self.resize(920, 710)
+        self.setMinimumSize(880, 720)
+        self.resize(920, 760)
         self._edit_preset_path = edit_preset_path
+        self._animating = False
 
         QTimer.singleShot(0, lambda: self._center())
 
@@ -1451,16 +1753,61 @@ class PresetBuilderDialog(QDialog):
         self.main_page = self._build_main_page()
         self.stack.addWidget(self.main_page)
 
-        # 页面 1：声骸套装（保持原有设计）
-        self.echo_editor = _EchoSetEditor()
-        self.echo_editor.back_clicked.connect(lambda: self.stack.setCurrentIndex(0))
-        self.echo_editor.save_clicked.connect(lambda: self._save_category("echo_set"))
-        self.stack.addWidget(self.echo_editor)
+        # 页面 1：编辑已有预设
+        self.edit_page = self._build_edit_page()
+        self.stack.addWidget(self.edit_page)
 
         main_layout.addWidget(self.stack)
 
         if edit_preset_data:
             self._load_data(edit_preset_data)
+
+    # ── 滑动动画 ──
+
+    def _slide_to(self, page_index):
+        """带上下滑动动画切换页面"""
+        if self._animating:
+            return
+        if page_index == self.stack.currentIndex():
+            return
+        self._animating = True
+
+        # 新页面在下方 → 往上滑入（下拉展开）；新页面在上方 → 往下滑入（收起）
+        direction = 1 if page_index > self.stack.currentIndex() else -1
+        h = self.stack.height()
+        w = self.stack.width()
+
+        # 新页面初始位置：下方或上方
+        self.stack.widget(page_index).setGeometry(0, h * direction, w, h)
+        self.stack.widget(page_index).show()
+
+        from_rect = self.stack.currentWidget().geometry()
+
+        # 当前页面滑出（往上或往下）
+        anim_out = QPropertyAnimation(self.stack.currentWidget(), b"geometry")
+        anim_out.setDuration(280)
+        anim_out.setEasingCurve(QEasingCurve.Type.InOutCubic)
+        anim_out.setStartValue(from_rect)
+        anim_out.setEndValue(from_rect.adjusted(0, -h * direction, 0, -h * direction))
+
+        # 新页面滑入
+        target_widget = self.stack.widget(page_index)
+        anim_in = QPropertyAnimation(target_widget, b"geometry")
+        anim_in.setDuration(280)
+        anim_in.setEasingCurve(QEasingCurve.Type.InOutCubic)
+        anim_in.setStartValue(target_widget.geometry())
+        anim_in.setEndValue(from_rect)
+
+        def _on_finished():
+            self.stack.setCurrentIndex(page_index)
+            target_widget.setGeometry(from_rect)
+            self._animating = False
+
+        anim_out.finished.connect(_on_finished)
+        anim_out.start()
+        anim_in.start()
+        self._anim_out = anim_out
+        self._anim_in = anim_in
 
     def _center(self):
         from PyQt6.QtGui import QGuiApplication
@@ -1480,6 +1827,8 @@ class PresetBuilderDialog(QDialog):
             self.setStyleSheet(build_stylesheet("dark"))
         except Exception:
             pass
+
+    # ── 页面构建 ──
 
     def _build_main_page(self):
         page = QWidget()
@@ -1521,7 +1870,7 @@ class PresetBuilderDialog(QDialog):
             cl = QVBoxLayout(card)
             cl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             cl.setSpacing(12)
-            cl.setContentsMargins(20, 24, 20, 24)
+            cl.setContentsMargins(7, 8, 7, 8)
 
             icon_label = QLabel(icon)
             icon_label.setStyleSheet("font-size: 42px; border: none; background: transparent;")
@@ -1550,12 +1899,229 @@ class PresetBuilderDialog(QDialog):
         load_btn.setObjectName("backButton")
         load_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         load_btn.setMinimumWidth(280)
-        load_btn.clicked.connect(self._load_preset)
+        load_btn.clicked.connect(lambda: self._slide_to(self._PAGE_EDIT))
         layout.addWidget(load_btn, alignment=Qt.AlignmentFlag.AlignCenter)
 
         layout.addStretch(3)
 
         return page
+
+    def _build_edit_page(self):
+        """页面 2：编辑已有预设 —— 与主界面同样的模板布局"""
+        page = QWidget()
+        page.setObjectName("presetMainPage")
+
+        # 可滚动容器
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+
+        inner = QWidget()
+        layout = QVBoxLayout(inner)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.setSpacing(20)
+
+        layout.addStretch(2)
+
+        # 第一行：标题
+        title = QLabel("编辑已有预设")
+        title.setObjectName("welcomeTitle")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title)
+
+        # 第二行：副标题
+        subtitle = QLabel("选择预设类型，查看并编辑已保存的预设。")
+        subtitle.setObjectName("welcomeSubtitle")
+        subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        subtitle.setWordWrap(True)
+        layout.addWidget(subtitle)
+
+        layout.addSpacing(16)
+
+        # 第三行：三个预设分类卡片
+        cards_layout = QHBoxLayout()
+        cards_layout.setSpacing(24)
+        cards_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        for icon, cat_key, cat_label in [
+            ("🎭", "character", "角色预设"),
+            ("⚔", "weapon", "武器预设"),
+            ("🔮", "echo_set", "声骸套装预设"),
+        ]:
+            card = QPushButton()
+            card.setObjectName("presetEntryCard")
+            card.setCursor(Qt.CursorShape.PointingHandCursor)
+            card.setMinimumSize(220, 260)
+            card.clicked.connect(lambda _, c=cat_key: self._select_edit_category(c))
+
+            cl = QVBoxLayout(card)
+            cl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            cl.setSpacing(12)
+            cl.setContentsMargins(7, 8, 7, 8)
+
+            icon_label = QLabel(icon)
+            icon_label.setStyleSheet("font-size: 42px; border: none; background: transparent;")
+            icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            cl.addWidget(icon_label)
+
+            title_label = QLabel(cat_label)
+            title_label.setObjectName("accentLabel")
+            title_label.setStyleSheet("font-size: 16px; font-weight: 700; border: none; background: transparent;")
+            title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            cl.addWidget(title_label)
+
+            cards_layout.addWidget(card)
+
+        layout.addLayout(cards_layout)
+        layout.addSpacing(16)
+
+        # 预设列表（初始隐藏，点击卡片后显示）
+        self._edit_list_area = QWidget()
+        self._edit_list_area.setVisible(False)
+        list_layout = QVBoxLayout(self._edit_list_area)
+        list_layout.setContentsMargins(40, 0, 40, 0)
+        list_layout.setSpacing(8)
+
+        self._edit_list_label = QLabel("")
+        self._edit_list_label.setObjectName("labelSecondary")
+        self._edit_list_label.setStyleSheet("font-size: 13px; font-weight: 600;")
+        self._edit_list_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        list_layout.addWidget(self._edit_list_label)
+
+        self._edit_list = QListWidget()
+        self._edit_list.setMinimumHeight(160)
+        self._edit_list.setMaximumHeight(260)
+        self._edit_list.setStyleSheet(
+            "QListWidget { border: 1px solid rgba(255,255,255,0.08); "
+            "border-radius: 6px; font-size: 13px; }"
+            "QListWidget::item { padding: 6px 8px; }"
+            "QListWidget::item:selected { background: rgba(233,69,96,0.25); }")
+        self._edit_list.itemDoubleClicked.connect(self._on_edit_preset_selected)
+        list_layout.addWidget(self._edit_list)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        del_btn = QPushButton("删除预设")
+        del_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        del_btn.setFixedWidth(90)
+        del_btn.setStyleSheet(
+            "QPushButton { padding: 3px 8px; color: #ef9a9a; "
+            "background: rgba(198,40,40,0.18); border: 1px solid rgba(198,40,40,0.35); "
+            "border-radius: 4px; }"
+            "QPushButton:hover { background: rgba(198,40,40,0.28); }")
+        del_btn.clicked.connect(self._on_delete_preset)
+        btn_row.addWidget(del_btn)
+        edit_btn = QPushButton("打开编辑")
+        edit_btn.setObjectName("presetSaveBtn")
+        edit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        edit_btn.setFixedWidth(90)
+        edit_btn.setStyleSheet("QPushButton { padding: 3px 8px; }")
+        edit_btn.clicked.connect(self._on_edit_preset_selected)
+        btn_row.addWidget(edit_btn)
+        list_layout.addLayout(btn_row)
+
+        layout.addWidget(self._edit_list_area)
+
+        # 第四行：返回创建预设
+        back_btn = QPushButton("← 返回创建预设")
+        back_btn.setObjectName("backButton")
+        back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        back_btn.setMinimumWidth(280)
+        back_btn.clicked.connect(lambda: self._slide_to(self._PAGE_MAIN))
+        layout.addWidget(back_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        layout.addStretch(3)
+
+        scroll.setWidget(inner)
+        page_layout = QVBoxLayout(page)
+        page_layout.setContentsMargins(0, 0, 0, 0)
+        page_layout.addWidget(scroll)
+
+        return page
+
+    # ── 编辑已有预设逻辑 ──
+
+    def _select_edit_category(self, cat_key):
+        """选中分类后，显示该分类下的预设列表"""
+        self._edit_presets = PresetManager.list_presets()
+        cat_presets = [p for p in self._edit_presets if p["category"] == cat_key]
+        cat_names = {"character": "角色", "weapon": "武器", "echo_set": "声骸套装"}
+
+        self._edit_list.clear()
+        self._edit_list_area.setVisible(True)
+        self._edit_list_label.setText(f"── {cat_names.get(cat_key, '')}预设列表 ──")
+
+        if not cat_presets:
+            item = QListWidgetItem("（暂无该类型预设）")
+            item.setFlags(Qt.ItemFlag.NoItemFlags)
+            self._edit_list.addItem(item)
+            return
+
+        for p in cat_presets:
+            source_mark = "【官】" if p["source"] == "official" else "【户】"
+            text = f"{source_mark} {p['name']}  ({p.get('mtime', '')})"
+            item = QListWidgetItem(text)
+            item.setData(Qt.ItemDataRole.UserRole, p)
+            if p["source"] == "official":
+                font = item.font()
+                font.setBold(True)
+                item.setFont(font)
+            self._edit_list.addItem(item)
+
+    def _on_edit_preset_selected(self):
+        """双击或点击「打开编辑」按钮 → 加载预设进入编辑"""
+        item = self._edit_list.currentItem()
+        if not item:
+            return
+        preset_info = item.data(Qt.ItemDataRole.UserRole)
+        if not preset_info:
+            return
+
+        data, err = PresetManager.load_preset(preset_info["path"])
+        if err:
+            QMessageBox.warning(self, "加载失败", err)
+            return
+
+        self._edit_preset_path = preset_info["path"]
+        self.setWindowTitle(f"预设构建器 - 编辑: {preset_info['name']}")
+
+        category = data.get("category", "")
+        if category == "character":
+            self._open_character()
+        elif category == "weapon":
+            self._open_weapon()
+        elif category == "echo_set":
+            self._open_echo_set()
+
+    def _on_delete_preset(self):
+        """删除选中的预设"""
+        item = self._edit_list.currentItem()
+        if not item:
+            return
+        preset_info = item.data(Qt.ItemDataRole.UserRole)
+        if not preset_info:
+            return
+
+        reply = QMessageBox.question(
+            self, "确认删除",
+            f"确定要删除预设「{preset_info['name']}」吗？\n此操作不可撤销。",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No)
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        try:
+            os.remove(preset_info["path"])
+        except OSError as e:
+            QMessageBox.warning(self, "删除失败", f"无法删除文件:\n{e}")
+            return
+
+        # 刷新当前分类列表
+        cat = preset_info.get("category", "")
+        if cat:
+            self._select_edit_category(cat)
+
+    # ── 打开编辑器 ──
 
     def _open_character(self):
         """打开角色预设分页窗口"""
@@ -1580,8 +2146,16 @@ class PresetBuilderDialog(QDialog):
         dlg.exec()
 
     def _open_echo_set(self):
-        """切换到声骸套装编辑页"""
-        self.stack.setCurrentIndex(1)
+        """打开声骸套装预设窗口"""
+        dlg = _EchoSetEditor(self)
+        dlg.save_clicked.connect(lambda: self._save_from_window(dlg, "echo_set"))
+        if self._edit_preset_path:
+            data, _ = PresetManager.load_preset(self._edit_preset_path)
+            if data and "echo_set" in data:
+                dlg.load_data(data["echo_set"])
+        dlg.exec()
+
+    # ── 保存 ──
 
     def _save_from_window(self, window, category):
         """从分页窗口保存预设"""
@@ -1598,7 +2172,7 @@ class PresetBuilderDialog(QDialog):
 
         if self._edit_preset_path:
             preset["name"] = os.path.splitext(os.path.basename(self._edit_preset_path))[0]
-            path, err = PresetManager.save_preset(preset, preset["name"])
+            path, err = PresetManager.save_preset(preset, preset["name"], overwrite=True)
             if err:
                 QMessageBox.warning(self, "保存失败", err)
                 return
@@ -1618,70 +2192,6 @@ class PresetBuilderDialog(QDialog):
         QMessageBox.information(self, "保存成功", f"预设已保存到:\n{path}")
         window.accept()
 
-    def _save_category(self, category):
-        """保存声骸套装预设"""
-        data = self.echo_editor.to_dict()
-        default_name = data.get("name", "") or "未命名套装"
-
-        preset = {
-            "version": 1,
-            "type": "preset",
-            "name": default_name,
-            "category": category,
-            category: data,
-        }
-
-        if self._edit_preset_path:
-            preset["name"] = os.path.splitext(os.path.basename(self._edit_preset_path))[0]
-            path, err = PresetManager.save_preset(preset, preset["name"])
-            if err:
-                QMessageBox.warning(self, "保存失败", err)
-                return
-            QMessageBox.information(self, "保存成功", f"预设已保存到:\n{path}")
-            return
-
-        name, ok = QInputDialog.getText(
-            self, "保存预设", "预设名称:", text=f"{default_name}-预设")
-        if not ok or not name.strip():
-            return
-        preset["name"] = name.strip()
-        path, err = PresetManager.save_preset(preset, name.strip())
-        if err:
-            QMessageBox.warning(self, "保存失败", err)
-            return
-        QMessageBox.information(self, "保存成功", f"预设已保存到:\n{path}")
-
-    def _load_preset(self):
-        presets = PresetManager.list_presets()
-        if not presets:
-            QMessageBox.information(self, "无预设", "暂无已保存的预设文件。\n\n请先创建并保存预设。")
-            return
-
-        names = [f"[{'官方' if p['source'] == 'official' else '用户'}] {p['name']}"
-                 for p in presets]
-        item, ok = QInputDialog.getItem(self, "加载预设", "选择要编辑的预设:", names, 0, False)
-        if not ok or not item:
-            return
-
-        idx = names.index(item)
-        preset_info = presets[idx]
-        data, err = PresetManager.load_preset(preset_info["path"])
-        if err:
-            QMessageBox.warning(self, "加载失败", err)
-            return
-
-        self._edit_preset_path = preset_info["path"]
-        self.setWindowTitle(f"预设构建器 - 编辑: {preset_info['name']}")
-
-        category = data.get("category", "")
-        if category == "character":
-            self._open_character()
-        elif category == "weapon":
-            self._open_weapon()
-        elif category == "echo_set":
-            self._load_data(data)
-            self.stack.setCurrentIndex(1)
-
     def _load_data(self, data):
-        if "echo_set" in data and data["echo_set"]:
-            self.echo_editor.load_data(data["echo_set"])
+        """加载已有预设数据（编辑模式）"""
+        pass

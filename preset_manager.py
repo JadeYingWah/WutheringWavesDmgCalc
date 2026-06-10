@@ -5,6 +5,7 @@
 # {
 #   "version": 1, "type": "preset", "name": "...",
 #   "character": { "name", "element", "effect", "base_hp", "base_atk", "base_def",
+#                  "multiplier": { "base_mult", "mult_increase", "mult_boosts": [...] },
 #                  "resonance_chain": [ { "effects": [...], "indep_zones": [...] }, ... ] },
 #   "weapon": { "name", "base_atk", "bonus_type", "bonus_value",
 #               "refinement": [ { "resonance_desc", "effects": [...], "indep_zones": [...] }, ... ] },
@@ -153,6 +154,8 @@ class PresetManager:
                 return False, "character 必须是对象"
             if "name" not in c or not c["name"]:
                 return False, "角色必须填写名称"
+            if "multiplier" in c and not isinstance(c["multiplier"], dict):
+                return False, "character.multiplier 必须是对象"
 
         # 验证武器（可选）
         if has_weapon:
@@ -173,13 +176,14 @@ class PresetManager:
         return True, None
 
     @staticmethod
-    def save_preset(data, name, source="user"):
+    def save_preset(data, name, source="user", overwrite=False):
         """保存预设到指定目录。
 
         Args:
             data: 预设数据字典（含 category 字段决定存入哪个子目录）
             name: 预设名称（将用作文件名）
             source: "user" 或 "official"
+            overwrite: True 时直接覆盖同名文件（编辑已有预设时使用）
         Returns:
             (path: str | None, error: str | None)
         """
@@ -198,6 +202,13 @@ class PresetManager:
             return None, "预设名称无效"
 
         fpath = os.path.join(target_dir, f"{safe_name}.json")
+
+        # 同名检测：新建时自动追加 .副本，编辑时直接覆盖
+        if not overwrite and os.path.exists(fpath):
+            while os.path.exists(fpath):
+                safe_name = f"{safe_name}.副本"
+                fpath = os.path.join(target_dir, f"{safe_name}.json")
+            data["name"] = safe_name
         try:
             os.makedirs(target_dir, exist_ok=True)
             with open(fpath, "w", encoding="utf-8") as f:
@@ -228,6 +239,16 @@ class PresetManager:
             cb.hp_spin.setValue(char_data.get("base_hp", 1))
             cb.atk_spin.setValue(char_data.get("base_atk", 1))
             cb.def_spin.setValue(char_data.get("base_def", 1))
+
+            # 应用倍率设置
+            multiplier = char_data.get("multiplier", {})
+            if multiplier:
+                rp = main_screen.page_result
+                rp.base_mult.setValue(multiplier.get("base_mult", 100.0))
+                rp.mult_increase.setValue(multiplier.get("mult_increase", 0.0))
+                for _i, _v in enumerate(multiplier.get("mult_boosts", [0, 0, 0])):
+                    if _i < len(rp.mult_boosts):
+                        rp.mult_boosts[_i].setValue(_v)
 
             # 应用共鸣链效果（全部 0~6 链）
             chains = char_data.get("resonance_chain", [])

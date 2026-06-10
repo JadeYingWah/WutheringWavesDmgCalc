@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 使用预设窗口 —— 列表 + 详情预览 + 选择性应用 + 更新官方预设
+# 使用预设窗口 —— 来源选择 → 分类选择 + 多选预设 + 详情预览
 
 __all__ = ["PresetLoaderDialog"]
 
@@ -9,11 +9,16 @@ from PyQt6.QtWidgets import (
     QDialog, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QListWidget, QListWidgetItem,
     QScrollArea, QFrame, QGroupBox, QCheckBox,
-    QMessageBox, QSplitter, QSizePolicy,
+    QMessageBox, QSplitter, QSizePolicy, QStackedWidget,
 )
 from PyQt6.QtCore import Qt, QTimer
 
 from preset_manager import PresetManager
+
+
+# ── 选择上限 ──
+_CATEGORY_LIMITS = {"character": 1, "weapon": 1, "echo_set": 5}
+_CATEGORY_LABELS = {"character": "角色", "weapon": "武器", "echo_set": "声骸套装"}
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -98,8 +103,14 @@ class _PresetPreview(QScrollArea):
             f"基础生命: {c.get('base_hp', 0):.0f}  "
             f"攻击: {c.get('base_atk', 0):.0f}  "
             f"防御: {c.get('base_def', 0):.0f}",
-            "",
         ]
+        mult = c.get("multiplier", {})
+        if mult:
+            bm = mult.get("base_mult", 100)
+            mi = mult.get("mult_increase", 0)
+            mb = mult.get("mult_boosts", [0, 0, 0])
+            lines.append(f"倍率: 基础{bm}% + 增加{mi}%  提升:{'/'.join(f'{b}%' for b in mb)}")
+        lines.append("")
         chains = c.get("resonance_chain", [])
         for i, ch in enumerate(chains):
             effs = ch.get("effects", [])
@@ -184,26 +195,63 @@ class _PresetPreview(QScrollArea):
 # ═══════════════════════════════════════════════════════════════
 
 class PresetLoaderDialog(QDialog):
-    """使用预设窗口 —— 列表 + 详情 + 选择性应用"""
+    """使用预设窗口 —— 来源选择 → 分类 + 多选 + 预览"""
 
     def __init__(self, parent=None, main_screen=None):
         super().__init__(parent)
         self.setWindowTitle("使用预设")
-        self.setMinimumSize(800, 560)
-        self.resize(880, 600)
+        self.setMinimumSize(900, 620)
+        self.resize(960, 660)
         self._main_screen = main_screen
+        # 已选预设: {"character": [path, ...], "weapon": [...], "echo_set": [...]}
+        self._selected = {"character": [], "weapon": [], "echo_set": []}
 
         QTimer.singleShot(0, lambda: self._center())
 
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(12, 12, 12, 12)
-        main_layout.setSpacing(10)
+        main_layout.setContentsMargins(0, 0, 0, 0)
 
-        # ── 顶栏 ──
+        self.stack = QStackedWidget()
+
+        # 页面 0：来源选择
+        self._page_source = self._build_source_page()
+        self.stack.addWidget(self._page_source)
+
+        # 页面 1：分类 + 预设列表 + 预览
+        self._page_browse = self._build_browse_page()
+        self.stack.addWidget(self._page_browse)
+
+        main_layout.addWidget(self.stack)
+
+    def reject(self):
+        """ESC：浏览页返回来源选择页，来源选择页关闭窗口"""
+        if self.stack.currentIndex() == 1:
+            self.stack.setCurrentIndex(0)
+        else:
+            super().reject()
+
+    def _center(self):
+        if self.parent():
+            geo = self.parent().geometry()
+            self.move(geo.center() - self.rect().center())
+        else:
+            from PyQt6.QtGui import QGuiApplication
+            screen = QGuiApplication.primaryScreen().availableGeometry()
+            self.move(screen.center() - self.rect().center())
+
+    # ── 页面 0：来源选择 ──
+
+    def _build_source_page(self):
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(16)
+
+        # 顶栏
         top = QHBoxLayout()
-        top_title = QLabel("选择预设")
-        top_title.setObjectName("sectionTitle")
-        top.addWidget(top_title)
+        title = QLabel("使用预设")
+        title.setObjectName("sectionTitle")
+        top.addWidget(title)
         top.addStretch()
 
         update_btn = QPushButton("🔄 更新官方预设")
@@ -217,153 +265,359 @@ class PresetLoaderDialog(QDialog):
         builder_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         builder_btn.clicked.connect(self._open_builder)
         top.addWidget(builder_btn)
-        main_layout.addLayout(top)
+        layout.addLayout(top)
 
-        # ── 中间：左右分栏 ──
+        # 两张来源卡片
+        cards_layout = QHBoxLayout()
+        cards_layout.setSpacing(32)
+        cards_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        for icon, label, source in [
+            ("🏛", "官方预设", "official"),
+            ("👤", "我的预设", "user"),
+        ]:
+            card = QPushButton()
+            card.setObjectName("presetEntryCard")
+            card.setCursor(Qt.CursorShape.PointingHandCursor)
+            card.setMinimumSize(260, 280)
+            card.clicked.connect(lambda _, s=source: self._enter_source(s))
+
+            cl = QVBoxLayout(card)
+            cl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            cl.setSpacing(14)
+            cl.setContentsMargins(20, 28, 20, 28)
+
+            icon_label = QLabel(icon)
+            icon_label.setStyleSheet("font-size: 52px; border: none; background: transparent;")
+            icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            cl.addWidget(icon_label)
+
+            title_label = QLabel(label)
+            title_label.setObjectName("accentLabel")
+            title_label.setStyleSheet("font-size: 18px; font-weight: 700; border: none; background: transparent;")
+            title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            cl.addWidget(title_label)
+
+            cards_layout.addWidget(card)
+
+        layout.addStretch(1)
+        layout.addLayout(cards_layout)
+        layout.addStretch(2)
+
+        # 底部按钮
+        bottom = QHBoxLayout()
+        bottom.addStretch()
+        cancel_btn = QPushButton("取消")
+        cancel_btn.setObjectName("backButton")
+        cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        cancel_btn.clicked.connect(self.reject)
+        bottom.addWidget(cancel_btn)
+        layout.addLayout(bottom)
+
+        return page
+
+    # ── 页面 1：分类 + 预设列表 + 预览 ──
+
+    def _build_browse_page(self):
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setSpacing(10)
+
+        # 顶栏
+        top = QHBoxLayout()
+        top.setContentsMargins(0, 0, 0, 0)
+
+        back_btn = QPushButton("← 返回")
+        back_btn.setObjectName("backButton")
+        back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        back_btn.setFixedWidth(80)
+        back_btn.clicked.connect(lambda: self.stack.setCurrentIndex(0))
+        top.addWidget(back_btn)
+
+        self._browse_title = QLabel("")
+        self._browse_title.setObjectName("sectionTitle")
+        top.addWidget(self._browse_title)
+
+        top.addStretch()
+        layout.addLayout(top)
+
+        # 副标题（独立一行，居中）
+        self._browse_hint = QLabel("单击查看详细，双击选择预设。")
+        self._browse_hint.setObjectName("labelSecondary")
+        self._browse_hint.setStyleSheet("font-size: 12px;")
+        self._browse_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self._browse_hint)
+
+        # 三张分类卡片
+        cat_row = QHBoxLayout()
+        cat_row.setSpacing(16)
+        cat_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self._cat_buttons = {}
+        for icon, cat_key, cat_label in [
+            ("🎭", "character", "角色"),
+            ("⚔", "weapon", "武器"),
+            ("🔮", "echo_set", "声骸套装"),
+        ]:
+            btn = QPushButton()
+            btn.setObjectName("presetEntryCard")
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setFixedSize(160, 100)
+            btn.clicked.connect(lambda _, c=cat_key: self._select_category(c))
+
+            cl = QVBoxLayout(btn)
+            cl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            cl.setSpacing(6)
+            cl.setContentsMargins(8, 8, 8, 8)
+
+            il = QLabel(icon)
+            il.setStyleSheet("font-size: 28px; border: none; background: transparent;")
+            il.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            cl.addWidget(il)
+
+            tl = QLabel(f"{cat_label} (0/{_CATEGORY_LIMITS[cat_key]})")
+            tl.setObjectName("accentLabel")
+            tl.setStyleSheet("font-size: 12px; font-weight: 600; border: none; background: transparent;")
+            tl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            cl.addWidget(tl)
+
+            cat_row.addWidget(btn)
+            self._cat_buttons[cat_key] = (btn, tl)
+
+        layout.addLayout(cat_row)
+
+        # 中间：预设列表 + 预览
         splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setStyleSheet(
+            "QSplitter::handle { background: transparent; width: 2px; }")
 
         left = QWidget()
         ll = QVBoxLayout(left)
         ll.setContentsMargins(0, 0, 0, 0)
         ll.setSpacing(6)
 
-        self.preset_list = QListWidget()
-        self.preset_list.setMinimumWidth(240)
-        self.preset_list.currentItemChanged.connect(self._on_preset_selected)
-        ll.addWidget(self.preset_list)
+        self._preset_list = QListWidget()
+        self._preset_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
+        self._preset_list.setMinimumWidth(240)
+        self._preset_list.setStyleSheet(
+            "QListWidget { border: 1px solid rgba(255,255,255,0.08); "
+            "border-radius: 6px; font-size: 13px; outline: none; }"
+            "QListWidget::item { padding: 7px 10px; margin: 1px 3px; "
+            "border-radius: 4px; }"
+            "QListWidget::item:hover { background: rgba(255,255,255,0.06); }"
+            "QListWidget::item:selected { background: rgba(255,255,255,0.10); "
+            "border: 1px solid rgba(255,255,255,0.15); }")
+        self._preset_list.currentItemChanged.connect(self._on_item_selected)
+        self._preset_list.itemDoubleClicked.connect(self._on_item_double_clicked)
+        ll.addWidget(self._preset_list)
         splitter.addWidget(left)
 
-        self.preview = _PresetPreview()
-        splitter.addWidget(self.preview)
+        self._preview = _PresetPreview()
+        splitter.addWidget(self._preview)
         splitter.setStretchFactor(0, 2)
-        splitter.setStretchFactor(1, 5)
+        splitter.setStretchFactor(1, 4)
 
-        main_layout.addWidget(splitter, stretch=1)
+        layout.addWidget(splitter, stretch=1)
 
-        # ── 底部：选择性应用勾选框 + 按钮 ──
+        # 底部：已选信息 + 应用按钮
         bottom = QHBoxLayout()
-        bottom.setSpacing(16)
+        bottom.setSpacing(12)
 
-        bottom.addWidget(QLabel("应用内容:"))
-        self.cb_char = QCheckBox("角色")
-        self.cb_char.setChecked(True)
-        self.cb_char.setCursor(Qt.CursorShape.PointingHandCursor)
-        bottom.addWidget(self.cb_char)
-
-        self.cb_weapon = QCheckBox("武器")
-        self.cb_weapon.setChecked(True)
-        self.cb_weapon.setCursor(Qt.CursorShape.PointingHandCursor)
-        bottom.addWidget(self.cb_weapon)
-
-        self.cb_echo = QCheckBox("声骸套装")
-        self.cb_echo.setChecked(True)
-        self.cb_echo.setCursor(Qt.CursorShape.PointingHandCursor)
-        bottom.addWidget(self.cb_echo)
-
+        self._sel_info = QLabel("已选中: 0/1 角色  0/1 武器  0/5 声骸套装")
+        self._sel_info.setObjectName("labelSecondary")
+        self._sel_info.setStyleSheet("font-size: 13px;")
+        bottom.addWidget(self._sel_info)
         bottom.addStretch()
 
-        cancel_btn = QPushButton("取消")
-        cancel_btn.setObjectName("backButton")
-        cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        cancel_btn.clicked.connect(self.reject)
-        bottom.addWidget(cancel_btn)
+        self._apply_btn = QPushButton("应用预设")
+        self._apply_btn.setObjectName("presetSaveBtn")
+        self._apply_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._apply_btn.setFixedWidth(120)
+        self._apply_btn.clicked.connect(self._apply_preset)
+        self._apply_btn.setEnabled(False)
+        bottom.addWidget(self._apply_btn)
 
-        self.apply_btn = QPushButton("应用预设")
-        self.apply_btn.setObjectName("presetSaveBtn")
-        self.apply_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.apply_btn.clicked.connect(self._apply_preset)
-        self.apply_btn.setEnabled(False)
-        bottom.addWidget(self.apply_btn)
+        layout.addLayout(bottom)
 
-        main_layout.addLayout(bottom)
+        # 当前浏览的来源和分类
+        self._current_source = None
+        self._current_category = None
 
-        self._refresh_list()
+        return page
 
-    def _center(self):
-        if self.parent():
-            geo = self.parent().geometry()
-            self.move(geo.center() - self.rect().center())
-        else:
-            from PyQt6.QtGui import QGuiApplication
-            screen = QGuiApplication.primaryScreen().availableGeometry()
-            self.move(screen.center() - self.rect().center())
+    # ── 来源选择 ──
 
-    def _refresh_list(self):
-        self.preset_list.clear()
-        self._presets = PresetManager.list_presets()
-        if not self._presets:
-            item = QListWidgetItem("（暂无预设文件）")
+    def _enter_source(self, source):
+        self._current_source = source
+        source_label = "官方预设" if source == "official" else "我的预设"
+        self._browse_title.setText(source_label)
+        self.stack.setCurrentIndex(1)
+        # 默认选中第一个有预设的分类
+        all_presets = PresetManager.list_presets()
+        for cat in ["character", "weapon", "echo_set"]:
+            if any(p["source"] == source and p["category"] == cat for p in all_presets):
+                self._select_category(cat)
+                return
+        # 没有预设，清空列表
+        self._current_category = None
+        self._preset_list.clear()
+        self._preview.clear()
+
+    # ── 分类选择 ──
+
+    def _select_category(self, cat_key):
+        self._current_category = cat_key
+        self._refresh_preset_list()
+        self._update_sel_info()
+
+    def _refresh_preset_list(self):
+        self._preset_list.blockSignals(True)
+        self._preset_list.clear()
+
+        all_presets = PresetManager.list_presets()
+        cat_presets = [p for p in all_presets
+                       if p["source"] == self._current_source
+                       and p["category"] == self._current_category]
+
+        if not cat_presets:
+            item = QListWidgetItem("（该分类下暂无预设）")
             item.setFlags(Qt.ItemFlag.NoItemFlags)
-            self.preset_list.addItem(item)
+            self._preset_list.addItem(item)
+            self._preset_list.blockSignals(False)
             return
 
-        for p in self._presets:
-            source_mark = "【官】" if p["source"] == "official" else "【户】"
-            cat = p.get("category", "")
-            cat_label = {"character": "角色", "weapon": "武器", "echo_set": "套装"}.get(cat, "")
-            cat_str = f" [{cat_label}]" if cat_label else ""
-            text = f"{source_mark}{cat_str} {p['name']}"
+        cat = self._current_category
+        selected_paths = set(self._selected.get(cat, []))
+
+        for p in cat_presets:
+            is_sel = p["path"] in selected_paths
+            text = f"✓ {p['name']}" if is_sel else f"   {p['name']}"
             item = QListWidgetItem(text)
             item.setData(Qt.ItemDataRole.UserRole, p)
-            if p["source"] == "official":
-                font = item.font()
-                font.setBold(True)
-                item.setFont(font)
-            self.preset_list.addItem(item)
+            if is_sel:
+                item.setSelected(True)
+            if self._current_source == "official":
+                f = item.font()
+                f.setBold(True)
+                item.setFont(f)
+            self._preset_list.addItem(item)
 
-    def _on_preset_selected(self, current, previous):
+        self._preset_list.blockSignals(False)
+
+    def _update_item_text(self):
+        """更新列表项文本和样式，标记已选中的预设"""
+        from PyQt6.QtGui import QColor
+        cat = self._current_category
+        if not cat:
+            return
+        selected_paths = set(self._selected.get(cat, []))
+        for i in range(self._preset_list.count()):
+            item = self._preset_list.item(i)
+            info = item.data(Qt.ItemDataRole.UserRole)
+            if not info:
+                continue
+            name = info["name"]
+            if info["path"] in selected_paths:
+                item.setText(f"✓ {name}")
+                item.setBackground(QColor(80, 112, 232, 70))
+                item.setForeground(QColor(224, 228, 255))
+            else:
+                item.setText(f"   {name}")
+                item.setBackground(QColor(0, 0, 0, 0))
+                item.setForeground(QColor(200, 204, 216))
+
+    # ── 交互：单击预览，双击选中/取消 ──
+
+    def _on_item_selected(self, current, previous):
+        """单击：仅预览，不改变选中状态"""
         if current and current.data(Qt.ItemDataRole.UserRole):
-            preset_info = current.data(Qt.ItemDataRole.UserRole)
-            self.preview.show_preset(preset_info)
-            self.apply_btn.setEnabled(True)
-
-            # 根据预设类别自动勾选对应复选框
-            cat = preset_info.get("category", "")
-            has_char = (cat == "character")
-            has_weap = (cat == "weapon")
-            has_echo = (cat == "echo_set")
-            self.cb_char.setChecked(has_char)
-            self.cb_char.setEnabled(has_char)
-            self.cb_weapon.setChecked(has_weap)
-            self.cb_weapon.setEnabled(has_weap)
-            self.cb_echo.setChecked(has_echo)
-            self.cb_echo.setEnabled(has_echo)
+            self._preview.show_preset(current.data(Qt.ItemDataRole.UserRole))
         else:
-            self.preview.clear()
-            self.apply_btn.setEnabled(False)
+            self._preview.clear()
+
+    def _on_item_double_clicked(self, item):
+        """双击：切换选中/取消"""
+        info = item.data(Qt.ItemDataRole.UserRole)
+        if not info:
+            return
+        cat = self._current_category
+        if not cat:
+            return
+
+        path = info["path"]
+        selected = self._selected.get(cat, [])
+        limit = _CATEGORY_LIMITS[cat]
+
+        if path in selected:
+            # 已选中 → 取消
+            selected.remove(path)
+        else:
+            # 未选中 → 添加（超出限制时移除最早的）
+            if len(selected) >= limit:
+                selected.pop(0)
+            selected.append(path)
+
+        self._selected[cat] = selected
+        self._update_item_text()
+        self._update_sel_info()
+
+    def _update_sel_info(self):
+        parts = []
+        for cat in ["character", "weapon", "echo_set"]:
+            n = len(self._selected.get(cat, []))
+            lim = _CATEGORY_LIMITS[cat]
+            parts.append(f"{n}/{lim} {_CATEGORY_LABELS[cat]}")
+            # 更新分类卡片标签
+            if cat in self._cat_buttons:
+                _, tl = self._cat_buttons[cat]
+                tl.setText(f"{_CATEGORY_LABELS[cat]} ({n}/{lim})")
+        self._sel_info.setText(f"已选中: {'  '.join(parts)}")
+
+        total = sum(len(v) for v in self._selected.values())
+        self._apply_btn.setEnabled(total > 0)
+
+    # ── 应用预设 ──
 
     def _apply_preset(self):
-        current = self.preset_list.currentItem()
-        if not current:
-            return
-        preset_info = current.data(Qt.ItemDataRole.UserRole)
-        if not preset_info:
-            return
-
         if not self._main_screen:
             QMessageBox.warning(self, "错误", "未连接到主界面，无法应用预设。")
             return
 
-        data, err = PresetManager.load_preset(preset_info["path"])
-        if err:
-            QMessageBox.warning(self, "加载失败", f"无法读取预设文件:\n{err}")
+        total = sum(len(v) for v in self._selected.values())
+        if total == 0:
+            QMessageBox.information(self, "未选择", "请至少选择一个预设。")
             return
 
-        # 按用户勾选过滤
+        # 收集所有选中预设的数据
+        all_data = []
+        for cat in ["character", "weapon", "echo_set"]:
+            for path in self._selected.get(cat, []):
+                data, err = PresetManager.load_preset(path)
+                if err:
+                    QMessageBox.warning(self, "加载失败", f"无法读取预设:\n{err}")
+                    continue
+                all_data.append(data)
+
+        if not all_data:
+            return
+
+        # 合并为一个预设数据
+        merged = {"version": 1, "type": "preset", "name": "合并预设"}
+        for d in all_data:
+            for key in ["character", "weapon", "echo_set"]:
+                if key in d and d[key]:
+                    merged[key] = d[key]
+
+        # 确认
         parts = []
-        if self.cb_char.isChecked():
-            parts.append("角色")
-        if self.cb_weapon.isChecked():
-            parts.append("武器")
-        if self.cb_echo.isChecked():
-            parts.append("声骸套装")
+        for cat in ["character", "weapon", "echo_set"]:
+            n = len(self._selected.get(cat, []))
+            if n:
+                parts.append(f"{n} 个{_CATEGORY_LABELS[cat]}")
 
-        if not parts:
-            QMessageBox.information(self, "未选择", "请至少勾选一项要应用的内容。")
-            return
-
-        msg = (f"将应用预设「{preset_info['name']}」的以下内容到当前计算器：\n\n"
-               f"  • {'  • '.join(parts)}\n\n"
+        msg = (f"将应用以下预设到当前计算器：\n\n"
+               f"  {'  '.join(parts)}\n\n"
                "预设数据将追加到现有数据中（不会清空已有数据）。\n是否继续？")
         reply = QMessageBox.question(
             self, "确认应用", msg,
@@ -372,34 +626,29 @@ class PresetLoaderDialog(QDialog):
         if reply != QMessageBox.StandardButton.Yes:
             return
 
-        # 构建只包含用户勾选部分的数据
-        filtered = {"version": data.get("version", 1), "type": "preset", "name": data.get("name", "")}
-        if self.cb_char.isChecked() and "character" in data:
-            filtered["character"] = data["character"]
-        if self.cb_weapon.isChecked() and "weapon" in data:
-            filtered["weapon"] = data["weapon"]
-        if self.cb_echo.isChecked() and "echo_set" in data:
-            filtered["echo_set"] = data["echo_set"]
-
         try:
-            PresetManager.apply_preset(filtered, self._main_screen)
+            PresetManager.apply_preset(merged, self._main_screen)
         except Exception as e:
             QMessageBox.warning(self, "应用失败", f"应用预设时发生错误:\n{e}")
             return
 
         QMessageBox.information(
             self, "应用成功",
-            f"预设「{preset_info['name']}」已成功应用。\n\n"
+            "预设已成功应用。\n\n"
             "共鸣链/精炼/套装的所有阶段效果均已添加，\n"
             "标记为「默认隐藏」的效果已在隐藏状态中。")
         self.accept()
 
+    # ── 其他 ──
+
     def _update_official(self):
         PresetManager.update_official_presets(self)
-        self._refresh_list()
+        if self._current_category:
+            self._refresh_preset_list()
 
     def _open_builder(self):
         from preset_builder import PresetBuilderDialog
         dlg = PresetBuilderDialog(self)
         dlg.exec()
-        self._refresh_list()
+        if self._current_category:
+            self._refresh_preset_list()

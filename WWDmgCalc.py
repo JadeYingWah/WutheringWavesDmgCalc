@@ -45,7 +45,7 @@ from PyQt6.QtWidgets import (
 )
 
 # 导入 Qt 核心枚举与动画支持
-from PyQt6.QtCore import Qt, QEvent, QPoint, QPropertyAnimation, QEasingCurve, QTimer, QUrl, QThread, QRect, QRectF, QSize, QSequentialAnimationGroup, pyqtSignal
+from PyQt6.QtCore import Qt, QEvent, QObject, QPoint, QPropertyAnimation, QEasingCurve, QTimer, QUrl, QThread, QRect, QRectF, QSize, QSequentialAnimationGroup, pyqtSignal
 
 # 导入字体与绘图相关功能
 from PyQt6.QtGui import (
@@ -10258,6 +10258,18 @@ class MainScreen(QWidget):
         if hasattr(self, 'page_result') and self.page_result._auto_compute:
             self.page_result._toggle_auto_compute()
 
+# ==================== 全局事件过滤器 ====================
+
+class _NoWheelFilter(QObject):
+    """禁止鼠标滚轮修改所有 QSpinBox / QDoubleSpinBox 的数值."""
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.Wheel:
+            if isinstance(obj, (QSpinBox, QDoubleSpinBox)):
+                event.ignore()
+                return True
+        return super().eventFilter(obj, event)
+
 # ==================== 主窗口 ====================
 
 class DmgCalculator(QMainWindow):
@@ -10348,7 +10360,7 @@ class DmgCalculator(QMainWindow):
 
         # 使用预设按钮（使用 accent 色突出）
         preset_style = (
-            "QPushButton { font-size: 12px; padding: 3px 8px; border: 1px solid #e94560; "
+            "QPushButton { font-size: 12px; padding: 5px 14px; border: 1px solid #e94560; "
             "border-radius: 4px; background: rgba(233,69,96,0.25); color: #ff8c9a; font-weight: 600; }"
             "QPushButton:hover { background: rgba(233,69,96,0.45); }"
         )
@@ -10595,6 +10607,10 @@ def main():
     font = QFont("Microsoft YaHei")
     font.setPointSize(12)  # 原先 14；12 更适合 1080p
     app.setFont(font)
+
+    # 禁止所有输入框的滚轮修改数值
+    _no_wheel = _NoWheelFilter(app)
+    app.installEventFilter(_no_wheel)
 
     # ── 全局异常捕获：闪退/未处理异常 → 写入日志 + 弹出外部窗口 ──
     _original_excepthook = sys.excepthook
