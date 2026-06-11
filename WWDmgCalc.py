@@ -5595,7 +5595,7 @@ class ResonanceChainEditDialog(QDialog):
         table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name, lambda: name))
 
         chain_num = self._item['name'].replace('共鸣链', '')
-        seq = QLabel(f"共鸣链{chain_num}-{eff_type[:1]}{row_idx + 1}")
+        seq = QLabel(f"共鸣链{chain_num}关联{row_idx + 1}")  # 临时占位，会被 _refresh_all_seq_labels 更新
         seq.setObjectName("seqLabel")
         seq.setAlignment(Qt.AlignmentFlag.AlignCenter)
         table.setCellWidget(row_idx, 2, seq)
@@ -5758,6 +5758,9 @@ class ResonanceChainEditDialog(QDialog):
             self._indep_container.addWidget(gb)
             self._indep_groups.append(gb)
 
+        # 刷新序列号为全局编号，与关键词关联格式一致
+        self._refresh_all_seq_labels()
+
     def _debounced_sync(self):
         """防抖：300ms 内多次变更只同步一次"""
         self._sync_timer.start()
@@ -5801,6 +5804,21 @@ class ResonanceChainEditDialog(QDialog):
         parent_page = self.parent()
         if hasattr(parent_page, '_sync_chain_to_pages'):
             parent_page._sync_chain_to_pages(self._item)
+
+        # 刷新所有表格的序列号，确保与关键词关联的 seq 一致
+        self._refresh_all_seq_labels()
+
+    def _refresh_all_seq_labels(self):
+        """用全局编号（跨常驻/触发/特定三张表）刷新所有序列号标签，
+        与 _sync_chain_to_pages → 关键词关联的 seq_text 格式保持一致。"""
+        chain_num = self._item['name'].replace('共鸣链', '')
+        global_idx = 0
+        for table in (self._perm_table, self._trig_table, self._spec_table):
+            for row in range(table.rowCount()):
+                global_idx += 1
+                w = table.cellWidget(row, 2)
+                if w is not None and hasattr(w, 'setText'):
+                    w.setText(f"共鸣链{chain_num}关联{global_idx}")
 
     # ── 独立乘区组管理 ──
 

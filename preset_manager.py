@@ -281,15 +281,46 @@ class PresetManager:
                     if _i < len(rp.mult_boosts):
                         rp.mult_boosts[_i].setValue(_v)
 
-            # 应用共鸣链效果（全部 1~6 链）
+            # 应用共鸣链效果 —— 先填充共鸣链页面，再由页面同步到综合填写/关键词关联
             chains = char_data.get("resonance_chain", [])
+            rb = main_screen.page_resonance_buff
+            char_name = char_data.get("name", "")
+            if char_name:
+                rb._prefix = char_name
+            # 重置全部6链为关闭状态
+            for it in rb._items:
+                it["enabled"] = False
+                it["effects"] = []
+                it["indep_zones"] = []
+                it["intro"] = ""
+                it["name"] = f"{rb._prefix}的共鸣链{it['id']}" if rb._prefix else f"共鸣链{it['id']}"
+            # 用预设数据填充存在的链
             for chain_idx, chain in enumerate(chains):
-                _apply_effects_and_indep(
-                    main_screen,
-                    chain.get("effects", []),
-                    chain.get("indep_zones", []),
-                    tag_prefix=f"{char_data.get('name', '')} {chain_idx + 1}链"
-                )
+                if chain_idx >= len(rb._items):
+                    break
+                item = rb._items[chain_idx]
+                item["enabled"] = True
+                item["effects"] = chain.get("effects", [])
+                item["indep_zones"] = chain.get("indep_zones", [])
+                item["intro"] = chain.get("intro", "")
+                if rb._prefix:
+                    item["name"] = f"{rb._prefix}的共鸣链{chain_idx + 1}"
+            rb._refresh_cards()
+            # 同步效果到综合填写 + 关键词关联
+            for it in rb._items:
+                if it.get("enabled") and it.get("effects"):
+                    rb._sync_chain_to_pages(it)
+            # 同步独立乘区
+            for it in rb._items:
+                if it.get("enabled"):
+                    for iz_data in it.get("indep_zones", []):
+                        group_name = iz_data.get("group_name", "")
+                        values = iz_data.get("values", [])
+                        if not values:
+                            continue
+                        converted = [(v.get("name", ""), v.get("value", 0.0), v.get("hidden", False))
+                                     for v in values]
+                        main_screen.page_indep_zone._add_group(group_name, converted)
 
         # ── 2. 应用武器 ──
         weapon_data = data.get("weapon", {})

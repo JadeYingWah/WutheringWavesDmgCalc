@@ -891,7 +891,7 @@ class _EffectTabDialog(QDialog):
         self._perm_counter += 1
         self._add_table_row(self._perm_table, name, self._perm_value.value(),
                             self._perm_source.currentText(), "常驻",
-                            seq_prefix="常驻")
+                            seq_prefix="常驻", show_kw=False)
         self._perm_combo.lineEdit().clear()
         self._perm_value.setValue(0)
 
@@ -902,7 +902,7 @@ class _EffectTabDialog(QDialog):
         self._trig_counter += 1
         self._add_table_row(self._trig_table, name, self._trig_value.value(),
                             self._trig_source.currentText(), "触发",
-                            seq_prefix="触发")
+                            seq_prefix="触发", show_kw=False)
         self._trig_combo.lineEdit().clear()
         self._trig_value.setValue(0)
 
@@ -917,7 +917,7 @@ class _EffectTabDialog(QDialog):
         self._spec_combo.lineEdit().clear()
         self._spec_value.setValue(0)
 
-    def _add_table_row(self, table, name, value, source, eff_type, seq_prefix="", sub_name_text="", keywords=""):
+    def _add_table_row(self, table, name, value, source, eff_type, seq_prefix="", sub_name_text="", keywords="", show_kw=True):
         from WWDmgCalc import _make_sub_name_cell
 
         row_idx = table.rowCount()
@@ -959,13 +959,15 @@ class _EffectTabDialog(QDialog):
         source_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         table.setCellWidget(row_idx, 5, source_lbl)
 
-        kw_btn = QPushButton(keywords if keywords else "点击编辑")
-        kw_btn.setObjectName("itemLockBtn")
-        kw_btn.setFixedSize(110, 35)
-        kw_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        kw_btn.clicked.connect(lambda _, r=row_idx, t=table: self._edit_keywords(r, t))
-        table.setCellWidget(row_idx, 6, kw_btn)
+        if show_kw:
+            kw_btn = QPushButton(keywords if keywords else "点击编辑")
+            kw_btn.setObjectName("itemLockBtn")
+            kw_btn.setFixedSize(110, 35)
+            kw_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            kw_btn.clicked.connect(lambda _, r=row_idx, t=table: self._edit_keywords(r, t))
+            table.setCellWidget(row_idx, 6, kw_btn)
 
+        ops_col = 7 if show_kw else 6
         ops = QWidget()
         ops_layout = QHBoxLayout(ops)
         ops_layout.setContentsMargins(2, 0, 2, 0)
@@ -979,13 +981,13 @@ class _EffectTabDialog(QDialog):
         def _del_this():
             sender = self.sender()
             for r in range(table.rowCount()):
-                ops_w = table.cellWidget(r, 7)
+                ops_w = table.cellWidget(r, ops_col)
                 if ops_w and sender in ops_w.findChildren(QPushButton):
                     table.removeRow(r)
                     return
         del_btn.clicked.connect(_del_this)
         ops_layout.addWidget(del_btn)
-        table.setCellWidget(row_idx, 7, ops)
+        table.setCellWidget(row_idx, ops_col, ops)
 
     def _edit_keywords(self, row_idx, table):
         kw_btn = table.cellWidget(row_idx, 6)
@@ -1092,23 +1094,25 @@ class _EffectTabDialog(QDialog):
 
     def _collect_table(self, table, eff_type):
         from WWDmgCalc import _get_sub_name_text
+        has_kw = table.columnCount() == 8
         effects = []
         for row in range(table.rowCount()):
             name_edit = table.cellWidget(row, 0)
             sub_name = table.cellWidget(row, 1)
             value_spin = table.cellWidget(row, 3)
             source_lbl = table.cellWidget(row, 5)
-            kw_btn = table.cellWidget(row, 6)
             if name_edit and value_spin:
-                kw_text = kw_btn.text() if kw_btn and kw_btn.text() != "点击编辑" else ""
-                effects.append({
+                eff = {
                     "name": name_edit.text().strip(),
                     "value": value_spin.value(),
                     "type": eff_type,
                     "source": source_lbl.text() if source_lbl else "",
                     "sub_name": _get_sub_name_text(sub_name),
-                    "keywords": kw_text,
-                })
+                }
+                if has_kw:
+                    kw_btn = table.cellWidget(row, 6)
+                    eff["keywords"] = kw_btn.text() if kw_btn and kw_btn.text() != "点击编辑" else ""
+                effects.append(eff)
         return effects
 
     def get_effects(self):
@@ -1137,7 +1141,7 @@ class _EffectTabDialog(QDialog):
                     eff.get("source", ""), "触发",
                     seq_prefix="触发",
                     sub_name_text=eff.get("sub_name", ""),
-                    keywords=eff.get("keywords", ""))
+                    show_kw=False)
             elif eff_type == "特定":
                 self._spec_counter += 1
                 self._add_table_row(self._spec_table,
@@ -1153,7 +1157,7 @@ class _EffectTabDialog(QDialog):
                     eff.get("source", ""), "常驻",
                     seq_prefix="常驻",
                     sub_name_text=eff.get("sub_name", ""),
-                    keywords=eff.get("keywords", ""))
+                    show_kw=False)
 
     def set_indep_zones(self, zones):
         for iz_data in zones:
@@ -2092,7 +2096,7 @@ class _CharacterBuffWindow(QDialog):
         perm_input.addWidget(self._perm_combo, stretch=3)
         self._perm_value = QDoubleSpinBox(); self._perm_value.setRange(0, 99999); self._perm_value.setDecimals(4); self._perm_value.setFixedWidth(100)
         perm_input.addWidget(self._perm_value); perm_input.addWidget(QLabel("%"))
-        self._perm_source = QComboBox(); self._perm_source.addItems(SOURCES); self._perm_source.setCurrentText("技能效果"); self._perm_source.setMinimumWidth(100)
+        self._perm_source = QComboBox(); self._perm_source.addItems(SOURCES); self._perm_source.setCurrentText("角色效果"); self._perm_source.setMinimumWidth(100)
         perm_input.addWidget(self._perm_source)
         add_perm = QPushButton("添加"); add_perm.setObjectName("addButton"); add_perm.setFixedWidth(50); add_perm.setCursor(Qt.CursorShape.PointingHandCursor)
         add_perm.clicked.connect(lambda: self._add_row("perm")); perm_input.addWidget(add_perm); perm_layout.addLayout(perm_input)
@@ -2107,7 +2111,7 @@ class _CharacterBuffWindow(QDialog):
         trig_input.addWidget(self._trig_combo, stretch=3)
         self._trig_value = QDoubleSpinBox(); self._trig_value.setRange(0, 99999); self._trig_value.setDecimals(4); self._trig_value.setFixedWidth(100)
         trig_input.addWidget(self._trig_value); trig_input.addWidget(QLabel("%"))
-        self._trig_source = QComboBox(); self._trig_source.addItems(SOURCES); self._trig_source.setCurrentText("技能效果"); self._trig_source.setMinimumWidth(100)
+        self._trig_source = QComboBox(); self._trig_source.addItems(SOURCES); self._trig_source.setCurrentText("角色效果"); self._trig_source.setMinimumWidth(100)
         trig_input.addWidget(self._trig_source)
         add_trig = QPushButton("添加"); add_trig.setObjectName("addButton"); add_trig.setFixedWidth(50); add_trig.setCursor(Qt.CursorShape.PointingHandCursor)
         add_trig.clicked.connect(lambda: self._add_row("trig")); trig_input.addWidget(add_trig); trig_layout.addLayout(trig_input)
@@ -2146,7 +2150,7 @@ class _CharacterBuffWindow(QDialog):
         spec_input.addWidget(self._spec_combo, stretch=3)
         self._spec_value = QDoubleSpinBox(); self._spec_value.setRange(0, 99999); self._spec_value.setDecimals(4); self._spec_value.setFixedWidth(100)
         spec_input.addWidget(self._spec_value); spec_input.addWidget(QLabel("%"))
-        self._spec_source = QComboBox(); self._spec_source.addItems(SOURCES); self._spec_source.setCurrentText("技能效果"); self._spec_source.setMinimumWidth(100)
+        self._spec_source = QComboBox(); self._spec_source.addItems(SOURCES); self._spec_source.setCurrentText("角色效果"); self._spec_source.setMinimumWidth(100)
         spec_input.addWidget(self._spec_source)
         add_spec = QPushButton("添加"); add_spec.setObjectName("addButton"); add_spec.setFixedWidth(50); add_spec.setCursor(Qt.CursorShape.PointingHandCursor)
         add_spec.clicked.connect(lambda: self._add_row("spec")); spec_input.addWidget(add_spec); spec_layout.addLayout(spec_input)
@@ -2186,10 +2190,10 @@ class _CharacterBuffWindow(QDialog):
             self._spec_counter += 1
         name = combo.currentText().strip()
         if not name: return
-        self._add_table_row(table, name, val.value(), src.currentText(), etype, prefix)
+        self._add_table_row(table, name, val.value(), src.currentText(), etype, prefix, show_kw=(kind == "spec"))
         combo.lineEdit().clear(); val.setValue(0)
 
-    def _add_table_row(self, table, name, value, source, eff_type, seq_prefix, sub_name_text="", keywords=""):
+    def _add_table_row(self, table, name, value, source, eff_type, seq_prefix, sub_name_text="", keywords="", show_kw=True):
         from WWDmgCalc import _make_sub_name_cell
         ri = table.rowCount(); table.insertRow(ri); table.setRowHeight(ri, 42)
         ne = QLineEdit(name); ne.setObjectName("nameEdit"); ne.setAlignment(Qt.AlignmentFlag.AlignCenter); table.setCellWidget(ri, 0, ne)
@@ -2199,16 +2203,18 @@ class _CharacterBuffWindow(QDialog):
         vs = QDoubleSpinBox(); vs.setObjectName("itemValueSpin"); vs.setRange(0, 99999); vs.setDecimals(4); vs.setValue(value); vs.setFixedWidth(120); vs.setAlignment(Qt.AlignmentFlag.AlignCenter); table.setCellWidget(ri, 3, vs)
         ul = QLabel("百分比"); ul.setObjectName("unitLabel"); ul.setAlignment(Qt.AlignmentFlag.AlignCenter); table.setCellWidget(ri, 4, ul)
         sl = QLabel(source); sl.setObjectName("seqLabel"); sl.setAlignment(Qt.AlignmentFlag.AlignCenter); table.setCellWidget(ri, 5, sl)
-        kb = QPushButton(keywords if keywords else "点击编辑"); kb.setObjectName("itemLockBtn"); kb.setFixedSize(110, 35); kb.setCursor(Qt.CursorShape.PointingHandCursor)
-        kb.clicked.connect(lambda _, r=ri, t=table: self._edit_keywords(r, t)); table.setCellWidget(ri, 6, kb)
+        if show_kw:
+            kb = QPushButton(keywords if keywords else "点击编辑"); kb.setObjectName("itemLockBtn"); kb.setFixedSize(110, 35); kb.setCursor(Qt.CursorShape.PointingHandCursor)
+            kb.clicked.connect(lambda _, r=ri, t=table: self._edit_keywords(r, t)); table.setCellWidget(ri, 6, kb)
+        ops_col = 7 if show_kw else 6
         ops = QWidget(); ol = QHBoxLayout(ops); ol.setContentsMargins(2, 0, 2, 0); ol.setSpacing(3)
         db = QPushButton("删除"); db.setObjectName("itemDeleteBtn"); db.setFixedSize(55, 28); db.setCursor(Qt.CursorShape.PointingHandCursor)
         def _del():
             s = self.sender()
             for r in range(table.rowCount()):
-                ow = table.cellWidget(r, 7)
+                ow = table.cellWidget(r, ops_col)
                 if ow and s in ow.findChildren(QPushButton): table.removeRow(r); return
-        db.clicked.connect(_del); ol.addWidget(db); table.setCellWidget(ri, 7, ops)
+        db.clicked.connect(_del); ol.addWidget(db); table.setCellWidget(ri, ops_col, ops)
 
     def _edit_keywords(self, ri, table):
         kb = table.cellWidget(ri, 6)
@@ -2247,13 +2253,17 @@ class _CharacterBuffWindow(QDialog):
 
     def _collect_table(self, table, eff_type):
         from WWDmgCalc import _get_sub_name_text
+        has_kw = table.columnCount() == 8
         effects = []
         for row in range(table.rowCount()):
-            ne = table.cellWidget(row, 0); sn = table.cellWidget(row, 1); vs = table.cellWidget(row, 3); sl = table.cellWidget(row, 5); kb = table.cellWidget(row, 6)
+            ne = table.cellWidget(row, 0); sn = table.cellWidget(row, 1); vs = table.cellWidget(row, 3); sl = table.cellWidget(row, 5)
             if ne and vs:
-                kt = kb.text() if kb and kb.text() != "点击编辑" else ""
-                effects.append({"name": ne.text().strip(), "value": vs.value(), "type": eff_type,
-                                "source": sl.text() if sl else "", "sub_name": _get_sub_name_text(sn), "keywords": kt})
+                eff = {"name": ne.text().strip(), "value": vs.value(), "type": eff_type,
+                       "source": sl.text() if sl else "", "sub_name": _get_sub_name_text(sn)}
+                if has_kw:
+                    kb = table.cellWidget(row, 6)
+                    eff["keywords"] = kb.text() if kb and kb.text() != "点击编辑" else ""
+                effects.append(eff)
         return effects
 
     def to_dict(self):
@@ -2277,13 +2287,13 @@ class _CharacterBuffWindow(QDialog):
             et = eff.get("type", "常驻")
             if et == "触发":
                 self._trig_counter += 1
-                self._add_table_row(self._trig_table, eff.get("name", ""), eff.get("value", 0.0), eff.get("source", ""), "触发", "触发", eff.get("sub_name", ""), eff.get("keywords", ""))
+                self._add_table_row(self._trig_table, eff.get("name", ""), eff.get("value", 0.0), eff.get("source", ""), "触发", "触发", eff.get("sub_name", ""), show_kw=False)
             elif et == "特定":
                 self._spec_counter += 1
-                self._add_table_row(self._spec_table, eff.get("name", ""), eff.get("value", 0.0), eff.get("source", ""), "特定", "特定", eff.get("sub_name", ""), eff.get("keywords", ""))
+                self._add_table_row(self._spec_table, eff.get("name", ""), eff.get("value", 0.0), eff.get("source", ""), "特定", "特定", eff.get("sub_name", ""), eff.get("keywords", ""), show_kw=True)
             else:
                 self._perm_counter += 1
-                self._add_table_row(self._perm_table, eff.get("name", ""), eff.get("value", 0.0), eff.get("source", ""), "常驻", "常驻", eff.get("sub_name", ""), eff.get("keywords", ""))
+                self._add_table_row(self._perm_table, eff.get("name", ""), eff.get("value", 0.0), eff.get("source", ""), "常驻", "常驻", eff.get("sub_name", ""), show_kw=False)
         for iz_data in data.get("indep_zones", []):
             gb = _IndepZoneGroupBox(iz_data.get("group_name", ""), iz_data.get("values", []))
             gb.del_group_btn.clicked.connect(lambda g=gb: self._remove_indep_group(g))
@@ -2304,11 +2314,14 @@ class _CharacterBuffWindow(QDialog):
             if count > 0:
                 lines.append(f"── {label} ({count} 条) ──")
                 for row in range(count):
-                    ne = table.cellWidget(row, 0); vs = table.cellWidget(row, 3); sl = table.cellWidget(row, 5); kb = table.cellWidget(row, 6)
+                    ne = table.cellWidget(row, 0); vs = table.cellWidget(row, 3); sl = table.cellWidget(row, 5)
                     if ne and vs:
-                        kt = kb.text() if kb and kb.text() != "点击编辑" else ""
-                        kw = f" [关键词: {kt}]" if kt else ""
-                        lines.append(f"  {ne.text().strip()} +{vs.value():.1f}%  (来源: {sl.text() if sl else ''}){kw}")
+                        label_text = f"  {ne.text().strip()} +{vs.value():.1f}%  (来源: {sl.text() if sl else ''})"
+                        if table.columnCount() == 8:
+                            kb = table.cellWidget(row, 6)
+                            kt = kb.text() if kb and kb.text() != "点击编辑" else ""
+                            if kt: label_text += f" [关键词: {kt}]"
+                        lines.append(label_text)
             else: lines.append(f"── {label} ──\n  (无)")
             lines.append("")
         indep = self._indep_groups
@@ -2392,7 +2405,7 @@ class _EchoSetEditor(QDialog):
         first_label.setStyleSheet("font-size: 15px; font-weight: 700; margin-top: 8px;")
         self._root.addWidget(first_label)
 
-        self._first_data = {"effects": [], "indep_zones": []}
+        self._first_data = {"effects": [], "indep_zones": [], "name": "", "intro": ""}
         self._first_card = _CompactCard("首位声骸增益")
         self._first_card.set_info("暂无效果")
         self._first_card.set_expand_callback(self._open_first_edit)
@@ -2445,6 +2458,12 @@ class _EchoSetEditor(QDialog):
             lines.append("")
 
         lines.append("── 首位声骸增益 ──")
+        fb_name = self._first_data.get("name", "")
+        if fb_name:
+            lines.append(f"  名称: {fb_name}")
+        fb_intro = self._first_data.get("intro", "")
+        if fb_intro:
+            lines.append(f"  介绍: {fb_intro}")
         fb_effects = self._first_data.get("effects", [])
         if fb_effects:
             lines.append(f"  效果 ({len(fb_effects)} 条):")
@@ -2565,18 +2584,34 @@ class _EchoSetEditor(QDialog):
         self._stage_cards[idx].set_info(text)
 
     def _open_first_edit(self):
-        dlg = _EditDialog("首位声骸增益 - 编辑", default_source="合鸣效果", parent=self)
+        # 首位声骸名称输入
+        first_name_edit = QLineEdit(self._first_data.get("name", ""))
+        first_name_edit.setPlaceholderText("首位声骸名称（例如：无归的谬误）")
+        name_row = QHBoxLayout()
+        name_row.addWidget(QLabel("首位声骸名称:"))
+        name_row.addWidget(first_name_edit, stretch=1)
+        dlg = _EditDialog("首位声骸增益 - 编辑", default_source="合鸣效果", parent=self,
+                          intro_tab_label="首位声骸介绍",
+                          intro_title="编辑首位声骸的介绍信息：",
+                          intro_text=self._first_data.get("intro", ""),
+                          intro_placeholder="在此输入首位声骸的介绍文本...",
+                          intro_extra=name_row)
         dlg.set_effects(self._first_data["effects"])
         dlg.set_indep_zones(self._first_data["indep_zones"])
         if dlg.exec() == QDialog.DialogCode.Accepted:
+            self._first_data["name"] = first_name_edit.text().strip()
             self._first_data["effects"] = dlg.get_effects()
             self._first_data["indep_zones"] = dlg.get_indep_zones()
+            self._first_data["intro"] = dlg.get_intro_text()
             eff_count = len(self._first_data["effects"])
             iz_count = len(self._first_data["indep_zones"])
-            if eff_count == 0 and iz_count == 0:
+            name = self._first_data.get("name", "")
+            if eff_count == 0 and iz_count == 0 and not name:
                 self._first_card.set_info("暂无效果")
             else:
                 parts = []
+                if name:
+                    parts.append(name)
                 if eff_count > 0:
                     parts.append(f"{eff_count} 条效果")
                 if iz_count > 0:
@@ -2595,6 +2630,8 @@ class _EchoSetEditor(QDialog):
                 for i, cd in enumerate(self._stage_data)
             ],
             "first_echo_bonus": {
+                "name": self._first_data.get("name", ""),
+                "intro": self._first_data.get("intro", ""),
                 "effects": self._first_data["effects"],
                 "indep_zones": self._first_data["indep_zones"],
             },
@@ -2614,6 +2651,8 @@ class _EchoSetEditor(QDialog):
                     self._update_stage_summary(i)
         first = data.get("first_echo_bonus", {})
         if first:
+            self._first_data["name"] = first.get("name", "")
+            self._first_data["intro"] = first.get("intro", "")
             self._first_data["effects"] = first.get("effects", [])
             self._first_data["indep_zones"] = first.get("indep_zones", [])
             eff_count = len(self._first_data["effects"])

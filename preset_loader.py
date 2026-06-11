@@ -730,11 +730,29 @@ class PresetLoaderDialog(QDialog):
             return
 
         # ── 合并为一个预设数据 ──
+        # 角色/武器默认只有一份直接覆盖；角色增益和声骸套装需要累积
         merged = {"version": 1, "type": "preset", "name": "合并预设"}
         for d in all_data:
             for key in ["character", "weapon", "echo_set", "character_buff"]:
-                if key in d and d[key]:
+                if key not in d or not d[key]:
+                    continue
+                if key in ("character", "weapon"):
                     merged[key] = d[key]
+                elif key == "character_buff":
+                    if key not in merged:
+                        merged[key] = {"name": "", "effects": [], "indep_zones": []}
+                    merged[key]["effects"].extend(d[key].get("effects", []))
+                    merged[key]["indep_zones"].extend(d[key].get("indep_zones", []))
+                    if d[key].get("name"):
+                        merged[key]["name"] = d[key]["name"]
+                elif key == "echo_set":
+                    if key not in merged:
+                        merged[key] = {"name": "", "stages": [], "first_echo_bonus": {}}
+                    merged[key]["stages"].extend(d[key].get("stages", []))
+                    if d[key].get("first_echo_bonus"):
+                        merged[key]["first_echo_bonus"] = d[key]["first_echo_bonus"]
+                    if d[key].get("name"):
+                        merged[key]["name"] = d[key]["name"]
 
         # ── 根据用户选择过滤数据 ──
 
@@ -756,25 +774,18 @@ class PresetLoaderDialog(QDialog):
             else:
                 merged["weapon"]["refinement"] = []
 
-        # 首位声骸增益：仅保留选中的那个
+        # 首位声骸增益：仅保留选中的那个（不覆盖已累积的阶段效果）
         if echo_combo and "echo_set" in merged:
             sel_idx = echo_combo.currentIndex()
-            # 只有选中的 echo set 保留 first_echo_bonus
-            # 注意：merged 可能把多个 echo_set 合并了（后面的覆盖前面的）
-            # 实际场景中只有一个 echo_set，但用户可能选了多个
-            # 这里我们保留 stage 效果，但 first_echo_bonus 只在选中的那一个上生效
-            # 由于 merged 结构直接覆盖，我们需要从 all_data 中找对应 echo_set
             echo_idx = 0
             for d in all_data:
                 if "echo_set" in d and d["echo_set"]:
                     if echo_idx == sel_idx:
-                        merged["echo_set"] = d["echo_set"]  # 保留完整数据（含 first_echo_bonus）
+                        merged["echo_set"]["first_echo_bonus"] = d["echo_set"].get("first_echo_bonus", {})
                         break
                     echo_idx += 1
             else:
-                # 如果没找到选中的（理论上不会），移除 first_echo_bonus
-                if "echo_set" in merged:
-                    merged["echo_set"].pop("first_echo_bonus", None)
+                merged["echo_set"].pop("first_echo_bonus", None)
 
         try:
             PresetManager.apply_preset(merged, self._main_screen)
