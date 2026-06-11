@@ -266,6 +266,17 @@ class IndepZonePage(QWidget):
         frame.deleteLater()
         self._notify_change()
 
+    def remove_all_groups(self):
+        """清除所有独立乘区组（用于应用预设前重置，避免重复叠加）。"""
+        while self._groups:
+            gd = self._groups.pop()
+            frame = gd["frame"]
+            self._groups_layout.removeWidget(frame)
+            frame.hide()
+            frame.setParent(None)
+            frame.deleteLater()
+        self._notify_change()
+
     def _notify_change(self):
         self.recalc()
         if self._on_change_cb:

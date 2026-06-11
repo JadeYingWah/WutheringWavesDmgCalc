@@ -1656,6 +1656,10 @@ class _CharacterPresetWindow(QDialog):
                 it["effects"] = ch.get("effects", [])
                 it["indep_zones"] = ch.get("indep_zones", [])
                 it["intro"] = ch.get("intro", "")
+            else:
+                it["effects"] = []
+                it["indep_zones"] = []
+                it["intro"] = ""
         self._resonance_page._refresh_cards()
         # 恢复结果列表
         rl_data = data.get("result_list", [])
@@ -1983,7 +1987,11 @@ class _WeaponPresetWindow(QDialog):
                 cd["resonance_desc"] = ref.get("resonance_desc", "")
                 cd["effects"] = ref.get("effects", [])
                 cd["indep_zones"] = ref.get("indep_zones", [])
-                self._update_refine_summary(i)
+            else:
+                cd["resonance_desc"] = ""
+                cd["effects"] = []
+                cd["indep_zones"] = []
+            self._update_refine_summary(i)
 
 
 # ═══════════════════════════════════════════════════════════════

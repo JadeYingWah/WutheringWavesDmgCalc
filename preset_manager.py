@@ -263,6 +263,9 @@ class PresetManager:
         # ── 导入必要引用（延迟导入避免循环依赖） ──
         from WWDmgCalc import HIDDEN_ITEMS, _APP_DIR as _a
 
+        # ── 0. 清除旧的独立乘区组（避免重复叠加） ──
+        main_screen.page_indep_zone.remove_all_groups()
+
         # ── 1. 应用角色基础属性 ──
         char_data = data.get("character", {})
         if char_data:
@@ -675,11 +678,11 @@ def _apply_effects_and_indep(main_screen, effects, indep_zones, tag_prefix=""):
         if not name:
             continue
 
-        # 选择目标页面
-        if eff_type == "触发":
-            page = main_screen.page_combined_trigger
-        else:
+        # 选择目标页面（与 _sync_chain_to_pages 保持一致：常驻→perm，其余→trigger）
+        if eff_type == "常驻":
             page = main_screen.page_combined_perm
+        else:
+            page = main_screen.page_combined_trigger
 
         # 使用 _add_row_with_source 添加行
         page._counter += 1

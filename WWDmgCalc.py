@@ -5594,7 +5594,7 @@ class ResonanceChainEditDialog(QDialog):
         sub_name.textChanged.connect(lambda: self._debounced_sync())
         table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name, lambda: name))
 
-        chain_num = self._item['name'].replace('共鸣链', '')
+        chain_num = self._item['id']
         seq = QLabel(f"共鸣链{chain_num}关联{row_idx + 1}")  # 临时占位，会被 _refresh_all_seq_labels 更新
         seq.setObjectName("seqLabel")
         seq.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -5811,7 +5811,7 @@ class ResonanceChainEditDialog(QDialog):
     def _refresh_all_seq_labels(self):
         """用全局编号（跨常驻/触发/特定三张表）刷新所有序列号标签，
         与 _sync_chain_to_pages → 关键词关联的 seq_text 格式保持一致。"""
-        chain_num = self._item['name'].replace('共鸣链', '')
+        chain_num = self._item['id']
         global_idx = 0
         for table in (self._perm_table, self._trig_table, self._spec_table):
             for row in range(table.rowCount()):
