@@ -707,21 +707,20 @@ class _EffectTabDialog(QDialog):
 
         self._perm_table = QTableWidget()
         self._perm_table.setObjectName("attrTable")
-        self._perm_table.setColumnCount(8)
+        self._perm_table.setColumnCount(7)
         self._perm_table.setHorizontalHeaderLabels(
-            ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
+            ["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"])
         self._perm_table.verticalHeader().setVisible(False)
         perm_hdr = self._perm_table.horizontalHeader()
         perm_hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        for i in range(1, 8):
+        for i in range(1, 7):
             perm_hdr.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
         perm_hdr.resizeSection(1, 130)
         perm_hdr.resizeSection(2, 120)
         perm_hdr.resizeSection(3, 140)
         perm_hdr.resizeSection(4, 70)
         perm_hdr.resizeSection(5, 100)
-        perm_hdr.resizeSection(6, 120)
-        perm_hdr.resizeSection(7, 100)
+        perm_hdr.resizeSection(6, 100)
         perm_layout.addWidget(self._perm_table)
         scroll_layout.addWidget(perm_group)
 
@@ -760,21 +759,20 @@ class _EffectTabDialog(QDialog):
 
         self._trig_table = QTableWidget()
         self._trig_table.setObjectName("attrTable")
-        self._trig_table.setColumnCount(8)
+        self._trig_table.setColumnCount(7)
         self._trig_table.setHorizontalHeaderLabels(
-            ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
+            ["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"])
         self._trig_table.verticalHeader().setVisible(False)
         trig_hdr = self._trig_table.horizontalHeader()
         trig_hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        for i in range(1, 8):
+        for i in range(1, 7):
             trig_hdr.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
         trig_hdr.resizeSection(1, 130)
         trig_hdr.resizeSection(2, 120)
         trig_hdr.resizeSection(3, 140)
         trig_hdr.resizeSection(4, 70)
         trig_hdr.resizeSection(5, 100)
-        trig_hdr.resizeSection(6, 120)
-        trig_hdr.resizeSection(7, 100)
+        trig_hdr.resizeSection(6, 100)
         trig_layout.addWidget(self._trig_table)
         scroll_layout.addWidget(trig_group)
 
@@ -2099,7 +2097,7 @@ class _CharacterBuffWindow(QDialog):
         add_perm = QPushButton("添加"); add_perm.setObjectName("addButton"); add_perm.setFixedWidth(50); add_perm.setCursor(Qt.CursorShape.PointingHandCursor)
         add_perm.clicked.connect(lambda: self._add_row("perm")); perm_input.addWidget(add_perm); perm_layout.addLayout(perm_input)
         self._perm_combo.lineEdit().returnPressed.connect(lambda: self._add_row("perm"))
-        self._perm_table = self._make_table(); perm_layout.addWidget(self._perm_table); scroll_layout.addWidget(perm_group)
+        self._perm_table = self._make_table(show_kw=False); perm_layout.addWidget(self._perm_table); scroll_layout.addWidget(perm_group)
 
         # 触发效果
         trig_group = QGroupBox("触发效果"); trig_group.setMinimumHeight(500)
@@ -2114,7 +2112,7 @@ class _CharacterBuffWindow(QDialog):
         add_trig = QPushButton("添加"); add_trig.setObjectName("addButton"); add_trig.setFixedWidth(50); add_trig.setCursor(Qt.CursorShape.PointingHandCursor)
         add_trig.clicked.connect(lambda: self._add_row("trig")); trig_input.addWidget(add_trig); trig_layout.addLayout(trig_input)
         self._trig_combo.lineEdit().returnPressed.connect(lambda: self._add_row("trig"))
-        self._trig_table = self._make_table(); trig_layout.addWidget(self._trig_table); scroll_layout.addWidget(trig_group)
+        self._trig_table = self._make_table(show_kw=False); trig_layout.addWidget(self._trig_table); scroll_layout.addWidget(trig_group)
 
         # 独立乘区
         iz_label = QLabel("独立乘区组"); iz_label.setObjectName("labelSecondary")
@@ -2160,14 +2158,20 @@ class _CharacterBuffWindow(QDialog):
 
     # ═══ 表格/行/关键词/独立乘区 ═══
 
-    def _make_table(self):
-        t = QTableWidget(); t.setObjectName("attrTable"); t.setColumnCount(8)
-        t.setHorizontalHeaderLabels(["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
+    def _make_table(self, show_kw=True):
+        cols = 8 if show_kw else 7
+        headers = ["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"] if not show_kw else ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"]
+        t = QTableWidget(); t.setObjectName("attrTable"); t.setColumnCount(cols)
+        t.setHorizontalHeaderLabels(headers)
         t.verticalHeader().setVisible(False)
         h = t.horizontalHeader(); h.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        for i in range(1, 8): h.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
-        h.resizeSection(1, 130); h.resizeSection(2, 120); h.resizeSection(3, 140)
-        h.resizeSection(4, 70); h.resizeSection(5, 100); h.resizeSection(6, 120); h.resizeSection(7, 100)
+        for i in range(1, cols): h.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
+        if show_kw:
+            h.resizeSection(1, 130); h.resizeSection(2, 120); h.resizeSection(3, 140)
+            h.resizeSection(4, 70); h.resizeSection(5, 100); h.resizeSection(6, 120); h.resizeSection(7, 100)
+        else:
+            h.resizeSection(1, 130); h.resizeSection(2, 120); h.resizeSection(3, 140)
+            h.resizeSection(4, 70); h.resizeSection(5, 100); h.resizeSection(6, 100)
         return t
 
     def _add_row(self, kind):

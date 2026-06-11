@@ -5386,21 +5386,20 @@ class ResonanceChainEditDialog(QDialog):
 
         self._perm_table = QTableWidget()
         self._perm_table.setObjectName("attrTable")
-        self._perm_table.setColumnCount(8)
+        self._perm_table.setColumnCount(7)
         self._perm_table.setHorizontalHeaderLabels(
-            ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
+            ["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"])
         self._perm_table.verticalHeader().setVisible(False)
         perm_hdr = self._perm_table.horizontalHeader()
         perm_hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        for i in range(1, 8):
+        for i in range(1, 7):
             perm_hdr.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
         perm_hdr.resizeSection(1, 140)  # 副名称
         perm_hdr.resizeSection(2, 120)  # 序列号
         perm_hdr.resizeSection(3, 140)  # 数值
         perm_hdr.resizeSection(4, 70)   # 取值
         perm_hdr.resizeSection(5, 100)  # 来源
-        perm_hdr.resizeSection(6, 120)  # 关键词关联
-        perm_hdr.resizeSection(7, 100)  # 操作
+        perm_hdr.resizeSection(6, 100)  # 操作
         perm_layout.addWidget(self._perm_table)
         layout.addWidget(perm_group)
 
@@ -5438,21 +5437,20 @@ class ResonanceChainEditDialog(QDialog):
 
         self._trig_table = QTableWidget()
         self._trig_table.setObjectName("attrTable")
-        self._trig_table.setColumnCount(8)
+        self._trig_table.setColumnCount(7)
         self._trig_table.setHorizontalHeaderLabels(
-            ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
+            ["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"])
         self._trig_table.verticalHeader().setVisible(False)
         trig_hdr = self._trig_table.horizontalHeader()
         trig_hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        for i in range(1, 8):
+        for i in range(1, 7):
             trig_hdr.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
         trig_hdr.resizeSection(1, 140)  # 副名称
         trig_hdr.resizeSection(2, 120)  # 序列号
         trig_hdr.resizeSection(3, 140)  # 数值
         trig_hdr.resizeSection(4, 70)   # 取值
         trig_hdr.resizeSection(5, 100)  # 来源
-        trig_hdr.resizeSection(6, 120)  # 关键词关联
-        trig_hdr.resizeSection(7, 100)  # 操作
+        trig_hdr.resizeSection(6, 100)  # 操作
         trig_layout.addWidget(self._trig_table)
         layout.addWidget(trig_group)
 
@@ -5553,7 +5551,7 @@ class ResonanceChainEditDialog(QDialog):
         if not name:
             return
         self._add_table_row(self._perm_table, name, self._perm_value.value(),
-                           self._perm_source.currentText(), "常驻")
+                           self._perm_source.currentText(), "常驻", show_kw=False)
         self._perm_combo.lineEdit().clear()
         self._perm_value.setValue(0)
         self._debounced_sync()
@@ -5563,7 +5561,7 @@ class ResonanceChainEditDialog(QDialog):
         if not name:
             return
         self._add_table_row(self._trig_table, name, self._trig_value.value(),
-                           self._trig_source.currentText(), "触发")
+                           self._trig_source.currentText(), "触发", show_kw=False)
         self._trig_combo.lineEdit().clear()
         self._trig_value.setValue(0)
         self._debounced_sync()
@@ -5578,7 +5576,7 @@ class ResonanceChainEditDialog(QDialog):
         self._spec_value.setValue(0)
         self._debounced_sync()
 
-    def _add_table_row(self, table, name, value, source, eff_type, sub_name_text="", keywords=""):
+    def _add_table_row(self, table, name, value, source, eff_type, sub_name_text="", keywords="", show_kw=True):
         row_idx = table.rowCount()
         table.insertRow(row_idx)
         table.setRowHeight(row_idx, 42)
@@ -5622,14 +5620,16 @@ class ResonanceChainEditDialog(QDialog):
         source_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         table.setCellWidget(row_idx, 5, source_lbl)
 
-        # 关键词关联按钮
-        kw_btn = QPushButton(keywords if keywords else "点击编辑")
-        kw_btn.setObjectName("itemLockBtn")
-        kw_btn.setFixedSize(110, 35)
-        kw_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        kw_btn.clicked.connect(lambda _, r=row_idx, t=table: self._edit_chain_keywords(r, t))
-        table.setCellWidget(row_idx, 6, kw_btn)
+        # 关键词关联按钮（仅特定增益显示）
+        if show_kw:
+            kw_btn = QPushButton(keywords if keywords else "点击编辑")
+            kw_btn.setObjectName("itemLockBtn")
+            kw_btn.setFixedSize(110, 35)
+            kw_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            kw_btn.clicked.connect(lambda _, r=row_idx, t=table: self._edit_chain_keywords(r, t))
+            table.setCellWidget(row_idx, 6, kw_btn)
 
+        ops_col = 7 if show_kw else 6
         ops = QWidget()
         ops_layout = QHBoxLayout(ops)
         ops_layout.setContentsMargins(2, 0, 2, 0)
@@ -5642,7 +5642,7 @@ class ResonanceChainEditDialog(QDialog):
         def _del_this():
             sender = self.sender()
             for r in range(table.rowCount()):
-                ops_w = table.cellWidget(r, 7)
+                ops_w = table.cellWidget(r, ops_col)
                 if ops_w and sender in ops_w.findChildren(QPushButton):
                     table.removeRow(r)
                     self._debounced_sync()
@@ -5650,7 +5650,7 @@ class ResonanceChainEditDialog(QDialog):
         del_btn.clicked.connect(_del_this)
         ops_layout.addWidget(del_btn)
 
-        table.setCellWidget(row_idx, 7, ops)
+        table.setCellWidget(row_idx, ops_col, ops)
 
     def _edit_chain_keywords(self, row_idx, table):
         """编辑共鸣链效果的关键词关联"""
@@ -5747,7 +5747,8 @@ class ResonanceChainEditDialog(QDialog):
             self._add_table_row(table, eff.get("name", ""), eff.get("value", 0.0),
                                eff.get("source", "共鸣链效果"), eff_type,
                                sub_name_text=eff.get("sub_name", ""),
-                               keywords=eff.get("keywords", ""))
+                               keywords=eff.get("keywords", ""),
+                               show_kw=(eff_type == "特定"))
 
         # 加载独立乘区
         for iz_data in self._item.get("indep_zones", []):
@@ -5768,22 +5769,24 @@ class ResonanceChainEditDialog(QDialog):
 
         effects = []
         for table, eff_type in [(self._perm_table, "常驻"), (self._trig_table, "触发"), (self._spec_table, "特定")]:
+            has_kw = table.columnCount() == 8
             for row in range(table.rowCount()):
                 name_edit = table.cellWidget(row, 0)
                 sub_name = table.cellWidget(row, 1)
                 value_spin = table.cellWidget(row, 3)
                 source_lbl = table.cellWidget(row, 5)
-                kw_btn = table.cellWidget(row, 6)
                 if name_edit and value_spin:
-                    kw_text = kw_btn.text() if kw_btn and kw_btn.text() != "点击编辑" else ""
-                    effects.append({
+                    eff = {
                         "name": name_edit.text().strip(),
                         "value": value_spin.value(),
                         "type": eff_type,
                         "source": source_lbl.text() if source_lbl else "共鸣链效果",
                         "sub_name": _get_sub_name_text(sub_name),
-                        "keywords": kw_text,
-                    })
+                    }
+                    if has_kw:
+                        kw_btn = table.cellWidget(row, 6)
+                        eff["keywords"] = kw_btn.text() if kw_btn and kw_btn.text() != "点击编辑" else ""
+                    effects.append(eff)
         self._item["effects"] = effects
 
         # 收集独立乘区
