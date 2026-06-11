@@ -35,11 +35,13 @@ PRESETS_DIR = os.path.join(_APP_DIR, "presets")
 OFFICIAL_DIR = os.path.join(PRESETS_DIR, "official")
 USER_DIR = os.path.join(PRESETS_DIR, "user")
 
-# 三个类别子目录
-CATEGORY_DIRS = ["character", "weapon", "echo_set"]
+# 四个类别子目录
+CATEGORY_DIRS = ["character", "weapon", "echo_set", "character_buff"]
 
 # 类别中文名（用于列表显示）
-CATEGORY_LABELS = {"character": "角色", "weapon": "武器", "echo_set": "套装"}
+CATEGORY_LABELS = {
+    "character": "角色", "weapon": "武器",
+    "echo_set": "套装", "character_buff": "增益"}
 
 # GitHub 仓库配置（项目上传后可修改）
 GITHUB_REPO_OWNER = "YOUR_USERNAME"
@@ -120,10 +122,30 @@ class PresetManager:
         except Exception as e:
             return None, f"读取文件失败: {e}"
 
+        # ── 兼容旧版本预设：内部名称为空时自动补齐 ──
+        PresetManager._migrate_empty_names(data)
+
         valid, err = PresetManager.validate_preset(data)
         if not valid:
             return None, err
         return data, None
+
+    @staticmethod
+    def _migrate_empty_names(data):
+        """兼容旧版本预设：如果内部名称（character/weapon/echo_set.name）
+        为空，则从顶层 preset.name 自动填充。"""
+        preset_name = data.get("name", "")
+        for cat_key, fallback in [("character", "角色"), ("weapon", "武器"), ("echo_set", "套装"), ("character_buff", "增益")]:
+            cat_data = data.get(cat_key)
+            if isinstance(cat_data, dict) and not cat_data.get("name", ""):
+                # 从预设名称提取基础名："绯雪-预设" → "绯雪"
+                if preset_name and preset_name.endswith("-预设"):
+                    base = preset_name[:-3]
+                elif preset_name:
+                    base = preset_name
+                else:
+                    base = f"未命名{fallback}"
+                cat_data["name"] = base
 
     @staticmethod
     def validate_preset(data):
@@ -144,8 +166,9 @@ class PresetManager:
         has_char = "character" in data and data["character"]
         has_weapon = "weapon" in data and data["weapon"]
         has_echo = "echo_set" in data and data["echo_set"]
-        if not (has_char or has_weapon or has_echo):
-            return False, "预设至少需要包含角色、武器或声骸套装之一"
+        has_buff = "character_buff" in data and data["character_buff"]
+        if not (has_char or has_weapon or has_echo or has_buff):
+            return False, "预设至少需要包含角色、武器、声骸套装或角色增益之一"
 
         # 验证角色（可选）
         if has_char:
@@ -172,6 +195,14 @@ class PresetManager:
                 return False, "echo_set 必须是对象"
             if "name" not in e or not e["name"]:
                 return False, "声骸套装必须填写名称"
+
+        # 验证角色增益（可选）
+        if has_buff:
+            b = data["character_buff"]
+            if not isinstance(b, dict):
+                return False, "character_buff 必须是对象"
+            if "name" not in b or not b["name"]:
+                return False, "角色增益必须填写名称"
 
         return True, None
 
@@ -250,14 +281,14 @@ class PresetManager:
                     if _i < len(rp.mult_boosts):
                         rp.mult_boosts[_i].setValue(_v)
 
-            # 应用共鸣链效果（全部 0~6 链）
+            # 应用共鸣链效果（全部 1~6 链）
             chains = char_data.get("resonance_chain", [])
             for chain_idx, chain in enumerate(chains):
                 _apply_effects_and_indep(
                     main_screen,
                     chain.get("effects", []),
                     chain.get("indep_zones", []),
-                    tag_prefix=f"{char_data.get('name', '')} {chain_idx}链"
+                    tag_prefix=f"{char_data.get('name', '')} {chain_idx + 1}链"
                 )
 
         # ── 2. 应用武器 ──
@@ -310,7 +341,17 @@ class PresetManager:
                     tag_prefix=f"{echo_data.get('name', '')} 首位声骸"
                 )
 
-        # ── 4. 触发全局重算 ──
+        # ── 4. 应用角色增益 ──
+        buff_data = data.get("character_buff", {})
+        if buff_data:
+            _apply_effects_and_indep(
+                main_screen,
+                buff_data.get("effects", []),
+                buff_data.get("indep_zones", []),
+                tag_prefix=f"{buff_data.get('name', '')} 增益"
+            )
+
+        # ── 5. 触发全局重算 ──
         # 模拟一次完整的数据变更回调
         if hasattr(main_screen.page_combined_perm, '_on_change_cb') and \
            main_screen.page_combined_perm._on_change_cb:
@@ -557,7 +598,7 @@ class PresetManager:
             "<ol>"
             f"<li>访问项目 GitHub 仓库：<a href='{repo_url}'>{repo_url}</a></li>"
             "<li>Fork 该仓库到您的 GitHub 账号</li>"
-            f"<li>将本预设文件 <b>{os.path.basename(preset_path)}</b> 放入 Fork 仓库的 <code>presets/official/</code> 下对应类别目录（character/weapon/echo_set）</li>"
+            f"<li>将本预设文件 <b>{os.path.basename(preset_path)}</b> 放入 Fork 仓库的 <code>presets/official/</code> 下对应类别目录（character/weapon/echo_set/character_buff）</li>"
             "<li>提交 Pull Request，等待作者审核</li>"
             "</ol>"
             "<p><b>提示：</b>也可以通过项目 QQ 群向作者反馈。</p>"
@@ -590,6 +631,7 @@ def _apply_effects_and_indep(main_screen, effects, indep_zones, tag_prefix=""):
     from WWDmgCalc import HIDDEN_ITEMS
 
     # ── 应用效果到综合填写 ──
+    kw_seq_counter = 0
     for eff in effects:
         eff_type = eff.get("type", "常驻")
         name = eff.get("name", "")
@@ -597,6 +639,7 @@ def _apply_effects_and_indep(main_screen, effects, indep_zones, tag_prefix=""):
         source = eff.get("source", "其他效果")
         sub_name = eff.get("sub_name", "")
         default_hidden = eff.get("default_hidden", False)
+        keywords = eff.get("keywords", "")
 
         if not name:
             continue
@@ -629,6 +672,13 @@ def _apply_effects_and_indep(main_screen, effects, indep_zones, tag_prefix=""):
             last['hide_btn'].setObjectName("itemDeleteBtn")
             last['hide_btn'].style().unpolish(last['hide_btn'])
             last['hide_btn'].style().polish(last['hide_btn'])
+
+        # 同步到关键词关联页面
+        if keywords:
+            kw_seq_counter += 1
+            seq_text = f"{tag_prefix}关联{kw_seq_counter}" if tag_prefix else f"关联{kw_seq_counter}"
+            main_screen.page_keyword_assoc.add_effect_with_seq(
+                name, value, eff_type, source, sub_name, keywords, seq_text)
 
     # ── 应用独立乘区 ──
     for iz_data in indep_zones:

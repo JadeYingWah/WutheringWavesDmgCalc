@@ -7,9 +7,10 @@ import os
 
 from PyQt6.QtWidgets import (
     QDialog, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QListWidget, QListWidgetItem,
+    QLabel, QLineEdit, QPushButton, QListWidget, QListWidgetItem,
     QScrollArea, QFrame, QGroupBox, QCheckBox,
     QMessageBox, QSplitter, QSizePolicy, QStackedWidget,
+    QSpinBox, QComboBox, QFormLayout, QDialogButtonBox,
 )
 from PyQt6.QtCore import Qt, QTimer
 
@@ -17,8 +18,8 @@ from preset_manager import PresetManager
 
 
 # ── 选择上限 ──
-_CATEGORY_LIMITS = {"character": 1, "weapon": 1, "echo_set": 5}
-_CATEGORY_LABELS = {"character": "角色", "weapon": "武器", "echo_set": "声骸套装"}
+_CATEGORY_LIMITS = {"character": 1, "weapon": 1, "echo_set": 5, "character_buff": 5}
+_CATEGORY_LABELS = {"character": "角色", "weapon": "武器", "echo_set": "声骸套装", "character_buff": "角色增益"}
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -79,13 +80,20 @@ class _PresetPreview(QScrollArea):
         if echo and echo.get("name"):
             self._add_section("🔮 声骸套装", self._fmt_echo(echo))
 
+        buff = data.get("character_buff", {})
+        if buff and buff.get("name"):
+            self._add_section("💠 角色增益", self._fmt_buff(buff))
+
         self._content_layout.addStretch()
 
     def _clear_content(self):
         while self._content_layout.count():
             item = self._content_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+            w = item.widget()
+            if w is not None:
+                w.hide()
+                w.setParent(None)
+                w.deleteLater()
 
     def _add_section(self, title, text):
         gb = QGroupBox(title)
@@ -116,7 +124,7 @@ class _PresetPreview(QScrollArea):
             effs = ch.get("effects", [])
             izs = ch.get("indep_zones", [])
             if effs or izs:
-                lines.append(f"── {i} 链 ──")
+                lines.append(f"── {i + 1} 链 ──")
                 for e in effs:
                     h = " [隐藏]" if e.get("default_hidden") else ""
                     lines.append(f"  [{e.get('type','')}] {e.get('name','')} = {e.get('value',0):.4f}%"
@@ -185,6 +193,22 @@ class _PresetPreview(QScrollArea):
                     lines.append(f"    {v.get('name','')} = {v.get('value',0):.4f}%{h}")
         return "\n".join(lines)
 
+    def _fmt_buff(self, b):
+        lines = []
+        effects = b.get("effects", [])
+        perm_count = sum(1 for e in effects if e.get("type") != "触发")
+        trig_count = sum(1 for e in effects if e.get("type") == "触发")
+        lines.append(f"常驻: {perm_count} 条  触发: {trig_count} 条")
+        lines.append("")
+        for e in effects:
+            lines.append(f"  [{e.get('type','')}] {e.get('name','')} = {e.get('value',0):.4f}%"
+                         f"  ({e.get('source','')})")
+            if e.get("sub_name"):
+                lines.append(f"    副名称: {e['sub_name']}")
+            if e.get("keywords"):
+                lines.append(f"    关键词: {e['keywords']}")
+        return "\n".join(lines)
+
     def clear(self):
         self._title_label.setText("选择预设查看详情")
         self._clear_content()
@@ -204,7 +228,7 @@ class PresetLoaderDialog(QDialog):
         self.resize(960, 660)
         self._main_screen = main_screen
         # 已选预设: {"character": [path, ...], "weapon": [...], "echo_set": [...]}
-        self._selected = {"character": [], "weapon": [], "echo_set": []}
+        self._selected = {"character": [], "weapon": [], "echo_set": [], "character_buff": []}
 
         QTimer.singleShot(0, lambda: self._center())
 
@@ -359,6 +383,7 @@ class PresetLoaderDialog(QDialog):
             ("🎭", "character", "角色"),
             ("⚔", "weapon", "武器"),
             ("🔮", "echo_set", "声骸套装"),
+            ("💠", "character_buff", "角色增益"),
         ]:
             btn = QPushButton()
             btn.setObjectName("presetEntryCard")
@@ -386,6 +411,17 @@ class PresetLoaderDialog(QDialog):
             self._cat_buttons[cat_key] = (btn, tl)
 
         layout.addLayout(cat_row)
+
+        # 搜索框
+        search_row = QHBoxLayout()
+        search_row.setContentsMargins(0, 4, 0, 0)
+        self._search_input = QLineEdit()
+        self._search_input.setPlaceholderText("输入关键词搜索预设...")
+        self._search_input.setObjectName("nameEdit")
+        self._search_input.setClearButtonEnabled(True)
+        self._search_input.textChanged.connect(self._on_search_changed)
+        search_row.addWidget(self._search_input)
+        layout.addLayout(search_row)
 
         # 中间：预设列表 + 预览
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -424,7 +460,7 @@ class PresetLoaderDialog(QDialog):
         bottom = QHBoxLayout()
         bottom.setSpacing(12)
 
-        self._sel_info = QLabel("已选中: 0/1 角色  0/1 武器  0/5 声骸套装")
+        self._sel_info = QLabel("已选中: 0/1 角色  0/1 武器  0/5 声骸套装  0/5 角色增益")
         self._sel_info.setObjectName("labelSecondary")
         self._sel_info.setStyleSheet("font-size: 13px;")
         bottom.addWidget(self._sel_info)
@@ -455,7 +491,7 @@ class PresetLoaderDialog(QDialog):
         self.stack.setCurrentIndex(1)
         # 默认选中第一个有预设的分类
         all_presets = PresetManager.list_presets()
-        for cat in ["character", "weapon", "echo_set"]:
+        for cat in ["character", "weapon", "echo_set", "character_buff"]:
             if any(p["source"] == source and p["category"] == cat for p in all_presets):
                 self._select_category(cat)
                 return
@@ -479,6 +515,11 @@ class PresetLoaderDialog(QDialog):
         cat_presets = [p for p in all_presets
                        if p["source"] == self._current_source
                        and p["category"] == self._current_category]
+
+        # 搜索过滤
+        search_text = self._search_input.text().strip().lower() if hasattr(self, '_search_input') else ""
+        if search_text:
+            cat_presets = [p for p in cat_presets if search_text in p["name"].lower()]
 
         if not cat_presets:
             item = QListWidgetItem("（该分类下暂无预设）")
@@ -504,6 +545,10 @@ class PresetLoaderDialog(QDialog):
             self._preset_list.addItem(item)
 
         self._preset_list.blockSignals(False)
+
+    def _on_search_changed(self):
+        """搜索框文本变化时重新过滤预设列表"""
+        self._refresh_preset_list()
 
     def _update_item_text(self):
         """更新列表项文本和样式，标记已选中的预设"""
@@ -564,7 +609,7 @@ class PresetLoaderDialog(QDialog):
 
     def _update_sel_info(self):
         parts = []
-        for cat in ["character", "weapon", "echo_set"]:
+        for cat in ["character", "weapon", "echo_set", "character_buff"]:
             n = len(self._selected.get(cat, []))
             lim = _CATEGORY_LIMITS[cat]
             parts.append(f"{n}/{lim} {_CATEGORY_LABELS[cat]}")
@@ -591,40 +636,145 @@ class PresetLoaderDialog(QDialog):
 
         # 收集所有选中预设的数据
         all_data = []
-        for cat in ["character", "weapon", "echo_set"]:
+        char_name = None
+        weapon_name = None
+        echo_names = []  # (name, has_first_bonus)
+        buff_names = []
+        for cat in ["character", "weapon", "echo_set", "character_buff"]:
             for path in self._selected.get(cat, []):
                 data, err = PresetManager.load_preset(path)
                 if err:
                     QMessageBox.warning(self, "加载失败", f"无法读取预设:\n{err}")
                     continue
                 all_data.append(data)
+                if cat == "character" and "character" in data:
+                    char_name = data["character"].get("name", "未命名角色")
+                elif cat == "weapon" and "weapon" in data:
+                    weapon_name = data["weapon"].get("name", "未命名武器")
+                elif cat == "echo_set" and "echo_set" in data:
+                    es = data["echo_set"]
+                    ename = es.get("name", "未命名套装")
+                    has_fb = bool(es.get("first_echo_bonus", {}).get("effects") or
+                                  es.get("first_echo_bonus", {}).get("indep_zones"))
+                    echo_names.append((ename, has_fb))
+                elif cat == "character_buff" and "character_buff" in data:
+                    buff_names.append(data["character_buff"].get("name", "未命名增益"))
 
         if not all_data:
             return
 
-        # 合并为一个预设数据
+        # ── 配置对话框 ──
+        dlg = QDialog(self)
+        dlg.setWindowTitle("配置预设应用")
+        dlg.setMinimumWidth(420)
+        layout = QVBoxLayout(dlg)
+        layout.setSpacing(16)
+        layout.setContentsMargins(20, 20, 20, 20)
+
+        form = QFormLayout()
+        form.setSpacing(10)
+
+        chain_spin = None
+        refine_spin = None
+        echo_combo = None
+
+        if char_name:
+            chain_spin = QSpinBox()
+            chain_spin.setRange(0, 6)
+            chain_spin.setValue(6)
+            chain_spin.setSuffix(" 链")
+            chain_spin.setToolTip("0=不开启任何共鸣链，N=开启1~N链")
+            form.addRow(f"共鸣链 ({char_name}):", chain_spin)
+
+        if weapon_name:
+            refine_spin = QSpinBox()
+            refine_spin.setRange(1, 5)
+            refine_spin.setValue(1)
+            refine_spin.setSuffix(" 阶")
+            refine_spin.setToolTip("选择使用哪一阶的武器精炼数据")
+            form.addRow(f"武器等阶 ({weapon_name}):", refine_spin)
+
+        if len(echo_names) > 1:
+            echo_combo = QComboBox()
+            for ename, has_fb in echo_names:
+                suffix = " (有效果)" if has_fb else " (无效果)"
+                echo_combo.addItem(ename + suffix)
+            echo_combo.setToolTip("只有被选中的声骸套装的首位声骸增益会生效")
+            form.addRow("首位声骸增益:", echo_combo)
+
+        layout.addLayout(form)
+
+        # 角色增益提示
+        if buff_names:
+            buff_label = QLabel(f"角色增益: {', '.join(buff_names)} (共 {len(buff_names)} 个)")
+            buff_label.setStyleSheet("color: #888; font-size: 12px;")
+            buff_label.setWordWrap(True)
+            layout.addWidget(buff_label)
+
+        # 说明文字
+        hint = QLabel("共鸣链：N 链 = 开启 1~N 链效果\n"
+                      "武器等阶：仅使用所选等阶的数据\n"
+                      "首位声骸增益：仅选中套装的增益生效（首位只能有一个声骸）")
+        hint.setStyleSheet("color: #888; font-size: 12px;")
+        hint.setWordWrap(True)
+        layout.addWidget(hint)
+
+        # 按钮
+        btns = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        btns.accepted.connect(dlg.accept)
+        btns.rejected.connect(dlg.reject)
+        layout.addWidget(btns)
+
+        if dlg.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        # ── 合并为一个预设数据 ──
         merged = {"version": 1, "type": "preset", "name": "合并预设"}
         for d in all_data:
-            for key in ["character", "weapon", "echo_set"]:
+            for key in ["character", "weapon", "echo_set", "character_buff"]:
                 if key in d and d[key]:
                     merged[key] = d[key]
 
-        # 确认
-        parts = []
-        for cat in ["character", "weapon", "echo_set"]:
-            n = len(self._selected.get(cat, []))
-            if n:
-                parts.append(f"{n} 个{_CATEGORY_LABELS[cat]}")
+        # ── 根据用户选择过滤数据 ──
 
-        msg = (f"将应用以下预设到当前计算器：\n\n"
-               f"  {'  '.join(parts)}\n\n"
-               "预设数据将追加到现有数据中（不会清空已有数据）。\n是否继续？")
-        reply = QMessageBox.question(
-            self, "确认应用", msg,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.Yes)
-        if reply != QMessageBox.StandardButton.Yes:
-            return
+        # 共鸣链：只保留 1~N 链（数组索引 0~N-1 对应 1~N 链）
+        if chain_spin and "character" in merged:
+            n_chain = chain_spin.value()
+            chains = merged["character"].get("resonance_chain", [])
+            if n_chain == 0:
+                merged["character"]["resonance_chain"] = []
+            else:
+                merged["character"]["resonance_chain"] = chains[:n_chain]
+
+        # 武器等阶：仅保留选中等阶的数据
+        if refine_spin and "weapon" in merged:
+            n_ref = refine_spin.value()
+            refs = merged["weapon"].get("refinement", [])
+            if 0 < n_ref <= len(refs):
+                merged["weapon"]["refinement"] = [refs[n_ref - 1]]
+            else:
+                merged["weapon"]["refinement"] = []
+
+        # 首位声骸增益：仅保留选中的那个
+        if echo_combo and "echo_set" in merged:
+            sel_idx = echo_combo.currentIndex()
+            # 只有选中的 echo set 保留 first_echo_bonus
+            # 注意：merged 可能把多个 echo_set 合并了（后面的覆盖前面的）
+            # 实际场景中只有一个 echo_set，但用户可能选了多个
+            # 这里我们保留 stage 效果，但 first_echo_bonus 只在选中的那一个上生效
+            # 由于 merged 结构直接覆盖，我们需要从 all_data 中找对应 echo_set
+            echo_idx = 0
+            for d in all_data:
+                if "echo_set" in d and d["echo_set"]:
+                    if echo_idx == sel_idx:
+                        merged["echo_set"] = d["echo_set"]  # 保留完整数据（含 first_echo_bonus）
+                        break
+                    echo_idx += 1
+            else:
+                # 如果没找到选中的（理论上不会），移除 first_echo_bonus
+                if "echo_set" in merged:
+                    merged["echo_set"].pop("first_echo_bonus", None)
 
         try:
             PresetManager.apply_preset(merged, self._main_screen)
@@ -634,9 +784,7 @@ class PresetLoaderDialog(QDialog):
 
         QMessageBox.information(
             self, "应用成功",
-            "预设已成功应用。\n\n"
-            "共鸣链/精炼/套装的所有阶段效果均已添加，\n"
-            "标记为「默认隐藏」的效果已在隐藏状态中。")
+            "预设已成功应用。")
         self.accept()
 
     # ── 其他 ──

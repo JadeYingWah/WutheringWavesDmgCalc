@@ -300,11 +300,14 @@ class IndepZonePage(QWidget):
         ]
 
     def apply_data(self, data):
-        # 清除旧组
+        # 清除旧组（先隐藏再标记删除）
         while self._groups:
             gd = self._groups.pop()
-            self._groups_layout.removeWidget(gd["frame"])
-            gd["frame"].deleteLater()
+            frame = gd["frame"]
+            self._groups_layout.removeWidget(frame)
+            frame.hide()
+            frame.setParent(None)
+            frame.deleteLater()
         # 恢复（兼容旧格式：2 元素和 3 元素 tuple）
         for g in (data or []):
             values = []

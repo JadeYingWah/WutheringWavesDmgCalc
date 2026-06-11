@@ -568,7 +568,7 @@ def build_stylesheet(theme):
     QPushButton#presetSaveBtn:hover {{ background-color: {c["btn_hover"]}; }}
     QDialog QPushButton#presetSaveBtn {{
         background-color: {c["btn_bg"]}; color: white; border: none;
-        padding: 10px 40px; font-size: 14px; font-weight: 600; border-radius: 8px;
+        padding: 8px 24px; font-size: 14px; font-weight: 600; border-radius: 8px;
     }}
     QDialog QPushButton#presetSaveBtn:hover {{ background-color: {c["btn_hover"]}; }}
     QPushButton#presetEntryCard {{

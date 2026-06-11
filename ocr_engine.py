@@ -921,6 +921,7 @@ def _parse_dmg_mult_ocr_results(ocr_results):
             results.append({
                 "label": label,
                 "skill": resolved_skill,
+                "category": current_skill if current_skill in _SKILL_CATEGORIES else "",
                 "basis": basis,
                 "base_mult": hit["mult"],
                 "mult_increase": 0.0,

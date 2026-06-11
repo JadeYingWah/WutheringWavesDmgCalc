@@ -472,17 +472,26 @@ class SummaryBasePage(QWidget):
     def _clear_content(self):
         while self._content_layout.count():
             item = self._content_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
-            elif item.layout():
-                self._clear_layout(item.layout())
+            w = item.widget()
+            if w is not None:
+                w.hide()
+                w.setParent(None)
+                w.deleteLater()
+            elif item.layout() is not None:
+                lyt = item.layout()
+                self._clear_layout(lyt)
+                lyt.setParent(None)
+                lyt.deleteLater()
 
     def _clear_layout(self, layout):
         while layout.count():
             item = layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
-            elif item.layout():
+            w = item.widget()
+            if w is not None:
+                w.hide()
+                w.setParent(None)
+                w.deleteLater()
+            elif item.layout() is not None:
                 self._clear_layout(item.layout())
 
 

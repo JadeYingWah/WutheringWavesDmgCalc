@@ -115,6 +115,7 @@ WEAPON_RESONANCE_ATTRS = [
     "治疗效果加成", "共鸣效率加成",
     "声骸技能伤害加成", "声骸技能伤害加深",
     "光噪加深", "风蚀加深", "虚湮加深", "聚爆加深", "霜渐加深", "电磁加深",
+    "倍率增加", "倍率提升",
 ]
 
 # 武器附加属性类型（角色与武器页使用）
@@ -2102,9 +2103,11 @@ class DamageMultConfirmDialog(QDialog):
         body = QHBoxLayout()
         body.setSpacing(16)
 
-        # === 左侧：QTableWidget + 固定列宽（列宽=框宽） ===
-        COL_W = [260, 120, 120, 120, 120, 120]  # 名称, 基础数值, 倍率, 技能, 元素, 效应
-        headers = ["名称", "基础数值", "基础倍率(%)", "技能类型", "元素", "效应"]
+        # === 左侧：QTableWidget + 比例列宽 ===
+        # 列: 名称 | 分类 | 基础数值 | 基础倍率(%) | 技能类型 | 元素 | 效应
+        COL_W = [260, 100, 100, 110, 110, 90, 100]
+        headers = ["名称", "分类", "基础数值", "基础倍率(%)", "技能类型", "元素", "效应"]
+        COL_RATIOS = [3.5, 1.2, 1.0, 1.2, 1.3, 1.0, 1.2]
 
         table = QTableWidget()
         table.setColumnCount(len(headers))
@@ -2114,9 +2117,6 @@ class DamageMultConfirmDialog(QDialog):
         table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         table.setShowGrid(False)
         table.verticalHeader().setDefaultSectionSize(38)
-
-        # 全列按比例自适应（10 分制：名称 5，其余各 1）
-        COL_RATIOS = [5, 1, 1, 1, 1, 1]  # 名称:基础数值:倍率:技能:元素:效应
         hh = table.horizontalHeader()
         hh.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
 
@@ -2183,18 +2183,34 @@ class DamageMultConfirmDialog(QDialog):
             table.setCellWidget(row, 0, le)
             widgets.append(le)
 
+            # 分类
+            cat_cb = NarrowComboBox()
+            cat_cb.addItems(DAMAGE_CATEGORIES)
+            cat_val = d.get("category", "")
+            if cat_val and cat_val in DAMAGE_CATEGORIES:
+                cat_cb.setCurrentText(cat_val)
+            cat_cb.setFixedWidth(COL_W[1])
+            cat_cb.setStyleSheet(
+                f"QComboBox {{ {narrow_style} }} QComboBox:focus {{ {widget_focus} }}"
+                "QComboBox::drop-down { border: none; width: 10px; }"
+                f"QComboBox QAbstractItemView {{ {dropdown_style} }}"
+            )
+            cat_cb.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+            table.setCellWidget(row, 1, cat_cb)
+            widgets.append(cat_cb)
+
             # 基础数值
             cb1 = NarrowComboBox()
             cb1.addItems(["攻击力", "生命值", "防御力"])
             cb1.setCurrentText(d.get("basis", "攻击力"))
-            cb1.setFixedWidth(COL_W[1])
+            cb1.setFixedWidth(COL_W[2])
             cb1.setStyleSheet(
                 f"QComboBox {{ {narrow_style} }} QComboBox:focus {{ {widget_focus} }}"
                 "QComboBox::drop-down { border: none; width: 10px; }"
                 f"QComboBox QAbstractItemView {{ {dropdown_style} }}"
             )
             cb1.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
-            table.setCellWidget(row, 1, cb1)
+            table.setCellWidget(row, 2, cb1)
             widgets.append(cb1)
 
             # 基础倍率
@@ -2203,7 +2219,7 @@ class DamageMultConfirmDialog(QDialog):
             sp.setDecimals(4)
             sp.setValue(d.get("base_mult", 0.0))
             sp.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            sp.setFixedWidth(COL_W[2])
+            sp.setFixedWidth(COL_W[3])
             sp.setStyleSheet(
                 f"QDoubleSpinBox {{ {narrow_style} }} QDoubleSpinBox:focus {{ {widget_focus} }}"
                 "QDoubleSpinBox::up-button, QDoubleSpinBox::down-button"
@@ -2211,7 +2227,7 @@ class DamageMultConfirmDialog(QDialog):
                 "QDoubleSpinBox::up-arrow, QDoubleSpinBox::down-arrow"
                 " { image: none; border: none; width: 0; height: 0; }"
             )
-            table.setCellWidget(row, 2, sp)
+            table.setCellWidget(row, 3, sp)
             widgets.append(sp)
 
             # 技能类型
@@ -2222,14 +2238,14 @@ class DamageMultConfirmDialog(QDialog):
                 cb3.setCurrentText(sk)
             elif sk:
                 cb3.setCurrentText("普攻")
-            cb3.setFixedWidth(COL_W[3])
+            cb3.setFixedWidth(COL_W[4])
             cb3.setStyleSheet(
                 f"QComboBox {{ {narrow_style} }} QComboBox:focus {{ {widget_focus} }}"
                 "QComboBox::drop-down { border: none; width: 10px; }"
                 f"QComboBox QAbstractItemView {{ {dropdown_style} }}"
             )
             cb3.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
-            table.setCellWidget(row, 3, cb3)
+            table.setCellWidget(row, 4, cb3)
             widgets.append(cb3)
 
             # 元素
@@ -2238,14 +2254,14 @@ class DamageMultConfirmDialog(QDialog):
             el = d.get("element")
             if el and el in ELEMENTS:
                 cb4.setCurrentText(el)
-            cb4.setFixedWidth(COL_W[4])
+            cb4.setFixedWidth(COL_W[5])
             cb4.setStyleSheet(
                 f"QComboBox {{ {narrow_style} }} QComboBox:focus {{ {widget_focus} }}"
                 "QComboBox::drop-down { border: none; width: 10px; }"
                 f"QComboBox QAbstractItemView {{ {dropdown_style} }}"
             )
             cb4.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
-            table.setCellWidget(row, 4, cb4)
+            table.setCellWidget(row, 5, cb4)
             widgets.append(cb4)
 
             # 效应
@@ -2254,14 +2270,14 @@ class DamageMultConfirmDialog(QDialog):
             ef = d.get("effect")
             if ef and ef in EFFECTS:
                 cb5.setCurrentText(ef)
-            cb5.setFixedWidth(COL_W[5])
+            cb5.setFixedWidth(COL_W[6])
             cb5.setStyleSheet(
                 f"QComboBox {{ {narrow_style} }} QComboBox:focus {{ {widget_focus} }}"
                 "QComboBox::drop-down { border: none; width: 10px; }"
                 f"QComboBox QAbstractItemView {{ {dropdown_style} }}"
             )
             cb5.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
-            table.setCellWidget(row, 5, cb5)
+            table.setCellWidget(row, 6, cb5)
             widgets.append(cb5)
 
             self._row_widgets.append(widgets)
@@ -2322,8 +2338,9 @@ class DamageMultConfirmDialog(QDialog):
         result = []
         for row, widgets in enumerate(self._row_widgets):
             item = dict(self._data[row])
-            label_edit, basis_cb, mult_sp, skill_cb, elem_cb, effect_cb = widgets
+            label_edit, cat_cb, basis_cb, mult_sp, skill_cb, elem_cb, effect_cb = widgets
             item["label"] = label_edit.text().strip() or item.get("label", "")
+            item["category"] = cat_cb.currentText()
             item["basis"] = basis_cb.currentText()
             item["base_mult"] = mult_sp.value()
             item["skill"] = skill_cb.currentText()
@@ -4167,6 +4184,7 @@ ELEMENTS = ["(无)", "冷凝", "热熔", "气动", "导电", "衍射", "湮灭"]
 SKILL_TYPES = ["(无)", "普攻", "重击", "共鸣技能", "共鸣解放", "变奏技能", "声骸技能"]
 EFFECTS = ["(无)", "光噪", "风蚀", "虚湮", "聚爆", "霜渐", "电磁"]
 EFFECT_TYPES = ["常驻", "触发"]
+DAMAGE_CATEGORIES = ["常态攻击", "共鸣技能", "共鸣回路", "共鸣解放", "变奏技能"]
 
 ELEMENT_NAMES_SET = {"冷凝", "热熔", "气动", "导电", "衍射", "湮灭"}
 SKILL_TYPE_NAMES_SET = {"普攻", "重击", "共鸣技能", "共鸣解放", "变奏技能", "声骸技能"}
@@ -4255,16 +4273,26 @@ class ResonanceBuffPage(QWidget):
             self._refresh_cards()
 
     def _refresh_cards(self):
+        # 立即隐藏并清理旧卡片（deleteLater 是异步的，必须先 hide 避免重叠）
         while self._cards_layout.count():
             child = self._cards_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-            elif child.layout():
+            w = child.widget()
+            if w is not None:
+                w.hide()
+                w.setParent(None)
+                w.deleteLater()
+            elif child.layout() is not None:
                 # 清理 QHBoxLayout 行
-                while child.layout().count():
-                    sub = child.layout().takeAt(0)
-                    if sub.widget():
-                        sub.widget().deleteLater()
+                row_layout = child.layout()
+                while row_layout.count():
+                    sub = row_layout.takeAt(0)
+                    sw = sub.widget()
+                    if sw is not None:
+                        sw.hide()
+                        sw.setParent(None)
+                        sw.deleteLater()
+                row_layout.setParent(None)
+                row_layout.deleteLater()
         self._cards.clear()
 
         cols = 2
@@ -4419,7 +4447,8 @@ class ResonanceBuffPage(QWidget):
             seq_text = f"共鸣链{chain_num}关联{idx}"
             kw_page.add_effect_with_seq(
                 eff["name"], eff["value"], eff.get("type", "常驻"),
-                eff.get("source", "共鸣链效果"), eff.get("sub_name", ""), "",
+                eff.get("source", "共鸣链效果"), eff.get("sub_name", ""),
+                eff.get("keywords", ""),
                 seq_text)
 
         # 触发下游重算（综合填写→数值总结→计算结果→结果列表）
@@ -5301,7 +5330,17 @@ class ResonanceChainEditDialog(QDialog):
     def _build_general_tab(self):
         tab = QWidget()
         tab_layout = QVBoxLayout(tab)
-        tab_layout.setContentsMargins(0, 0, 0, 0)
+        tab_layout.setContentsMargins(16, 16, 16, 16)
+
+        # 主标题 + 副标题
+        title = QLabel("通用增益")
+        title.setObjectName("sectionTitle")
+        tab_layout.addWidget(title)
+
+        desc = QLabel("管理共鸣链的常驻效果和触发效果，并添加独立乘区组")
+        desc.setObjectName("labelSecondary")
+        desc.setWordWrap(True)
+        tab_layout.addWidget(desc)
 
         # 滚动区域
         scroll = QScrollArea()
@@ -5347,19 +5386,21 @@ class ResonanceChainEditDialog(QDialog):
 
         self._perm_table = QTableWidget()
         self._perm_table.setObjectName("attrTable")
-        self._perm_table.setColumnCount(7)
-        self._perm_table.setHorizontalHeaderLabels(["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"])
+        self._perm_table.setColumnCount(8)
+        self._perm_table.setHorizontalHeaderLabels(
+            ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
         self._perm_table.verticalHeader().setVisible(False)
         perm_hdr = self._perm_table.horizontalHeader()
         perm_hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        for i in range(1, 7):
+        for i in range(1, 8):
             perm_hdr.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
         perm_hdr.resizeSection(1, 140)  # 副名称
         perm_hdr.resizeSection(2, 120)  # 序列号
         perm_hdr.resizeSection(3, 140)  # 数值
         perm_hdr.resizeSection(4, 70)   # 取值
         perm_hdr.resizeSection(5, 100)  # 来源
-        perm_hdr.resizeSection(6, 250)  # 操作
+        perm_hdr.resizeSection(6, 120)  # 关键词关联
+        perm_hdr.resizeSection(7, 100)  # 操作
         perm_layout.addWidget(self._perm_table)
         layout.addWidget(perm_group)
 
@@ -5397,21 +5438,41 @@ class ResonanceChainEditDialog(QDialog):
 
         self._trig_table = QTableWidget()
         self._trig_table.setObjectName("attrTable")
-        self._trig_table.setColumnCount(7)
-        self._trig_table.setHorizontalHeaderLabels(["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"])
+        self._trig_table.setColumnCount(8)
+        self._trig_table.setHorizontalHeaderLabels(
+            ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
         self._trig_table.verticalHeader().setVisible(False)
         trig_hdr = self._trig_table.horizontalHeader()
         trig_hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        for i in range(1, 7):
+        for i in range(1, 8):
             trig_hdr.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
         trig_hdr.resizeSection(1, 140)  # 副名称
         trig_hdr.resizeSection(2, 120)  # 序列号
         trig_hdr.resizeSection(3, 140)  # 数值
         trig_hdr.resizeSection(4, 70)   # 取值
         trig_hdr.resizeSection(5, 100)  # 来源
-        trig_hdr.resizeSection(6, 250)  # 操作
+        trig_hdr.resizeSection(6, 120)  # 关键词关联
+        trig_hdr.resizeSection(7, 100)  # 操作
         trig_layout.addWidget(self._trig_table)
         layout.addWidget(trig_group)
+
+        # ── 独立乘区组 ──
+        iz_label = QLabel("独立乘区组")
+        iz_label.setObjectName("labelSecondary")
+        iz_label.setStyleSheet("font-size: 13px; font-weight: 600; margin-top: 8px;")
+        layout.addWidget(iz_label)
+
+        self._indep_container = QVBoxLayout()
+        self._indep_container.setSpacing(6)
+        layout.addLayout(self._indep_container)
+
+        self._indep_groups = []
+
+        add_iz_btn = QPushButton("+ 添加独立乘区组")
+        add_iz_btn.setObjectName("addButton")
+        add_iz_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        add_iz_btn.clicked.connect(self._add_indep_group)
+        layout.addWidget(add_iz_btn)
 
         layout.addStretch()
 
@@ -5467,19 +5528,21 @@ class ResonanceChainEditDialog(QDialog):
 
         self._spec_table = QTableWidget()
         self._spec_table.setObjectName("attrTable")
-        self._spec_table.setColumnCount(7)
-        self._spec_table.setHorizontalHeaderLabels(["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"])
+        self._spec_table.setColumnCount(8)
+        self._spec_table.setHorizontalHeaderLabels(
+            ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
         self._spec_table.verticalHeader().setVisible(False)
         spec_hdr = self._spec_table.horizontalHeader()
         spec_hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        for i in range(1, 7):
+        for i in range(1, 8):
             spec_hdr.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
         spec_hdr.resizeSection(1, 140)   # 副名称
         spec_hdr.resizeSection(2, 120)   # 序列号
         spec_hdr.resizeSection(3, 140)   # 数值
         spec_hdr.resizeSection(4, 70)    # 取值
         spec_hdr.resizeSection(5, 100)   # 来源
-        spec_hdr.resizeSection(6, 250)   # 操作
+        spec_hdr.resizeSection(6, 120)   # 关键词关联
+        spec_hdr.resizeSection(7, 100)   # 操作
         specific_layout.addWidget(self._spec_table)
         layout.addWidget(specific_group)
 
@@ -5515,7 +5578,7 @@ class ResonanceChainEditDialog(QDialog):
         self._spec_value.setValue(0)
         self._debounced_sync()
 
-    def _add_table_row(self, table, name, value, source, eff_type, sub_name_text=""):
+    def _add_table_row(self, table, name, value, source, eff_type, sub_name_text="", keywords=""):
         row_idx = table.rowCount()
         table.insertRow(row_idx)
         table.setRowHeight(row_idx, 42)
@@ -5559,6 +5622,14 @@ class ResonanceChainEditDialog(QDialog):
         source_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         table.setCellWidget(row_idx, 5, source_lbl)
 
+        # 关键词关联按钮
+        kw_btn = QPushButton(keywords if keywords else "点击编辑")
+        kw_btn.setObjectName("itemLockBtn")
+        kw_btn.setFixedSize(110, 35)
+        kw_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        kw_btn.clicked.connect(lambda _, r=row_idx, t=table: self._edit_chain_keywords(r, t))
+        table.setCellWidget(row_idx, 6, kw_btn)
+
         ops = QWidget()
         ops_layout = QHBoxLayout(ops)
         ops_layout.setContentsMargins(2, 0, 2, 0)
@@ -5571,15 +5642,98 @@ class ResonanceChainEditDialog(QDialog):
         def _del_this():
             sender = self.sender()
             for r in range(table.rowCount()):
-                ops = table.cellWidget(r, 6)
-                if ops and sender in ops.findChildren(QPushButton):
+                ops_w = table.cellWidget(r, 7)
+                if ops_w and sender in ops_w.findChildren(QPushButton):
                     table.removeRow(r)
                     self._debounced_sync()
                     return
         del_btn.clicked.connect(_del_this)
         ops_layout.addWidget(del_btn)
 
-        table.setCellWidget(row_idx, 6, ops)
+        table.setCellWidget(row_idx, 7, ops)
+
+    def _edit_chain_keywords(self, row_idx, table):
+        """编辑共鸣链效果的关键词关联"""
+        kw_btn = table.cellWidget(row_idx, 6)
+        if not kw_btn:
+            return
+        current_kw = kw_btn.text() if kw_btn.text() != "点击编辑" else ""
+        current_list = [k.strip() for k in current_kw.split(",") if k.strip()] if current_kw else []
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle("编辑关键词关联")
+        dlg.setMinimumSize(400, 350)
+        dlg.resize(450, 400)
+
+        dlg_layout = QVBoxLayout(dlg)
+        dlg_layout.setSpacing(10)
+        dlg_layout.setContentsMargins(12, 12, 12, 12)
+
+        kw_title = QLabel("关键词关联")
+        kw_title.setObjectName("sectionTitle")
+        dlg_layout.addWidget(kw_title)
+
+        kw_desc = QLabel("输入关键词后点击添加，留空则增益全部卡片")
+        kw_desc.setObjectName("labelSecondary")
+        kw_desc.setWordWrap(True)
+        dlg_layout.addWidget(kw_desc)
+
+        input_row = QHBoxLayout()
+        kw_input = QLineEdit()
+        kw_input.setPlaceholderText("输入关键词...")
+        kw_input.setObjectName("nameEdit")
+        input_row.addWidget(kw_input, stretch=1)
+
+        add_kw_btn = QPushButton("添加")
+        add_kw_btn.setObjectName("addButton")
+        add_kw_btn.setFixedWidth(50)
+        add_kw_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        input_row.addWidget(add_kw_btn)
+        dlg_layout.addLayout(input_row)
+
+        kw_list = QListWidget()
+        kw_list.setObjectName("attrList")
+        for kw in current_list:
+            kw_list.addItem(kw)
+        dlg_layout.addWidget(kw_list, stretch=1)
+
+        del_kw_btn = QPushButton("删除选中")
+        del_kw_btn.setObjectName("itemDeleteBtn")
+        del_kw_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        dlg_layout.addWidget(del_kw_btn)
+
+        def add_keyword():
+            text = kw_input.text().strip()
+            if text and text not in [kw_list.item(i).text() for i in range(kw_list.count())]:
+                kw_list.addItem(text)
+                kw_input.clear()
+
+        add_kw_btn.clicked.connect(add_keyword)
+        kw_input.returnPressed.connect(add_keyword)
+
+        def del_keyword():
+            for item in reversed(kw_list.selectedItems()):
+                kw_list.takeItem(kw_list.row(item))
+
+        del_kw_btn.clicked.connect(del_keyword)
+
+        def on_ok():
+            keywords = ", ".join(kw_list.item(i).text() for i in range(kw_list.count()))
+            kw_btn.setText(keywords if keywords else "点击编辑")
+            self._debounced_sync()
+            dlg.close()
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        ok_btn = QPushButton("确定")
+        ok_btn.setObjectName("addButton")
+        ok_btn.setFixedWidth(80)
+        ok_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        ok_btn.clicked.connect(on_ok)
+        btn_row.addWidget(ok_btn)
+        dlg_layout.addLayout(btn_row)
+
+        dlg.exec()
 
     def _load_existing_data(self):
         for eff in self._item.get("effects", []):
@@ -5592,8 +5746,16 @@ class ResonanceChainEditDialog(QDialog):
                 table = self._spec_table
             self._add_table_row(table, eff.get("name", ""), eff.get("value", 0.0),
                                eff.get("source", "共鸣链效果"), eff_type,
-                               sub_name_text=eff.get("sub_name", ""))
+                               sub_name_text=eff.get("sub_name", ""),
+                               keywords=eff.get("keywords", ""))
 
+        # 加载独立乘区
+        for iz_data in self._item.get("indep_zones", []):
+            from preset_builder import _IndepZoneGroupBox
+            gb = _IndepZoneGroupBox(iz_data.get("group_name", ""), iz_data.get("values", []))
+            gb.del_group_btn.clicked.connect(lambda g=gb: self._remove_indep_group(g))
+            self._indep_container.addWidget(gb)
+            self._indep_groups.append(gb)
 
     def _debounced_sync(self):
         """防抖：300ms 内多次变更只同步一次"""
@@ -5611,20 +5773,48 @@ class ResonanceChainEditDialog(QDialog):
                 sub_name = table.cellWidget(row, 1)
                 value_spin = table.cellWidget(row, 3)
                 source_lbl = table.cellWidget(row, 5)
+                kw_btn = table.cellWidget(row, 6)
                 if name_edit and value_spin:
+                    kw_text = kw_btn.text() if kw_btn and kw_btn.text() != "点击编辑" else ""
                     effects.append({
                         "name": name_edit.text().strip(),
                         "value": value_spin.value(),
                         "type": eff_type,
                         "source": source_lbl.text() if source_lbl else "共鸣链效果",
                         "sub_name": _get_sub_name_text(sub_name),
+                        "keywords": kw_text,
                     })
         self._item["effects"] = effects
+
+        # 收集独立乘区
+        indep_zones = []
+        for gb in self._indep_groups:
+            data = gb.to_dict() if hasattr(gb, 'to_dict') else {}
+            if data.get("group_name") or data.get("values"):
+                indep_zones.append(data)
+        self._item["indep_zones"] = indep_zones
 
         # 同步效果到综合填写页和关键词关联页面
         parent_page = self.parent()
         if hasattr(parent_page, '_sync_chain_to_pages'):
             parent_page._sync_chain_to_pages(self._item)
+
+    # ── 独立乘区组管理 ──
+
+    def _add_indep_group(self):
+        from preset_builder import _IndepZoneGroupBox
+        gb = _IndepZoneGroupBox("", [])
+        gb.del_group_btn.clicked.connect(lambda: self._remove_indep_group(gb))
+        self._indep_container.addWidget(gb)
+        self._indep_groups.append(gb)
+
+    def _remove_indep_group(self, gb):
+        if gb in self._indep_groups:
+            self._indep_groups.remove(gb)
+            self._indep_container.removeWidget(gb)
+            gb.hide()
+            gb.setParent(None)
+            gb.deleteLater()
 
 
 # ==================== 结果列表页面 ====================
@@ -5687,6 +5877,12 @@ class ResultDetailDialog(QDialog):
         self.filter_skill.setCurrentText(item["skill"] if item["skill"] else "(无)")
         self.filter_skill.currentTextChanged.connect(self._on_filter_changed)
         filter_form.addRow("技能类型:", self.filter_skill)
+
+        self.filter_category = QComboBox()
+        self.filter_category.addItems(DAMAGE_CATEGORIES)
+        self.filter_category.setCurrentText(item.get("category", "") if item.get("category", "") in DAMAGE_CATEGORIES else "常态攻击")
+        self.filter_category.currentTextChanged.connect(self._on_filter_changed)
+        filter_form.addRow("分类:", self.filter_category)
 
         self.filter_effect = QComboBox()
         self.filter_effect.addItems(EFFECTS)
@@ -5853,8 +6049,11 @@ class ResultDetailDialog(QDialog):
         """在详情弹窗中构建关键词标签（可增删），并自动关联「关键词关联」页面匹配的关键词。"""
         while self._kw_flow_layout.count():
             child = self._kw_flow_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
+            w = child.widget()
+            if w is not None:
+                w.hide()
+                w.setParent(None)
+                w.deleteLater()
         keywords = item.setdefault("keywords", [])
         # 从关键词关联页面查找匹配的关键词
         item_name = item.get("label", "")
@@ -5931,6 +6130,7 @@ class ResultDetailDialog(QDialog):
         self._item["basis"] = self.filter_basis.currentText()
         self._item["element"] = None if self.filter_element.currentText() == "(无)" else self.filter_element.currentText()
         self._item["skill"] = None if self.filter_skill.currentText() == "(无)" else self.filter_skill.currentText()
+        self._item["category"] = self.filter_category.currentText()
         self._item["effect"] = None if self.filter_effect.currentText() == "(无)" else self.filter_effect.currentText()
         items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
         self._page._recalc_one(self._item, items_data)
@@ -6281,6 +6481,35 @@ class ResultListPage(QWidget):
         toolbar.addStretch()
         layout.addLayout(toolbar)
 
+        # —— 分类筛选行 ——
+        self._category_filter = "全部"
+        cat_row = QHBoxLayout()
+        cat_row.setSpacing(4)
+        self._category_buttons = {}
+        for cat in ["全部"] + DAMAGE_CATEGORIES:
+            btn = QPushButton(cat)
+            btn.setObjectName("backButton")
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setCheckable(True)
+            if cat == "全部":
+                btn.setChecked(True)
+                btn.setStyleSheet(
+                    "QPushButton { font-size: 12px; padding: 4px 12px; "
+                    "background: rgba(80,112,232,0.3); color: #5070e8; border: 1px solid #5070e8; "
+                    "border-radius: 4px; }"
+                )
+            else:
+                btn.setStyleSheet(
+                    "QPushButton { font-size: 12px; padding: 4px 10px; "
+                    "border: 1px solid #555; border-radius: 4px; "
+                    "color: #aaa; background: transparent; }"
+                )
+            btn.clicked.connect(lambda checked, c=cat: self._on_category_changed(c))
+            cat_row.addWidget(btn)
+            self._category_buttons[cat] = btn
+        cat_row.addStretch()
+        layout.addLayout(cat_row)
+
         # —— 批量操作确认栏（选择模式下可见） ——
         self._batch_action_bar = QWidget()
         self._batch_action_bar.setVisible(False)
@@ -6566,6 +6795,7 @@ class ResultListPage(QWidget):
             "element": _norm(settings["element"]),
             "skill": _norm(settings["skill"]),
             "effect": _norm(settings["effect"]),
+            "category": settings.get("category", ""),
             "base_mult": settings["base_mult"],
             "mult_increase": settings["mult_increase"],
             "mult_boosts": list(settings["mult_boosts"]),
@@ -6577,6 +6807,27 @@ class ResultListPage(QWidget):
         self._items.append(item)
         self._refresh_cards()
 
+    # —— 分类筛选 ——
+    def _on_category_changed(self, category):
+        self._category_filter = category
+        # 更新按钮样式
+        for cat, btn in self._category_buttons.items():
+            if cat == category:
+                btn.setChecked(True)
+                btn.setStyleSheet(
+                    "QPushButton { font-size: 12px; padding: 4px 12px; "
+                    "background: rgba(80,112,232,0.3); color: #5070e8; border: 1px solid #5070e8; "
+                    "border-radius: 4px; }"
+                )
+            else:
+                btn.setChecked(False)
+                btn.setStyleSheet(
+                    "QPushButton { font-size: 12px; padding: 4px 10px; "
+                    "border: 1px solid #555; border-radius: 4px; "
+                    "color: #aaa; background: transparent; }"
+                )
+        self._refresh_cards()
+
     # —— 卡片视图 ——
     def _on_search_changed(self):
         self._refresh_cards()
@@ -6585,13 +6836,19 @@ class ResultListPage(QWidget):
         # 获取搜索文本
         search_text = self._search_input.text().strip().lower() if hasattr(self, '_search_input') else ""
 
-        # 清除旧卡片
+        # 清除旧卡片（先隐藏再标记删除，避免新旧卡片重叠）
         while self._cards_layout.count():
             child = self._cards_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-            elif child.layout():
-                self._clear_layout(child.layout())
+            w = child.widget()
+            if w is not None:
+                w.hide()
+                w.setParent(None)
+                w.deleteLater()
+            elif child.layout() is not None:
+                lyt = child.layout()
+                self._clear_layout(lyt)
+                lyt.setParent(None)
+                lyt.deleteLater()
 
         # 重置所有行列伸缩（避免旧值累积）
         for r in range(100):
@@ -6604,10 +6861,17 @@ class ResultListPage(QWidget):
         for c in range(cols):
             self._cards_layout.setColumnStretch(c, 1)
 
-        # 搜索过滤
+        # 分类筛选 + 搜索过滤
         visible_items = []
         search_text = self._search_input.text().strip().lower() if hasattr(self, '_search_input') else ""
+        cat_filter = getattr(self, '_category_filter', "全部")
         for item in self._items:
+            # 分类筛选
+            if cat_filter != "全部":
+                item_cat = item.get("category", "")
+                if item_cat != cat_filter:
+                    continue
+            # 搜索过滤（在分类筛选的基础上）
             if search_text:
                 keywords = item.get("keywords", [])
                 match_texts = [item.get("label", "").lower()] + [k.lower() for k in keywords]
@@ -6639,9 +6903,12 @@ class ResultListPage(QWidget):
             return
         while layout.count():
             child = layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-            elif child.layout():
+            w = child.widget()
+            if w is not None:
+                w.hide()
+                w.setParent(None)
+                w.deleteLater()
+            elif child.layout() is not None:
                 self._clear_layout(child.layout())
 
     def _build_card(self, idx, item):
@@ -6717,7 +6984,7 @@ class ResultListPage(QWidget):
         kw_lbl.setStyleSheet("color: #888; font-size: 11px;")
         kw_row.addWidget(kw_lbl)
         kw_flow = QWidget()
-        kw_flow.setFixedHeight(36)
+        kw_flow.setFixedHeight(46)
         kw_flow_layout = FlowLayout(kw_flow)
         kw_flow_layout.setSpacing(3)
         kw_flow_layout._center_rows = True
@@ -6995,11 +7262,14 @@ class ResultListPage(QWidget):
 
     def _build_keyword_tags(self, layout, keywords, item):
         """构建关键词标签（小型按钮 + × 删除），末尾 + 添加按钮。"""
-        # 清除旧标签
+        # 清除旧标签（先隐藏再标记删除）
         while layout.count():
             child = layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
+            w = child.widget()
+            if w is not None:
+                w.hide()
+                w.setParent(None)
+                w.deleteLater()
 
         for kw in keywords:
             tag = QWidget()
@@ -7096,6 +7366,7 @@ class ResultListPage(QWidget):
                 "id": item["id"], "label": item["label"], "locked": item["locked"],
                 "basis": item["basis"], "element": item["element"],
                 "skill": item["skill"], "effect": item["effect"],
+                "category": item.get("category", ""),
                 "base_mult": item["base_mult"], "mult_increase": item["mult_increase"],
                 "mult_boosts": item["mult_boosts"], "zones": item["zones"],
                 "timestamp": item["timestamp"],
@@ -7683,13 +7954,16 @@ class ResultPage(QWidget):
         char_name = char_name.strip()
         self._dmg_ocr_char_name = char_name
 
-        # 选择角色元素
+        # 选择角色元素（继承上次选择）
+        last_elem = getattr(self, '_dmg_ocr_char_elem', '')
+        default_elem_idx = ELEMENTS.index(last_elem) if last_elem in ELEMENTS else 0
         char_elem, ok2 = QInputDialog.getItem(
             self, "角色元素", "选择角色元素属性：",
-            ELEMENTS, 0, False
+            ELEMENTS, default_elem_idx, False
         )
         if not ok2:
             return
+        self._dmg_ocr_char_elem = char_elem
 
         # 给每条结果加上角色名前缀和元素
         for item in all_items:
@@ -7710,6 +7984,7 @@ class ResultPage(QWidget):
                     "element": item.get("element"),
                     "skill": item.get("skill"),
                     "effect": item.get("effect"),
+                    "category": item.get("category", ""),
                     "base_mult": item.get("base_mult", 100.0),
                     "mult_increase": item.get("mult_increase", 0.0),
                     "mult_boosts": item.get("mult_boosts", [0.0, 0.0, 0.0]),
@@ -7783,11 +8058,13 @@ class ResultPage(QWidget):
 
     def _rebuild_kw_tags(self):
         """重建关键词标签（每个关键词一个小标签 + × 删除按钮）"""
-        # 清除所有
+        # 清除所有（先隐藏再标记删除）
         while self._kw_flow.count():
             item = self._kw_flow.takeAt(0)
             w = item.widget()
-            if w:
+            if w is not None:
+                w.hide()
+                w.setParent(None)
                 w.deleteLater()
         # 添加关键词标签
         for kw in self._keywords:
@@ -8018,6 +8295,7 @@ class ResultPage(QWidget):
             "element": selected_element,
             "skill": selected_skill,
             "effect": selected_effect,
+            "category": "常态攻击",
             "keywords": list(self._keywords),
             "base_mult": base_m,
             "mult_increase": mult_inc,
