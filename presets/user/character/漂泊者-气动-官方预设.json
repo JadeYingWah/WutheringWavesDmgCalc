@@ -85,6 +85,18 @@
         "intro": "万象崩落于风间\n共鸣技能缥缈无相伤害倍率提升30%。\n"
       }
     ],
+    "skill_buff": {
+      "effects": [
+        {
+          "name": "攻击力加成",
+          "value": 12.0,
+          "type": "常驻",
+          "source": "技能效果",
+          "sub_name": "角色技能页面点满攻击提升12%"
+        }
+      ],
+      "indep_zones": []
+    },
     "result_list": [
       {
         "id": 1,

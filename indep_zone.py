@@ -88,7 +88,7 @@ class IndepZonePage(QWidget):
         del_group_btn = QPushButton("删除组")
         del_group_btn.setObjectName("backButton")
         del_group_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        del_group_btn.clicked.connect(lambda: self._remove_group(frame))
+        del_group_btn.clicked.connect(lambda _checked=False, f=frame: self._remove_group(f))
         top_row.addWidget(del_group_btn)
         group_layout.addLayout(top_row)
 

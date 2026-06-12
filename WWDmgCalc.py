@@ -1609,7 +1609,8 @@ class EchoCounterItem(QWidget):
 from ocr_engine import _ALL_STAT_NAMES, OCRWorker, _parse_dmg_mult_ocr_results
 
 class LoadingOverlay(QWidget):
-    """半透明遮罩 + 旋转加载动画，覆盖在父窗口中央"""
+    """半透明遮罩 + 旋转加载动画 + 取消按钮，覆盖在父窗口中央"""
+    cancel_requested = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1622,6 +1623,12 @@ class LoadingOverlay(QWidget):
         self._progress_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._progress_label.setStyleSheet("color:#fff;font-size:14px;font-weight:bold;")
         self._progress_label.hide()
+        self._cancel_btn = QPushButton("取消", self)
+        self._cancel_btn.setObjectName("itemDeleteBtn")
+        self._cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._cancel_btn.setFixedSize(70, 32)
+        self._cancel_btn.clicked.connect(self.cancel_requested.emit)
+        self._cancel_btn.hide()
         self.hide()
 
     def _rotate(self):
@@ -1636,11 +1643,14 @@ class LoadingOverlay(QWidget):
         self.show()
         self.raise_()
         self.set_progress(text)
+        self._cancel_btn.show()
+        self._cancel_btn.raise_()
 
     def hide_overlay(self):
         self._timer.stop()
         self.hide()
         self._progress_label.hide()
+        self._cancel_btn.hide()
 
     def set_progress(self, text):
         if text:
@@ -1688,6 +1698,7 @@ class LoadingOverlay(QWidget):
         cx = self.width() // 2
         cy = self.height() // 2
         self._progress_label.setGeometry(cx - 100, cy + 50, 200, 28)
+        self._cancel_btn.move(cx - 35, cy + 80)
         super().resizeEvent(event)
 
 
@@ -2380,10 +2391,11 @@ class EchoCounterPage(QWidget):
     def set_ocr_callback(self, cb):
         self._ocr_callback = cb
 
-    def set_ocr_loading_callbacks(self, show_cb, hide_cb, progress_cb=None):
+    def set_ocr_loading_callbacks(self, show_cb, hide_cb, progress_cb=None, cancel_cb=None):
         self._ocr_loading_show = show_cb
         self._ocr_loading_hide = hide_cb
         self._ocr_loading_progress = progress_cb
+        self._ocr_cancel_cb = cancel_cb
 
     def _build_ui(self):
         layout = QVBoxLayout(self)
@@ -2581,6 +2593,11 @@ class EchoCounterPage(QWidget):
     def _on_ocr_progress(self, current, total):
         if self._ocr_loading_progress:
             self._ocr_loading_progress(f"识别中 {current}/{total}...")
+
+    def abort_ocr(self):
+        """中断当前 OCR 识别"""
+        if hasattr(self, '_ocr_worker') and self._ocr_worker and self._ocr_worker.isRunning():
+            self._ocr_worker.abort()
 
     def _start_ocr(self, sources):
         """sources: list[tuple[image_source, is_qimage]]"""
@@ -5754,7 +5771,7 @@ class ResonanceChainEditDialog(QDialog):
         for iz_data in self._item.get("indep_zones", []):
             from preset_builder import _IndepZoneGroupBox
             gb = _IndepZoneGroupBox(iz_data.get("group_name", ""), iz_data.get("values", []))
-            gb.del_group_btn.clicked.connect(lambda g=gb: self._remove_indep_group(g))
+            gb.del_group_btn.clicked.connect(lambda _checked=False, g=gb: self._remove_indep_group(g))
             self._indep_container.addWidget(gb)
             self._indep_groups.append(gb)
 
@@ -5825,7 +5842,7 @@ class ResonanceChainEditDialog(QDialog):
     def _add_indep_group(self):
         from preset_builder import _IndepZoneGroupBox
         gb = _IndepZoneGroupBox("", [])
-        gb.del_group_btn.clicked.connect(lambda: self._remove_indep_group(gb))
+        gb.del_group_btn.clicked.connect(lambda _checked=False, g=gb: self._remove_indep_group(g))
         self._indep_container.addWidget(gb)
         self._indep_groups.append(gb)
 
@@ -7877,10 +7894,11 @@ class ResultPage(QWidget):
     def set_result_list_page(self, page):
         self._result_list_page = page
 
-    def set_ocr_loading_callbacks(self, show_cb, hide_cb, progress_cb=None):
+    def set_ocr_loading_callbacks(self, show_cb, hide_cb, progress_cb=None, cancel_cb=None):
         self._ocr_loading_show = show_cb
         self._ocr_loading_hide = hide_cb
         self._ocr_loading_progress = progress_cb
+        self._ocr_cancel_cb = cancel_cb
 
     # —— 伤害倍率 OCR ——
 
@@ -7904,6 +7922,11 @@ class ResultPage(QWidget):
             QMessageBox.information(self, "无截图", "剪贴板中没有图片。\n请先使用截图工具截图，再点击此按钮。")
             return
         self._start_dmg_ocr([(qimage, True)])
+
+    def abort_ocr(self):
+        """中断当前 OCR 识别"""
+        if hasattr(self, '_dmg_ocr_worker') and self._dmg_ocr_worker and self._dmg_ocr_worker.isRunning():
+            self._dmg_ocr_worker.abort()
 
     def _start_dmg_ocr(self, sources):
         self._set_dmg_ocr_buttons_enabled(False)
@@ -10137,6 +10160,10 @@ class MainScreen(QWidget):
 
         # OCR 加载遮罩
         self._ocr_overlay = LoadingOverlay(self)
+        self._ocr_overlay.cancel_requested.connect(lambda: (
+            self.page_echo_counter.abort_ocr(),
+            self.page_result.abort_ocr()
+        ))
 
     def _open_base_override(self):
         """打开基础数值调整弹窗"""
@@ -10892,6 +10919,32 @@ class DmgCalculator(QMainWindow):
                 json.dump({"auto_all_active": active}, f)
         except Exception as e:
             _logger.debug("保存 auto_all_config 失败: %s", e)
+
+    # —— 关闭确认 ——
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape and self.stack.currentWidget() == self.main_screen:
+            self.close()  # 触发 closeEvent → 弹出保存提示
+        else:
+            super().keyPressEvent(event)
+
+    def closeEvent(self, event):
+        msg = QMessageBox(self)
+        msg.setWindowTitle("退出程序")
+        msg.setText("确定要退出程序吗？\n\n退出前是否需要保存当前数据？")
+        save_btn = msg.addButton("保存并退出", QMessageBox.ButtonRole.AcceptRole)
+        discard_btn = msg.addButton("不保存", QMessageBox.ButtonRole.DestructiveRole)
+        msg.setDefaultButton(save_btn)
+        msg.setEscapeButton(None)  # 禁用 Esc 关闭弹窗
+        msg.exec()
+        clicked = msg.clickedButton()
+        if clicked == save_btn:
+            self._save_wrapper()
+            event.accept()
+        elif clicked == discard_btn:
+            event.accept()
+        else:
+            event.ignore()
 
     # —— 启动时自动激活 ——
 

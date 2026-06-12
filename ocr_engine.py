@@ -983,6 +983,11 @@ class OCRWorker(QThread):
         super().__init__()
         self.sources = sources
         self._parser = parser
+        self._abort = False
+
+    def abort(self):
+        """请求中断 OCR 识别"""
+        self._abort = True
 
     def _process_one(self, ocr, source, is_qimage):
         """处理单张图片，返回 raw OCR results。
@@ -1082,6 +1087,8 @@ class OCRWorker(QThread):
             total = len(self.sources)
             results_list = []
             for i, (source, is_qimage) in enumerate(self.sources):
+                if self._abort:
+                    break
                 try:
                     raw = self._process_one(ocr, source, is_qimage)
                     data = parse(raw)

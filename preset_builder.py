@@ -43,6 +43,19 @@ WEAPON_BONUS_TYPES = ["生命值", "攻击力", "防御力", "暴击率", "暴�
 EFFECT_TYPES = ["常驻", "触发"]
 
 
+def _fit_to_screen(window, default_w):
+    """低分辨率保护：屏幕宽度不足时自动缩小窗口。
+    2K/4K 不受影响，1080p 及以下才会缩放。"""
+    from PyQt6.QtGui import QGuiApplication
+    screen_w = QGuiApplication.primaryScreen().availableGeometry().width()
+    if screen_w < default_w:
+        scale = max(0.75, screen_w / default_w)
+        cur_min_w, cur_min_h = window.minimumWidth(), window.minimumHeight()
+        cur_w, cur_h = window.width(), window.height()
+        window.setMinimumSize(max(800, int(cur_min_w * scale)), int(cur_min_h * scale))
+        window.resize(max(800, int(cur_w * scale)), int(cur_h * scale))
+
+
 # ═══════════════════════════════════════════════════════════════
 # 适配器类 —— 将预设数据包装为主程序接口格式
 # ═══════════════════════════════════════════════════════════════
@@ -564,6 +577,7 @@ class _EffectTabDialog(QDialog):
         self.setWindowTitle(title)
         self.setMinimumSize(1100, 680)
         self.resize(1150, 720)
+        _fit_to_screen(self, 1150)
 
         QTimer.singleShot(0, lambda: self._center())
 
@@ -1076,7 +1090,7 @@ class _EffectTabDialog(QDialog):
 
     def _add_indep_group(self):
         gb = _IndepZoneGroupBox("", [])
-        gb.del_group_btn.clicked.connect(lambda: self._remove_indep_group(gb))
+        gb.del_group_btn.clicked.connect(lambda _checked=False, g=gb: self._remove_indep_group(g))
         self._indep_container.addWidget(gb)
         self._indep_groups.append(gb)
 
@@ -1162,7 +1176,7 @@ class _EffectTabDialog(QDialog):
     def set_indep_zones(self, zones):
         for iz_data in zones:
             gb = _IndepZoneGroupBox(iz_data.get("group_name", ""), iz_data.get("values", []))
-            gb.del_group_btn.clicked.connect(lambda g=gb: self._remove_indep_group(gb))
+            gb.del_group_btn.clicked.connect(lambda _checked=False, g=gb: self._remove_indep_group(g))
             self._indep_container.addWidget(gb)
             self._indep_groups.append(gb)
 
@@ -1231,6 +1245,7 @@ class _CharacterPresetWindow(QDialog):
         self.setWindowTitle("角色预设")
         self.setMinimumSize(1000, 700)
         self.resize(1050, 750)
+        _fit_to_screen(self, 1050)
 
         QTimer.singleShot(0, lambda: self._center())
 
@@ -1277,6 +1292,11 @@ class _CharacterPresetWindow(QDialog):
         self._build_chain_tab()
         self.tabs.addTab(self.tab_chain, "共鸣链")
 
+        # ── 页面3: 技能增益 ──
+        self.tab_skill_buff = QWidget()
+        self._build_skill_buff_tab()
+        self.tabs.addTab(self.tab_skill_buff, "技能增益")
+
         # ── 适配器（延迟导入避免循环依赖） ──
         from WWDmgCalc import ResultPage, ResultListPage
         self._adapter_char_base = _PresetCharBaseAdapter()
@@ -1293,7 +1313,7 @@ class _CharacterPresetWindow(QDialog):
         self._build_calc_tab()
         self.tabs.addTab(self.tab_calc, "计算结果")
 
-        # ── 页面4: 结果列表 ──
+        # ── 页面5: 结果列表 ──
         self.tab_result_list = QWidget()
         self._preset_result_list = ResultListPage()
         self._build_result_list_tab()
@@ -1384,6 +1404,30 @@ class _CharacterPresetWindow(QDialog):
             else:
                 lines.append("  独立乘区: (无)")
             lines.append("")
+
+        # 技能增益
+        lines.append("── 技能增益 ──")
+        skill_effs = (
+            self._collect_skill_table(self._skill_perm_table, "常驻")
+            + self._collect_skill_table(self._skill_trig_table, "触发")
+        )
+        if skill_effs:
+            lines.append(f"  效果 ({len(skill_effs)} 条):")
+            for eff in skill_effs:
+                lines.append(f"    {eff.get('type', '常驻')}: {eff.get('name', '')} +{eff.get('value', 0):.1f}%  (来源: {eff.get('source', '')})")
+        else:
+            lines.append("  效果: (无)")
+        skill_iz = [iz.to_dict() for iz in self._skill_indep_groups]
+        if skill_iz:
+            lines.append(f"  独立乘区 ({len(skill_iz)} 组):")
+            for iz in skill_iz:
+                lines.append(f"    组名: {iz.get('group_name', '')}")
+                for v in iz.get("values", []):
+                    hidden = " [隐藏]" if v.get("hidden", False) else ""
+                    lines.append(f"      {v.get('name', '')} = {v.get('value', 0):.1f}%{hidden}")
+        else:
+            lines.append("  独立乘区: (无)")
+        lines.append("")
         lines.append("═" * 50)
 
         dlg = QDialog(self)
@@ -1571,10 +1615,141 @@ class _CharacterPresetWindow(QDialog):
             it["name"] = f"{name}的共鸣链{i + 1}" if name else f"共鸣链{i + 1}"
         self._resonance_page._refresh_cards()
 
-    # ── 页面3: 结果列表 ──
+    # ── 技能增益页 ──
+
+    def _build_skill_buff_tab(self):
+        """技能增益页：常驻/触发效果 + 独立乘区，照搬通用增益"""
+        tab_layout = QVBoxLayout(self.tab_skill_buff)
+        tab_layout.setContentsMargins(16, 16, 16, 16)
+
+        title = QLabel("技能增益")
+        title.setObjectName("sectionTitle"); tab_layout.addWidget(title)
+        desc = QLabel("管理角色技能页的常驻效果和触发效果，并添加独立乘区组")
+        desc.setObjectName("labelSecondary"); desc.setWordWrap(True); tab_layout.addWidget(desc)
+
+        scroll = QScrollArea(); scroll.setWidgetResizable(True); scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll_widget = QWidget(); scroll_layout = QVBoxLayout(scroll_widget)
+        scroll_layout.setContentsMargins(4, 4, 4, 4); scroll_layout.setSpacing(12)
+
+        SearchCombo, WEAPON_RESONANCE_ATTRS = _get_search_combo()
+
+        # 常驻效果
+        perm_group = QGroupBox("常驻效果"); perm_group.setMinimumHeight(350)
+        perm_layout = QVBoxLayout(perm_group)
+        perm_input = QHBoxLayout()
+        self._skill_perm_combo = SearchCombo(WEAPON_RESONANCE_ATTRS); self._skill_perm_combo.lineEdit().setPlaceholderText("输入搜索...")
+        perm_input.addWidget(self._skill_perm_combo, stretch=3)
+        self._skill_perm_value = QDoubleSpinBox(); self._skill_perm_value.setRange(0, 99999); self._skill_perm_value.setDecimals(4); self._skill_perm_value.setFixedWidth(100)
+        perm_input.addWidget(self._skill_perm_value); perm_input.addWidget(QLabel("%"))
+        self._skill_perm_source = QComboBox(); self._skill_perm_source.addItems(SOURCES); self._skill_perm_source.setCurrentText("技能效果"); self._skill_perm_source.setMinimumWidth(100)
+        perm_input.addWidget(self._skill_perm_source)
+        add_perm = QPushButton("添加"); add_perm.setObjectName("addButton"); add_perm.setFixedWidth(50); add_perm.setCursor(Qt.CursorShape.PointingHandCursor)
+        add_perm.clicked.connect(lambda: self._add_skill_row("perm")); perm_input.addWidget(add_perm); perm_layout.addLayout(perm_input)
+        self._skill_perm_combo.lineEdit().returnPressed.connect(lambda: self._add_skill_row("perm"))
+        self._skill_perm_table = self._make_skill_table(show_kw=False); perm_layout.addWidget(self._skill_perm_table); scroll_layout.addWidget(perm_group)
+
+        # 触发效果
+        trig_group = QGroupBox("触发效果"); trig_group.setMinimumHeight(350)
+        trig_layout = QVBoxLayout(trig_group)
+        trig_input = QHBoxLayout()
+        self._skill_trig_combo = SearchCombo(WEAPON_RESONANCE_ATTRS); self._skill_trig_combo.lineEdit().setPlaceholderText("输入搜索...")
+        trig_input.addWidget(self._skill_trig_combo, stretch=3)
+        self._skill_trig_value = QDoubleSpinBox(); self._skill_trig_value.setRange(0, 99999); self._skill_trig_value.setDecimals(4); self._skill_trig_value.setFixedWidth(100)
+        trig_input.addWidget(self._skill_trig_value); trig_input.addWidget(QLabel("%"))
+        self._skill_trig_source = QComboBox(); self._skill_trig_source.addItems(SOURCES); self._skill_trig_source.setCurrentText("技能效果"); self._skill_trig_source.setMinimumWidth(100)
+        trig_input.addWidget(self._skill_trig_source)
+        add_trig = QPushButton("添加"); add_trig.setObjectName("addButton"); add_trig.setFixedWidth(50); add_trig.setCursor(Qt.CursorShape.PointingHandCursor)
+        add_trig.clicked.connect(lambda: self._add_skill_row("trig")); trig_input.addWidget(add_trig); trig_layout.addLayout(trig_input)
+        self._skill_trig_combo.lineEdit().returnPressed.connect(lambda: self._add_skill_row("trig"))
+        self._skill_trig_table = self._make_skill_table(show_kw=False); trig_layout.addWidget(self._skill_trig_table); scroll_layout.addWidget(trig_group)
+
+        # 独立乘区
+        iz_label = QLabel("独立乘区组"); iz_label.setObjectName("labelSecondary")
+        iz_label.setStyleSheet("font-size: 13px; font-weight: 600; margin-top: 8px;"); scroll_layout.addWidget(iz_label)
+        self._skill_indep_container = QVBoxLayout(); self._skill_indep_container.setSpacing(6); scroll_layout.addLayout(self._skill_indep_container)
+        self._skill_indep_groups = []
+        add_iz_btn = QPushButton("+ 添加独立乘区组"); add_iz_btn.setObjectName("addButton"); add_iz_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        add_iz_btn.clicked.connect(self._add_skill_indep_group); scroll_layout.addWidget(add_iz_btn)
+        scroll_layout.addStretch(); scroll.setWidget(scroll_widget); tab_layout.addWidget(scroll)
+
+        self._skill_perm_counter = 0; self._skill_trig_counter = 0
+
+    def _make_skill_table(self, show_kw=True):
+        cols = 8 if show_kw else 7
+        headers = ["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"] if not show_kw else ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"]
+        t = QTableWidget(); t.setObjectName("attrTable"); t.setColumnCount(cols)
+        t.setHorizontalHeaderLabels(headers); t.verticalHeader().setVisible(False)
+        h = t.horizontalHeader(); h.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        for i in range(1, cols): h.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
+        if show_kw:
+            h.resizeSection(1, 130); h.resizeSection(2, 120); h.resizeSection(3, 140)
+            h.resizeSection(4, 70); h.resizeSection(5, 100); h.resizeSection(6, 120); h.resizeSection(7, 100)
+        else:
+            h.resizeSection(1, 130); h.resizeSection(2, 120); h.resizeSection(3, 140)
+            h.resizeSection(4, 70); h.resizeSection(5, 100); h.resizeSection(6, 100)
+        return t
+
+    def _add_skill_row(self, kind):
+        if kind == "perm":
+            combo, val, src, etype, prefix, table = self._skill_perm_combo, self._skill_perm_value, self._skill_perm_source, "常驻", "常驻", self._skill_perm_table
+            self._skill_perm_counter += 1
+        else:
+            combo, val, src, etype, prefix, table = self._skill_trig_combo, self._skill_trig_value, self._skill_trig_source, "触发", "触发", self._skill_trig_table
+            self._skill_trig_counter += 1
+        name = combo.currentText().strip()
+        if not name: return
+        self._add_skill_table_row(table, name, val.value(), src.currentText(), etype, prefix)
+        combo.lineEdit().clear(); val.setValue(0)
+
+    def _add_skill_table_row(self, table, name, value, source, eff_type, seq_prefix, sub_name_text="", keywords="", show_kw=True):
+        from WWDmgCalc import _make_sub_name_cell
+        ri = table.rowCount(); table.insertRow(ri); table.setRowHeight(ri, 42)
+        ne = QLineEdit(name); ne.setObjectName("nameEdit"); ne.setAlignment(Qt.AlignmentFlag.AlignCenter); table.setCellWidget(ri, 0, ne)
+        sn = QLineEdit(sub_name_text); sn.setObjectName("nameEdit"); sn.setAlignment(Qt.AlignmentFlag.AlignCenter); sn.setPlaceholderText("（备注）")
+        table.setCellWidget(ri, 1, _make_sub_name_cell(sn, lambda: name))
+        seq = QLabel(f"{seq_prefix}{ri + 1}"); seq.setObjectName("seqLabel"); seq.setAlignment(Qt.AlignmentFlag.AlignCenter); table.setCellWidget(ri, 2, seq)
+        vs = QDoubleSpinBox(); vs.setObjectName("itemValueSpin"); vs.setRange(0, 99999); vs.setDecimals(4); vs.setValue(value); vs.setFixedWidth(120); vs.setAlignment(Qt.AlignmentFlag.AlignCenter); table.setCellWidget(ri, 3, vs)
+        ul = QLabel("百分比"); ul.setObjectName("unitLabel"); ul.setAlignment(Qt.AlignmentFlag.AlignCenter); table.setCellWidget(ri, 4, ul)
+        sl = QLabel(source); sl.setObjectName("seqLabel"); sl.setAlignment(Qt.AlignmentFlag.AlignCenter); table.setCellWidget(ri, 5, sl)
+        ops_col = 7 if show_kw else 6
+        ops = QWidget(); ol = QHBoxLayout(ops); ol.setContentsMargins(2, 0, 2, 0); ol.setSpacing(3)
+        db = QPushButton("删除"); db.setObjectName("itemDeleteBtn"); db.setFixedSize(55, 28); db.setCursor(Qt.CursorShape.PointingHandCursor)
+        def _del():
+            s = self.sender()
+            for r in range(table.rowCount()):
+                ow = table.cellWidget(r, ops_col)
+                if ow and s in ow.findChildren(QPushButton): table.removeRow(r); return
+        db.clicked.connect(_del); ol.addWidget(db); table.setCellWidget(ri, ops_col, ops)
+
+    def _collect_skill_table(self, table, eff_type):
+        from WWDmgCalc import _get_sub_name_text
+        result = []
+        for row in range(table.rowCount()):
+            ne = table.cellWidget(row, 0); sn = table.cellWidget(row, 1)
+            vs = table.cellWidget(row, 3); sl = table.cellWidget(row, 5)
+            if ne and vs:
+                result.append({
+                    "name": ne.text().strip(), "value": vs.value(), "type": eff_type,
+                    "source": sl.text() if sl else "技能效果",
+                    "sub_name": _get_sub_name_text(sn),
+                })
+        return result
+
+    def _add_skill_indep_group(self):
+        gb = _IndepZoneGroupBox("", [])
+        gb.del_group_btn.clicked.connect(lambda _checked=False, g=gb: self._remove_skill_indep_group(g))
+        self._skill_indep_container.addWidget(gb); self._skill_indep_groups.append(gb)
+
+    def _remove_skill_indep_group(self, gb):
+        if gb in self._skill_indep_groups:
+            self._skill_indep_groups.remove(gb)
+            self._skill_indep_container.removeWidget(gb)
+            gb.hide(); gb.setParent(None); gb.deleteLater()
+
+    # ── 页面4: 计算结果 ──
 
     def _build_calc_tab(self):
-        """页面3: 计算结果（嵌入主程序 ResultPage）"""
+        """页面4: 计算结果（嵌入主程序 ResultPage）"""
         layout = QVBoxLayout(self.tab_calc)
         layout.setContentsMargins(0, 0, 0, 0)
         scroll = QScrollArea()
@@ -1584,7 +1759,7 @@ class _CharacterPresetWindow(QDialog):
         layout.addWidget(scroll)
 
     def _build_result_list_tab(self):
-        """页面4: 结果列表（嵌入主程序 ResultListPage）"""
+        """页面5: 结果列表（嵌入主程序 ResultListPage）"""
         layout = QVBoxLayout(self.tab_result_list)
         layout.setContentsMargins(0, 0, 0, 0)
         scroll = QScrollArea()
@@ -1605,6 +1780,24 @@ class _CharacterPresetWindow(QDialog):
         ]
         self._adapter_entries.update_from_chain_data(chain_data)
         self._adapter_indep.update_from_chain_data(chain_data)
+        # 追加技能增益效果
+        skill_effects = (
+            self._collect_skill_table(self._skill_perm_table, "常驻")
+            + self._collect_skill_table(self._skill_trig_table, "触发")
+        )
+        for se in skill_effects:
+            name = se.get("name", "")
+            if not name: continue
+            self._adapter_entries._entries.append((
+                name, se.get("value", 0.0), False,
+                se.get("source", "技能效果"), f"技能{se.get('type', '')}", se.get("sub_name", ""),
+            ))
+        # 追加技能增益独立乘区
+        for iz in self._skill_indep_groups:
+            d = iz.to_dict()
+            if d.get("values"):
+                self._adapter_indep._groups.append(d)
+
         self._adapters_dirty = False
 
     def _on_tab_changed(self, index):
@@ -1637,6 +1830,13 @@ class _CharacterPresetWindow(QDialog):
                 }
                 for it in self._resonance_page.get_items()
             ],
+            "skill_buff": {
+                "effects": (
+                    self._collect_skill_table(self._skill_perm_table, "常驻")
+                    + self._collect_skill_table(self._skill_trig_table, "触发")
+                ),
+                "indep_zones": [iz.to_dict() for iz in self._skill_indep_groups],
+            },
             "result_list": self._preset_result_list.collect_data(),
         }
 
@@ -1675,6 +1875,26 @@ class _CharacterPresetWindow(QDialog):
                 it["indep_zones"] = []
                 it["intro"] = ""
         self._resonance_page._refresh_cards()
+        # 恢复技能增益
+        skill = data.get("skill_buff", {})
+        self._skill_perm_table.setRowCount(0); self._skill_trig_table.setRowCount(0)
+        self._skill_perm_counter = 0; self._skill_trig_counter = 0
+        for eff in skill.get("effects", []):
+            et = eff.get("type", "常驻")
+            if et == "触发":
+                self._skill_trig_counter += 1
+                self._add_skill_table_row(self._skill_trig_table, eff.get("name", ""), eff.get("value", 0.0), eff.get("source", "技能效果"), "触发", "触发", eff.get("sub_name", ""), show_kw=False)
+            else:
+                self._skill_perm_counter += 1
+                self._add_skill_table_row(self._skill_perm_table, eff.get("name", ""), eff.get("value", 0.0), eff.get("source", "技能效果"), "常驻", "常驻", eff.get("sub_name", ""), show_kw=False)
+        # 恢复技能增益独立乘区
+        for gb in list(self._skill_indep_groups):
+            self._skill_indep_container.removeWidget(gb); gb.hide(); gb.setParent(None); gb.deleteLater()
+        self._skill_indep_groups.clear()
+        for iz_data in skill.get("indep_zones", []):
+            gb = _IndepZoneGroupBox(iz_data.get("group_name", ""), iz_data.get("values", []))
+            gb.del_group_btn.clicked.connect(lambda _checked=False, g=gb: self._remove_skill_indep_group(g))
+            self._skill_indep_container.addWidget(gb); self._skill_indep_groups.append(gb)
         # 恢复结果列表
         rl_data = data.get("result_list", [])
         if rl_data:
@@ -1694,6 +1914,7 @@ class _WeaponPresetWindow(QDialog):
         self.setWindowTitle("武器预设")
         self.setMinimumSize(1000, 700)
         self.resize(1050, 750)
+        _fit_to_screen(self, 1050)
 
         QTimer.singleShot(0, lambda: self._center())
 
@@ -2023,6 +2244,7 @@ class _CharacterBuffWindow(QDialog):
         self.setWindowTitle("角色增益预设")
         self.setMinimumSize(1050, 650)
         self.resize(1100, 700)
+        _fit_to_screen(self, 1100)
         QTimer.singleShot(0, lambda: self._center())
         self._apply_theme()
 
@@ -2273,7 +2495,7 @@ class _CharacterBuffWindow(QDialog):
 
     def _add_indep_group(self):
         gb = _IndepZoneGroupBox("", [])
-        gb.del_group_btn.clicked.connect(lambda: self._remove_indep_group(gb))
+        gb.del_group_btn.clicked.connect(lambda _checked=False, g=gb: self._remove_indep_group(g))
         self._indep_container.addWidget(gb); self._indep_groups.append(gb)
 
     def _remove_indep_group(self, gb):
@@ -2328,7 +2550,7 @@ class _CharacterBuffWindow(QDialog):
                 self._add_table_row(self._perm_table, eff.get("name", ""), eff.get("value", 0.0), eff.get("source", ""), "常驻", "常驻", eff.get("sub_name", ""), show_kw=False)
         for iz_data in data.get("indep_zones", []):
             gb = _IndepZoneGroupBox(iz_data.get("group_name", ""), iz_data.get("values", []))
-            gb.del_group_btn.clicked.connect(lambda g=gb: self._remove_indep_group(g))
+            gb.del_group_btn.clicked.connect(lambda _checked=False, g=gb: self._remove_indep_group(g))
             self._indep_container.addWidget(gb); self._indep_groups.append(gb)
 
     def reject(self):
@@ -2384,6 +2606,7 @@ class _EchoSetEditor(QDialog):
         self.setWindowTitle("声骸套装预设")
         self.setMinimumSize(1000, 650)
         self.resize(1050, 700)
+        _fit_to_screen(self, 1050)
 
         QTimer.singleShot(0, lambda: self._center())
         self._apply_theme()
@@ -2716,6 +2939,7 @@ class PresetBuilderDialog(QDialog):
         self.setWindowTitle("预设构建器")
         self.setMinimumSize(1000, 800)
         self.resize(1000, 800)
+        _fit_to_screen(self, 1000)
         self._edit_preset_path = edit_preset_path
         self._animating = False
         self._auto_update_enabled = True  # 自动更新开关记忆

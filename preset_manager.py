@@ -338,6 +338,16 @@ class PresetManager:
             if result_list:
                 main_screen.page_result_list.apply_data(result_list)
 
+            # 应用技能增益
+            skill_buff = char_data.get("skill_buff", {})
+            if skill_buff:
+                _apply_effects_and_indep(
+                    main_screen,
+                    skill_buff.get("effects", []),
+                    skill_buff.get("indep_zones", []),
+                    tag_prefix=f"{char_data.get('name', '')} 技能增益"
+                )
+
         # ── 2. 应用武器 ──
         weapon_data = data.get("weapon", {})
         if weapon_data:
