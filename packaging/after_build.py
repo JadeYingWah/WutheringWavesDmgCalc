@@ -116,7 +116,22 @@ def main():
         shutil.copytree(src_save, dst_save, dirs_exist_ok=True)
         print(f'  save/ 已复制')
 
-    # 7. 创建快捷方式
+    # 7. 移入工具目录（Git 代理 + 上传预设）
+    TOOLS_DIR = os.path.join(OUT, 'tools')
+    TOOLS_SRC = os.path.join(DIST, '..', 'packaging', 'dist_tools')
+    for src_name, exe_name, folder_label in [
+        ('GitProxyManager', 'GitProxyManager', 'Git代理管理'),
+        ('PresetUploader', 'PresetUploader', '上传官方预设'),
+    ]:
+        src_path = os.path.join(TOOLS_SRC, src_name)
+        dst_path = os.path.join(TOOLS_DIR, folder_label)
+        if os.path.exists(src_path):
+            if os.path.exists(dst_path):
+                shutil.rmtree(dst_path)
+            shutil.copytree(src_path, dst_path)
+            print(f'  tools/{folder_label}/ 已搬入')
+
+    # 8. 创建快捷方式（主程序 + 错误查看器 + 工具）
     create_shortcut(
         os.path.join(OUT, 'WWDmgCalc', 'WWDmgCalc.exe'),
         os.path.join(OUT, 'WWDmgCalc.lnk'),
@@ -127,6 +142,16 @@ def main():
         os.path.join(OUT, 'ErrorViewer.lnk'),
         '错误查看器'
     )
+
+    # 工具快捷方式
+    for folder_label, exe_name in [
+        ('Git代理管理', 'GitProxyManager'),
+        ('上传官方预设', 'PresetUploader'),
+    ]:
+        exe_path = os.path.join(OUT, 'tools', folder_label, exe_name + '.exe')
+        link_path = os.path.join(OUT, folder_label + '.lnk')
+        if os.path.exists(exe_path):
+            create_shortcut(exe_path, link_path, folder_label)
 
     print()
     print(f'打包完成: {OUT}')
