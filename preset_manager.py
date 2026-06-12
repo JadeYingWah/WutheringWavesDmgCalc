@@ -22,7 +22,7 @@ import sys
 import tempfile
 from datetime import datetime
 
-from PyQt6.QtWidgets import QMessageBox, QProgressDialog
+from PyQt6.QtWidgets import QApplication, QMessageBox, QProgressDialog
 from PyQt6.QtCore import Qt, QTimer
 
 # ── 项目根目录定位 ──
