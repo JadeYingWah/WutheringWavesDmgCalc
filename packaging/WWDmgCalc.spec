@@ -58,7 +58,6 @@ a2 = Analysis(
     binaries=[],
     datas=[
         ('../ico/icon.ico', '.'),
-    ('../models', 'models'),  # OCR ONNX 模型  # 窗口图标
     ],
     hiddenimports=[],
     hookspath=[],
