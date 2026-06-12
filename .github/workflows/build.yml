@@ -1,4 +1,4 @@
-name: 自动打包发布
+﻿name: 自动打包发布
 
 on:
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
 
       - name: 打包辅助工具
         run: |
-          cd packaging/tools_specs
+          cd packaging
           python -m PyInstaller git_proxy_manager.spec --distpath ../dist_tools --workpath ../build_tools --clean
           python -m PyInstaller preset_uploader.spec --distpath ../dist_tools --workpath ../build_tools --clean
 
