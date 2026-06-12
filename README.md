@@ -129,3 +129,4 @@ python after_build.py
 ## 📬 联系
 
 - GitHub Issues: [https://github.com/JadeYingWah/WutheringWavesDmgCalc/issues](https://github.com/JadeYingWah/WutheringWavesDmgCalc/issues)
+- QQ群: 698544665
