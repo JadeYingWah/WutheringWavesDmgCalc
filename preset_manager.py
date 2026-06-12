@@ -22,7 +22,7 @@ import sys
 import tempfile
 from datetime import datetime
 
-from PyQt6.QtWidgets import QApplication, QMessageBox, QProgressDialog
+from PyQt6.QtWidgets import QApplication, QLabel, QMessageBox, QProgressDialog
 from PyQt6.QtCore import Qt, QTimer
 
 # ── 项目根目录定位 ──
@@ -470,9 +470,15 @@ class PresetManager:
             progress = QProgressDialog("正在连接 GitHub...", None, 0, 0, parent_widget)
             progress.setWindowTitle("更新官方预设")
             progress.setWindowModality(Qt.WindowModality.WindowModal)
-            progress.setMinimumWidth(420)
             progress.setMinimumDuration(0)
-            progress.setCancelButton(None)  # 暂不显示取消按钮
+            progress.setCancelButton(None)
+            # 窗口尺寸：增大 2.5 倍，给文字留够空间
+            progress.resize(550, 300)
+            progress.setMinimumSize(500, 250)
+            # 标题文字自动换行，避免撑宽窗口
+            label = progress.findChild(QLabel)
+            if label:
+                label.setWordWrap(True)
             progress.show()
 
         try:
