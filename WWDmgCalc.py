@@ -11039,16 +11039,17 @@ class DmgCalculator(QMainWindow):
         msg = QMessageBox(self)
         msg.setWindowTitle("退出程序")
         msg.setText("确定要退出程序吗？\n\n退出前是否需要保存当前数据？")
-        save_btn = msg.addButton("保存并退出", QMessageBox.ButtonRole.AcceptRole)
-        discard_btn = msg.addButton("不保存", QMessageBox.ButtonRole.DestructiveRole)
-        msg.setDefaultButton(save_btn)
-        msg.setEscapeButton(None)  # 禁用 Esc 关闭弹窗
+        msg.setStandardButtons(QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard)
+        msg.button(QMessageBox.StandardButton.Save).setText("保存并退出")
+        msg.button(QMessageBox.StandardButton.Discard).setText("不保存")
+        msg.setDefaultButton(QMessageBox.StandardButton.Save)
+        # X 按钮 = 取消，关闭对话框即可（event.ignore() 不退出）
         msg.exec()
         clicked = msg.clickedButton()
-        if clicked == save_btn:
+        if clicked is msg.button(QMessageBox.StandardButton.Save):
             self._save_wrapper()
             event.accept()
-        elif clicked == discard_btn:
+        elif clicked is msg.button(QMessageBox.StandardButton.Discard):
             event.accept()
         else:
             event.ignore()
