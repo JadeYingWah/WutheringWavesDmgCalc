@@ -83,19 +83,16 @@ class _TestThread(QThread):
                 else:
                     self.result.emit(f"❌ 访问失败 (HTTP {resp.status})", "red")
         except Exception as e:
-            if self._proto == "socks5" and "socks" not in str(e).lower():
+            if self._proto == "socks5":
                 try:
-                    import socket
-                    socks = __import__("socks")
-                    socks.set_default_proxy(socks.SOCKS5, "127.0.0.1", self._port)
-                    socket.socket = socks.socksocket
-                    req = urllib.request.Request("https://github.com")
-                    with urllib.request.urlopen(req, timeout=8) as resp:
-                        if resp.status == 200:
-                            self.result.emit("✅ 测试成功，可以访问 GitHub", "green")
-                        else:
-                            self.result.emit(f"❌ 访问失败 (HTTP {resp.status})", "red")
-                        return
+                    import subprocess, os
+                    r = subprocess.run(["git", "ls-remote", "https://github.com", "HEAD"], capture_output=True, text=True, timeout=10,
+                                      env={**os.environ, "http_proxy": self._proxy_url, "https_proxy": self._proxy_url})
+                    if r.returncode == 0:
+                        self.result.emit("✅ 测试成功，可以访问 GitHub", "green")
+                    else:
+                        self.result.emit("❌ 连接失败，代理不可用", "red")
+                    return
                 except Exception:
                     pass
             msg = str(e)
