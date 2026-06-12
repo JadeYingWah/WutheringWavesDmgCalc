@@ -467,11 +467,12 @@ class PresetManager:
         # 尝试从 GitHub 拉取
         progress = None
         if parent_widget:
-            progress = QProgressDialog("正在连接 GitHub...", "取消", 0, 0, parent_widget)
+            progress = QProgressDialog("正在连接 GitHub...", None, 0, 0, parent_widget)
             progress.setWindowTitle("更新官方预设")
             progress.setWindowModality(Qt.WindowModality.WindowModal)
-            progress.setMinimumWidth(400)
+            progress.setMinimumWidth(420)
             progress.setMinimumDuration(0)
+            progress.setCancelButton(None)  # 暂不显示取消按钮
             progress.show()
 
         try:
@@ -479,9 +480,13 @@ class PresetManager:
             import urllib.error
             from urllib.parse import quote
 
-            # 1. 从 raw URL 拉取 manifest.json（多源自动 fallback）
+            # ── 阶段1：拉取 manifest.json ──
+            if progress:
+                progress.setLabelText("正在连接预设源...")
+                QApplication.processEvents()
+
             manifest = None
-            working_url = None  # 记录可用的源，后续下载复用
+            working_url = None
             last_error = None
             for base_url in GITHUB_RAW_URLS:
                 manifest_url = f"{base_url}/manifest.json"
@@ -491,11 +496,11 @@ class PresetManager:
                     with urllib.request.urlopen(req, timeout=10) as resp:
                         manifest = json.loads(resp.read().decode("utf-8"))
                     working_url = base_url
-                    break  # 成功，跳出循环
+                    break
                 except urllib.error.HTTPError as e:
                     last_error = e
                     if e.code == 404:
-                        break  # 404 不重试其他 URL
+                        break
                     continue
                 except Exception as e:
                     last_error = e
@@ -518,12 +523,21 @@ class PresetManager:
                 QMessageBox.warning(parent_widget, "格式错误", "manifest 格式异常")
                 return False, "格式错误"
 
+            # ── 阶段2：统计 + 下载 ──
+            # 计算总文件数，切换为有进度的进度条
             PresetManager.ensure_dirs()
+            total_files = sum(len(v) for v in manifest.values() if isinstance(v, list))
             downloaded = 0
             failed = 0
-            failed_details = []  # [(cat, fname, reason), ...]
+            failed_details = []
 
-            # 2. 遍历 manifest，从 raw URL 下载每个预设文件
+            if progress and total_files > 0:
+                progress.setLabelText(f"准备下载 {total_files} 个预设文件...")
+                progress.setMaximum(total_files)
+                progress.setValue(0)
+                progress.setCancelButtonText("取消")
+                QApplication.processEvents()
+
             for cat in CATEGORY_DIRS:
                 file_list = manifest.get(cat, [])
                 if not isinstance(file_list, list):
@@ -532,9 +546,10 @@ class PresetManager:
                 for fname in file_list:
                     if progress and progress.wasCanceled():
                         break
+                    _short = fname[:28] + "..." if len(fname) > 28 else fname
                     if progress:
-                        _short = fname[:30] + "..." if len(fname) > 30 else fname
-                        progress.setLabelText(f"正在下载: {cat}/{_short}")
+                        progress.setLabelText(f"[{downloaded + failed + 1}/{total_files}] {cat}/{_short}")
+                        QApplication.processEvents()
                     raw_url = f"{working_url}/{cat}/{quote(fname)}"
                     try:
                         req2 = urllib.request.Request(raw_url)
@@ -546,6 +561,8 @@ class PresetManager:
                         if not valid:
                             failed += 1
                             failed_details.append((cat, fname, f"校验失败: {err_msg}"))
+                            if progress:
+                                progress.setValue(downloaded + failed)
                             continue
                         os.makedirs(target_dir, exist_ok=True)
                         dest = os.path.join(target_dir, fname)
@@ -557,12 +574,17 @@ class PresetManager:
                         failed_details.append((cat, fname, f"HTTP {e.code}"))
                     except urllib.error.URLError as e:
                         failed += 1
-                        failed_details.append((cat, fname, f"网络错误: {e.reason}"))
+                        failed_details.append((cat, fname, f"网络错误"))
                     except Exception as e:
                         failed += 1
                         failed_details.append((cat, fname, str(e)[:80]))
+                    if progress:
+                        progress.setValue(downloaded + failed)
 
             if progress:
+                progress.setLabelText("同步完成！" if downloaded > 0 else "同步失败")
+                progress.setValue(total_files)
+                QApplication.processEvents()
                 progress.close()
 
             # 3. 写入错误日志（供侧边栏"错误日志"查看）
