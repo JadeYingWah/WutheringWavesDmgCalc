@@ -47,7 +47,7 @@ CATEGORY_LABELS = {
 # GitHub 仓库配置（项目上传后可修改）
 GITHUB_REPO_OWNER = "JadeYingWah"
 GITHUB_REPO_NAME = "WutheringWavesDmgCalc"
-GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/contents/presets/official"
+GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/main/presets/official"
 
 
 class PresetManager:
@@ -472,118 +472,51 @@ class PresetManager:
             import urllib.request
             import urllib.error
 
-            # 获取官方预设目录的文件列表
-            req = urllib.request.Request(GITHUB_API_URL)
-            req.add_header("Accept", "application/vnd.github.v3+json")
-            req.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
-
+            # 1. 从 raw URL 拉取 manifest.json（无 API 限流）
+            manifest_url = f"{GITHUB_RAW_URL}/manifest.json"
             try:
+                req = urllib.request.Request(manifest_url)
+                req.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
                 with urllib.request.urlopen(req, timeout=15) as resp:
-                    file_list = json.loads(resp.read().decode("utf-8"))
+                    manifest = json.loads(resp.read().decode("utf-8"))
             except urllib.error.HTTPError as e:
                 if progress:
                     progress.close()
                 if e.code == 404:
-                    QMessageBox.information(
-                        parent_widget,
-                        "暂无官方预设",
-                        "GitHub 仓库中尚未上传官方预设文件。\n\n"
-                        "请等待作者上传或通过 Fork & Pull Request 贡献预设。"
-                    )
-                    return False, "官方预设目录为空"
-                else:
-                    QMessageBox.warning(
-                        parent_widget,
-                        "网络错误",
-                        f"访问 GitHub 失败 (HTTP {e.code}): {e.reason}"
-                    )
-                    return False, f"HTTP {e.code}"
+                    QMessageBox.information(parent_widget, "暂无官方预设",
+                        "GitHub 仓库中尚未上传官方预设文件。")
+                    return False, "manifest 不存在"
+                QMessageBox.warning(parent_widget, "网络错误", f"访问 GitHub 失败 (HTTP {e.code})")
+                return False, f"HTTP {e.code}"
             except urllib.error.URLError as e:
                 if progress:
                     progress.close()
-                QMessageBox.warning(
-                    parent_widget,
-                    "网络错误",
-                    f"无法连接到 GitHub:\n{e.reason}\n\n请检查网络连接后重试。"
-                )
+                QMessageBox.warning(parent_widget, "网络错误",
+                    f"无法连接到 GitHub:\n{e.reason}\n\n请检查网络连接后重试。")
                 return False, str(e.reason)
 
-            if not isinstance(file_list, list):
+            if not isinstance(manifest, dict):
                 if progress:
                     progress.close()
-                QMessageBox.warning(parent_widget, "格式错误", "GitHub 返回的数据格式异常")
+                QMessageBox.warning(parent_widget, "格式错误", "manifest 格式异常")
                 return False, "格式错误"
-
-            # 检查是否为目录列表（GitHub 返回的是目录内容）
-            # 可能包含子目录（character/, weapon/, echo_set/）和直接文件
-            subdirs = [f for f in file_list if isinstance(f, dict) and f.get("type") == "dir"
-                       and f.get("name") in CATEGORY_DIRS]
-            json_files = [f for f in file_list if isinstance(f, dict) and f.get("name", "").endswith(".json")]
 
             PresetManager.ensure_dirs()
             downloaded = 0
             failed = 0
 
-            def _download_file(f_info, target_dir):
-                nonlocal downloaded, failed
-                fname = f_info["name"]
-                download_url = f_info.get("download_url", "")
-                if not download_url:
-                    return
-                if progress:
-                    progress.setLabelText(f"正在下载: {fname}")
-                try:
-                    req2 = urllib.request.Request(download_url)
-                    req2.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
-                    with urllib.request.urlopen(req2, timeout=15) as resp:
-                        content = resp.read().decode("utf-8")
-                    data = json.loads(content)
-                    valid, _ = PresetManager.validate_preset(data)
-                    if not valid:
-                        failed += 1
-                        return
-                    os.makedirs(target_dir, exist_ok=True)
-                    dest = os.path.join(target_dir, fname)
-                    with open(dest, "w", encoding="utf-8") as f:
-                        f.write(content)
-                    downloaded += 1
-                except Exception:
-                    failed += 1
-
-            # 方式1：GitHub 仓库按类别子目录组织 → 遍历每个子目录
-            if subdirs:
-                for sd in subdirs:
-                    if progress and progress.wasCanceled():
-                        break
-                    cat = sd["name"]
-                    cat_target = os.path.join(OFFICIAL_DIR, cat)
-                    cat_api_url = sd.get("url", "")
-                    if not cat_api_url:
-                        continue
+            # 2. 遍历 manifest，从 raw URL 下载每个预设文件
+            for cat in CATEGORY_DIRS:
+                file_list = manifest.get(cat, [])
+                if not isinstance(file_list, list):
+                    continue
+                target_dir = os.path.join(OFFICIAL_DIR, cat)
+                for fname in file_list:
+                    if progress:
+                        progress.setLabelText(f"正在下载: {cat}/{fname}")
+                    raw_url = f"{GITHUB_RAW_URL}/{cat}/{fname}"
                     try:
-                        req3 = urllib.request.Request(cat_api_url)
-                        req3.add_header("Accept", "application/vnd.github.v3+json")
-                        req3.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
-                        with urllib.request.urlopen(req3, timeout=15) as resp3:
-                            cat_files = json.loads(resp3.read().decode("utf-8"))
-                        for cf in (cat_files if isinstance(cat_files, list) else []):
-                            if cf.get("name", "").endswith(".json"):
-                                _download_file(cf, cat_target)
-                    except Exception:
-                        failed += 1
-
-            # 方式2：扁平结构 → 根据文件内容 category 字段归类
-            elif json_files:
-                for f_info in json_files:
-                    if progress and progress.wasCanceled():
-                        break
-                    fname = f_info["name"]
-                    download_url = f_info.get("download_url", "")
-                    if not download_url:
-                        failed += 1
-                        continue
-                    try:
-                        req2 = urllib.request.Request(download_url)
+                        req2 = urllib.request.Request(raw_url)
                         req2.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
                         with urllib.request.urlopen(req2, timeout=15) as resp:
                             content = resp.read().decode("utf-8")
@@ -592,24 +525,13 @@ class PresetManager:
                         if not valid:
                             failed += 1
                             continue
-                        cat = data.get("category", "character")
-                        if cat not in CATEGORY_DIRS:
-                            cat = "character"
-                        cat_target = os.path.join(OFFICIAL_DIR, cat)
-                        os.makedirs(cat_target, exist_ok=True)
-                        dest = os.path.join(cat_target, fname)
+                        os.makedirs(target_dir, exist_ok=True)
+                        dest = os.path.join(target_dir, fname)
                         with open(dest, "w", encoding="utf-8") as f:
                             f.write(content)
                         downloaded += 1
                     except Exception:
                         failed += 1
-                        continue
-
-            if not subdirs and not json_files:
-                if progress:
-                    progress.close()
-                QMessageBox.information(parent_widget, "暂无预设", "官方预设目录中暂无预设文件。")
-                return True, "无预设文件"
 
             if progress:
                 progress.close()
