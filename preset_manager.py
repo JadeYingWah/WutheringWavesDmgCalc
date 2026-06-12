@@ -473,8 +473,8 @@ class PresetManager:
             progress.setMinimumDuration(0)
             progress.setCancelButton(None)
             # 窗口尺寸：增大 2.5 倍，给文字留够空间
-            progress.resize(550, 300)
-            progress.setMinimumSize(500, 250)
+            progress.resize(550, 550)
+            progress.setMinimumSize(500, 500)
             # 标题文字自动换行，避免撑宽窗口
             label = progress.findChild(QLabel)
             if label:
