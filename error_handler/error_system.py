@@ -31,7 +31,11 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QSequentialAnimationGroup
 
 # 项目根目录（error_system.py 在 error_handler/ 子目录下）
-_PROJ_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 打包后需向上跳到主文件夹（WWDmgCalc.exe 在 WWDmgCalc/ 下，主文件夹在上两级）
+if getattr(sys, 'frozen', False):
+    _PROJ_DIR = os.path.dirname(os.path.dirname(sys.executable))
+else:
+    _PROJ_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _ERROR_LOG_DIR = os.path.join(_PROJ_DIR, "config")
 _ERROR_LOG_FILE = os.path.join(_ERROR_LOG_DIR, "error_log.json")
 _MAX_PERSIST_ENTRIES = 500
