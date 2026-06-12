@@ -107,7 +107,7 @@ def main():
             dst_cat = os.path.join(dst_presets, cat)
             if os.path.exists(src_cat):
                 shutil.copytree(src_cat, dst_cat, dirs_exist_ok=True)
-                print(f'  presets/{cat} 已复制')
+                print(f'  presets/{cat} copied')
 
     # 6. 复制存档文件
     src_save = os.path.join(ROOT, 'save')
@@ -129,7 +129,7 @@ def main():
             if os.path.exists(dst_path):
                 shutil.rmtree(dst_path)
             shutil.copytree(src_path, dst_path)
-            print(f'  tools/{folder_label}/ 已搬入')
+            print(f'  tools/{folder_label}/ moved')
 
     # 8. 创建快捷方式（主程序 + 错误查看器 + 工具）
     create_shortcut(
