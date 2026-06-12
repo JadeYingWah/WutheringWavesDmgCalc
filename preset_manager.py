@@ -470,6 +470,7 @@ class PresetManager:
             progress = QProgressDialog("正在连接 GitHub...", "取消", 0, 0, parent_widget)
             progress.setWindowTitle("更新官方预设")
             progress.setWindowModality(Qt.WindowModality.WindowModal)
+            progress.setMinimumWidth(400)
             progress.setMinimumDuration(0)
             progress.show()
 
@@ -532,7 +533,8 @@ class PresetManager:
                     if progress and progress.wasCanceled():
                         break
                     if progress:
-                        progress.setLabelText(f"正在下载: {cat}/{fname}")
+                        _short = fname[:30] + "..." if len(fname) > 30 else fname
+                        progress.setLabelText(f"正在下载: {cat}/{_short}")
                     raw_url = f"{working_url}/{cat}/{quote(fname)}"
                     try:
                         req2 = urllib.request.Request(raw_url)
