@@ -85,6 +85,7 @@ class _TestThread(QThread):
         except Exception as e:
             if self._proto == "socks5" and "socks" not in str(e).lower():
                 try:
+                    import socket
                     socks = __import__("socks")
                     socks.set_default_proxy(socks.SOCKS5, "127.0.0.1", self._port)
                     socket.socket = socks.socksocket
@@ -229,6 +230,7 @@ class GitProxyManager(QWidget):
                 except Exception as e:
                     if proto == "socks5" and "socks" not in str(e).lower():
                         try:
+                            import socket
                             socks = __import__("socks")
                             socks.set_default_proxy(socks.SOCKS5, "127.0.0.1", port)
                             socket.socket = socks.socksocket
