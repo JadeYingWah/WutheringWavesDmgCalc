@@ -39,6 +39,22 @@ def _latest_critical():
     return None
 
 
+def _set_window_icon(window):
+    """设置窗口图标（开发/打包两种环境兼容）"""
+    try:
+        from PyQt6.QtGui import QIcon
+        import sys, os
+        if getattr(sys, 'frozen', False):
+            icon_path = os.path.join(sys._MEIPASS, 'icon.ico')
+        else:
+            icon_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                     'ico', 'icon.ico')
+        if os.path.exists(icon_path):
+            window.setWindowIcon(QIcon(icon_path))
+    except Exception:
+        pass
+
+
 def _show_detail(entry):
     """显示单条错误详情。"""
     try:
@@ -49,6 +65,7 @@ def _show_detail(entry):
 
         dlg = QDialog()
         dlg.setWindowTitle("错误详情")
+        _set_window_icon(dlg)
         dlg.setMinimumSize(480, 340)
         dlg.resize(560, 420)
 
@@ -100,6 +117,7 @@ def _show_log_list(entries):
 
         dlg = QDialog()
         dlg.setWindowTitle("错误日志")
+        _set_window_icon(dlg)
         dlg.setMinimumSize(680, 460)
         dlg.resize(720, 520)
 
@@ -167,20 +185,15 @@ def main():
         app = None
 
     entries = _load_entries()
-    if not entries:
-        if app:
-            from PyQt6.QtWidgets import QMessageBox
-            QMessageBox.information(None, "错误日志", "没有错误记录。")
-        return
 
     # --crash 标志：由主程序闪退后启动，先弹崩溃详情提醒用户
-    show_crash_first = "--crash" in sys.argv
-
-    if show_crash_first:
+    if "--crash" in sys.argv:
         critical = _latest_critical()
         if critical:
-            _show_detail(critical)       # 先展示崩溃详情
-    _show_log_list(entries)              # 关闭后展示完整日志列表
+            _show_detail(critical)
+
+    # 始终展示日志列表（即使为空也显示窗口界面）
+    _show_log_list(entries)
 
 
 if __name__ == "__main__":

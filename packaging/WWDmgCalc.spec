@@ -2,22 +2,22 @@
 
 # ── 主程序 ──
 a = Analysis(
-    ['WWDmgCalc.py'],
-    pathex=[],
+    ['../WWDmgCalc.py'],
+    pathex=['..'],
     binaries=[],
     datas=[
-    ('manual', 'manual'),
-    ('error_handler', 'error_handler'),
-    ('damage_calc.py', '.'),
-    ('C:\\Users\\yutia\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\rapidocr_onnxruntime', 'rapidocr_onnxruntime'),
-    ('ico\\icon.ico', '.'),
+    ('../manual', 'manual'),
+    ('../error_handler', 'error_handler'),
+    ('../damage_calc.py', '.'),
+    ('../ico/icon.ico', '.'),
+    ('../models', 'models'),  # PP-OCRv5 自定义 ONNX 模型
 ],
     hiddenimports=['onnxruntime', 'cv2', 'pyclipper', 'shapely', 'yaml', 'six',
                    'error_handler.error_system'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['paddleocr', 'paddle', 'paddlex', 'torch', 'torchvision', 'scipy', 'pandas', 'skimage', 'modelscope', 'rapidocr_onnxruntime'],
+    excludes=['paddleocr', 'paddle', 'paddlex', 'torch', 'torchvision', 'scipy', 'pandas', 'skimage', 'modelscope'],
     noarchive=False,
     optimize=0,
 )
@@ -29,7 +29,7 @@ exe = EXE(
     [],
     exclude_binaries=True,
     name='WWDmgCalc',
-    icon='ico\\icon.ico',
+    icon='../ico/icon.ico',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -53,15 +53,17 @@ coll = COLLECT(
 
 # ── 外部错误报告程序（独立 .exe） ──
 a2 = Analysis(
-    ['error_handler/error_viewer.py'],
+    ['../error_handler/error_viewer.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[
+        ('../ico/icon.ico', '.'),  # 窗口图标
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['paddleocr', 'paddle', 'paddlex', 'torch', 'torchvision', 'scipy', 'pandas', 'skimage', 'modelscope', 'rapidocr_onnxruntime'],
+    excludes=['paddleocr', 'paddle', 'paddlex', 'torch', 'torchvision', 'scipy', 'pandas', 'skimage', 'modelscope'],
     noarchive=False,
     optimize=0,
 )
@@ -72,7 +74,7 @@ exe2 = EXE(
     a2.scripts,
     exclude_binaries=True,
     name='ErrorViewer',
-    icon='ico\\icon.ico',
+    icon='../ico/icon.ico',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

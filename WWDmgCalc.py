@@ -1627,9 +1627,16 @@ class LoadingOverlay(QWidget):
         self._cancel_btn.setObjectName("itemDeleteBtn")
         self._cancel_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self._cancel_btn.setFixedSize(70, 32)
-        self._cancel_btn.clicked.connect(self.cancel_requested.emit)
+        self._cancel_btn.clicked.connect(self._on_cancel_clicked)
         self._cancel_btn.hide()
         self.hide()
+
+    def _on_cancel_clicked(self):
+        """取消按钮点击：即时反馈 + 发出中断信号"""
+        self._cancel_btn.setEnabled(False)
+        self._cancel_btn.setText("取消中…")
+        self._cancel_btn.repaint()
+        self.cancel_requested.emit()
 
     def _rotate(self):
         self._angle = (self._angle + 30) % 360
@@ -1643,6 +1650,8 @@ class LoadingOverlay(QWidget):
         self.show()
         self.raise_()
         self.set_progress(text)
+        self._cancel_btn.setEnabled(True)
+        self._cancel_btn.setText("取消")
         self._cancel_btn.show()
         self._cancel_btn.raise_()
 
@@ -1903,7 +1912,20 @@ class OCRConfirmDialog(QDialog):
 
         # 原始文本
         raw = tab.get("raw_lines", [])
-        self.raw_label.setText("\n".join(raw[:50]) if raw else "(无)")
+        # 全屏截图原始行数多，取前 30 行 + 尾部调试信息（解析结果/词条）
+        if not raw:
+            self.raw_label.setText("(无)")
+        elif len(raw) <= 50:
+            self.raw_label.setText("\n".join(raw))
+        else:
+            # 找到 "--- 逐行解析结果 ---" 的分割位置
+            split_at = next((i for i, s in enumerate(raw) if "逐行解析结果" in s), -1)
+            if split_at > 0:
+                head = raw[:30]
+                tail = raw[split_at:]
+                self.raw_label.setText("\n".join(head + ["... (省略中间行) ..."] + tail))
+            else:
+                self.raw_label.setText("\n".join(raw[:50]))
 
         # Tab 按钮高亮
         for i, btn in enumerate(self._tab_btns):
@@ -2546,9 +2568,17 @@ class EchoCounterPage(QWidget):
             self.ocr_clip_btn.setText("识别中...")
 
     def _on_ocr_finished(self, data_list):
+        # ⚠️ 必须最先检查 sender，防止旧 worker 残留信号
+        # 污染新 OCR 的 UI 状态（遮罩、按钮），导致卡死/闪退
+        if self.sender() is not getattr(self, '_ocr_worker', None):
+            return
         if self._ocr_loading_hide:
             self._ocr_loading_hide()
         self._set_ocr_buttons_enabled(True)
+
+        # 如果被中断，跳过结果处理
+        if getattr(self._ocr_worker, '_abort', False):
+            return
 
         # 过滤失败项 + 有效内容检测（至少要有 cost 或 main_stat）
         valid = []
@@ -2582,6 +2612,8 @@ class EchoCounterPage(QWidget):
             pass
 
     def _on_ocr_error(self, msg):
+        if self.sender() is not getattr(self, '_ocr_worker', None):
+            return
         if self._ocr_loading_hide:
             self._ocr_loading_hide()
         self._set_ocr_buttons_enabled(True)
@@ -2596,11 +2628,23 @@ class EchoCounterPage(QWidget):
 
     def abort_ocr(self):
         """中断当前 OCR 识别"""
+        # 立即隐藏遮罩，不等线程 finished 信号（terminate 后信号可能延迟/丢失）
+        if self._ocr_loading_hide:
+            self._ocr_loading_hide()
+        self._set_ocr_buttons_enabled(True)
         if hasattr(self, '_ocr_worker') and self._ocr_worker and self._ocr_worker.isRunning():
             self._ocr_worker.abort()
 
     def _start_ocr(self, sources):
         """sources: list[tuple[image_source, is_qimage]]"""
+        # 断开旧 worker 信号，防止残留信号污染
+        if hasattr(self, '_ocr_worker') and self._ocr_worker:
+            try:
+                self._ocr_worker.finished.disconnect(self._on_ocr_finished)
+                self._ocr_worker.error.disconnect(self._on_ocr_error)
+                self._ocr_worker.progress.disconnect(self._on_ocr_progress)
+            except Exception:
+                pass
         self._set_ocr_buttons_enabled(False)
         total = len(sources)
         if self._ocr_loading_show:
@@ -2624,16 +2668,28 @@ class EchoCounterPage(QWidget):
 
     def _screenshot_ocr(self):
         """截图识别：从剪贴板读取截图进行 OCR"""
-        clipboard = QApplication.clipboard()
-        qimage = clipboard.image()
-        if qimage.isNull():
-            QMessageBox.information(
-                self, "无截图",
-                "剪贴板中没有图片。\n"
-                "请先使用截图工具截图（如 Win+Shift+S），再点击此按钮。"
-            )
-            return
-        self._start_ocr([(qimage, True)])
+        try:
+            clipboard = QApplication.clipboard()
+            # 先用轻量检查（避免 clipboard.image() 对非图片数据卡死）
+            if not clipboard.mimeData().hasImage():
+                QMessageBox.information(
+                    self, "无截图",
+                    "剪贴板中没有图片。\n"
+                    "请先使用截图工具截图（如 Win+Shift+S），再点击此按钮。"
+                )
+                return
+            qimage = clipboard.image()
+            if qimage.isNull():
+                QMessageBox.information(
+                    self, "无截图",
+                    "剪贴板中没有图片。\n"
+                    "请先使用截图工具截图（如 Win+Shift+S），再点击此按钮。"
+                )
+                return
+            self._start_ocr([(qimage, True)])
+        except Exception as e:
+            _logger.exception("截图识别失败: %s", e)
+            QMessageBox.critical(self, "错误", f"截图识别失败:\n{e}")
 
     def _confirm_and_add(self, data_list):
         """弹出确认对话框，用户确认后创建声骸"""
@@ -2642,26 +2698,31 @@ class EchoCounterPage(QWidget):
             return
 
         confirmed_list = dlg.get_confirmed_data()
-        added = 0
-        for confirmed in confirmed_list:
-            current_cost = sum(e[0] for e in self.echoes)
-            current_count = len(self.echoes)
-            cost = confirmed["cost"]
-            if current_cost + cost > 12 or current_count >= 5:
-                QMessageBox.warning(self, "无法添加",
-                    f"总费用超限或声骸数量已达上限（已添加 {added} 个，跳过剩余）。")
-                break
+        # 暂停界面更新，避免逐条添加时反复重绘卡顿
+        self.setUpdatesEnabled(False)
+        try:
+            added = 0
+            for confirmed in confirmed_list:
+                current_cost = sum(e[0] for e in self.echoes)
+                current_count = len(self.echoes)
+                cost = confirmed["cost"]
+                if current_cost + cost > 12 or current_count >= 5:
+                    QMessageBox.warning(self, "无法添加",
+                        f"总费用超限或声骸数量已达上限（已添加 {added} 个，跳过剩余）。")
+                    break
 
-            self.echo_id_counter += 1
-            eid = self.echo_id_counter
-            self.echoes.append((cost, eid))
-            if self._add_callback:
-                self._add_callback(cost, eid)
+                self.echo_id_counter += 1
+                eid = self.echo_id_counter
+                self.echoes.append((cost, eid))
+                if self._add_callback:
+                    self._add_callback(cost, eid)
 
-            if self._ocr_callback:
-                self._ocr_callback(eid, confirmed)
+                if self._ocr_callback:
+                    self._ocr_callback(eid, confirmed)
 
-            added += 1
+                added += 1
+        finally:
+            self.setUpdatesEnabled(True)
 
         self._rebuild_echo_list()
         self._update_status()
@@ -6640,7 +6701,12 @@ class ResultListPage(QWidget):
             QMessageBox.warning(self, "错误", "识别功能未正确初始化，请重启应用。")
             return
         try:
-            qimage = QApplication.clipboard().image()
+            clipboard = QApplication.clipboard()
+            if not clipboard.mimeData().hasImage():
+                QMessageBox.information(self.window() or self, "无截图",
+                    "剪贴板中没有图片。\n请先使用截图工具截图，再点击此按钮。")
+                return
+            qimage = clipboard.image()
             if qimage.isNull():
                 QMessageBox.information(self.window() or self, "无截图",
                     "剪贴板中没有图片。\n请先使用截图工具截图，再点击此按钮。")
@@ -7917,18 +7983,38 @@ class ResultPage(QWidget):
         self._start_dmg_ocr(sources)
 
     def _screenshot_dmg_mult_ocr(self):
-        qimage = QApplication.clipboard().image()
-        if qimage.isNull():
-            QMessageBox.information(self, "无截图", "剪贴板中没有图片。\n请先使用截图工具截图，再点击此按钮。")
-            return
-        self._start_dmg_ocr([(qimage, True)])
+        try:
+            clipboard = QApplication.clipboard()
+            if not clipboard.mimeData().hasImage():
+                QMessageBox.information(self, "无截图", "剪贴板中没有图片。\n请先使用截图工具截图，再点击此按钮。")
+                return
+            qimage = clipboard.image()
+            if qimage.isNull():
+                QMessageBox.information(self, "无截图", "剪贴板中没有图片。\n请先使用截图工具截图，再点击此按钮。")
+                return
+            self._start_dmg_ocr([(qimage, True)])
+        except Exception as e:
+            _logger.exception("截图识别失败: %s", e)
+            QMessageBox.critical(self, "错误", f"截图识别失败:\n{e}")
 
     def abort_ocr(self):
         """中断当前 OCR 识别"""
+        # 立即隐藏遮罩，不等线程 finished 信号（terminate 后信号可能延迟/丢失）
+        if self._ocr_loading_hide:
+            self._ocr_loading_hide()
+        self._set_dmg_ocr_buttons_enabled(True)
         if hasattr(self, '_dmg_ocr_worker') and self._dmg_ocr_worker and self._dmg_ocr_worker.isRunning():
             self._dmg_ocr_worker.abort()
 
     def _start_dmg_ocr(self, sources):
+        # 断开旧 worker 信号，防止残留信号污染
+        if hasattr(self, '_dmg_ocr_worker') and self._dmg_ocr_worker:
+            try:
+                self._dmg_ocr_worker.finished.disconnect(self._on_dmg_ocr_finished)
+                self._dmg_ocr_worker.error.disconnect(self._on_dmg_ocr_error)
+                self._dmg_ocr_worker.progress.disconnect(self._on_dmg_ocr_progress)
+            except Exception:
+                pass
         self._set_dmg_ocr_buttons_enabled(False)
         total = len(sources)
         if self._ocr_loading_show:
@@ -7940,9 +8026,17 @@ class ResultPage(QWidget):
         self._dmg_ocr_worker.start()
 
     def _on_dmg_ocr_finished(self, results_list):
+        # ⚠️ 必须最先检查 sender，防止旧 worker 残留信号
+        # 污染新 OCR 的 UI 状态（遮罩、按钮），导致卡死/闪退
+        if self.sender() is not getattr(self, '_dmg_ocr_worker', None):
+            return
         if self._ocr_loading_hide:
             self._ocr_loading_hide()
         self._set_dmg_ocr_buttons_enabled(True)
+
+        # 如果被中断，跳过结果处理
+        if getattr(self._dmg_ocr_worker, '_abort', False):
+            return
 
         all_items = []
         all_raw_texts = []
@@ -7960,21 +8054,11 @@ class ResultPage(QWidget):
             elif isinstance(item, dict) and item.get("label"):
                 all_items.append(item)
 
-        # 组装右侧原始识别文本：逐行解析结果 + 识别倍率
+        # 组装右侧原始识别文本：解析器已生成完整的逐行解析 + 识别倍率
         raw_parts = []
         for rt in all_raw_texts:
             if rt.strip():
-                raw_parts.append(f"--- 逐行解析结果 ---\n{rt.strip()}")
-        if all_items:
-            mult_lines = []
-            for it in all_items:
-                skill = it.get("skill") or "(无)"
-                elem = it.get("element") or "(无)"
-                mult_lines.append(
-                    f"  {it['label']}  |  倍率:{it.get('base_mult',0)}%  |  "
-                    f"基准:{it.get('basis','攻击力')}  |  技能:{skill}  |  元素:{elem}"
-                )
-            raw_parts.append("--- 识别倍率 ---\n" + "\n".join(mult_lines))
+                raw_parts.append(rt.strip())
         raw_text = "\n\n".join(raw_parts)
 
         if not all_items:
@@ -8021,24 +8105,30 @@ class ResultPage(QWidget):
 
         confirmed = dlg.get_confirmed_data()
         if self._result_list_page:
-            for item in confirmed:
-                settings = {
-                    "label": item.get("label", ""),
-                    "basis": item.get("basis", "攻击力"),
-                    "element": item.get("element"),
-                    "skill": item.get("skill"),
-                    "effect": item.get("effect"),
-                    "category": item.get("category", ""),
-                    "base_mult": item.get("base_mult", 100.0),
-                    "mult_increase": item.get("mult_increase", 0.0),
-                    "mult_boosts": item.get("mult_boosts", [0.0, 0.0, 0.0]),
-                    "zones": item.get("zones", {}),
-                }
-                self._result_list_page.add_item(settings)
+            self._result_list_page.setUpdatesEnabled(False)
+            try:
+                for item in confirmed:
+                    settings = {
+                        "label": item.get("label", ""),
+                        "basis": item.get("basis", "攻击力"),
+                        "element": item.get("element"),
+                        "skill": item.get("skill"),
+                        "effect": item.get("effect"),
+                        "category": item.get("category", ""),
+                        "base_mult": item.get("base_mult", 100.0),
+                        "mult_increase": item.get("mult_increase", 0.0),
+                        "mult_boosts": item.get("mult_boosts", [0.0, 0.0, 0.0]),
+                        "zones": item.get("zones", {}),
+                    }
+                    self._result_list_page.add_item(settings)
+            finally:
+                self._result_list_page.setUpdatesEnabled(True)
             # 导入后自动触发一次全部计算，让刚加入的条目立刻显示伤害数值
             self._result_list_page._update_all()
 
     def _on_dmg_ocr_error(self, msg):
+        if self.sender() is not getattr(self, '_dmg_ocr_worker', None):
+            return
         if self._ocr_loading_hide:
             self._ocr_loading_hide()
         self._set_dmg_ocr_buttons_enabled(True)
@@ -10610,6 +10700,9 @@ class DmgCalculator(QMainWindow):
         else:
             base_dir = os.path.dirname(os.path.abspath(__file__))
         icon_path = os.path.join(base_dir, "icon.ico")
+        if not os.path.exists(icon_path) and getattr(sys, 'frozen', False):
+            # 打包后 icon.ico 在 _internal 子目录
+            icon_path = os.path.join(sys._MEIPASS, "icon.ico")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
         else:
@@ -10990,7 +11083,7 @@ def main():
             )
             try:
                 subprocess.Popen([sys.executable, viewer_path, "--crash"],
-                               creationflags=subprocess.CREATE_NO_WINDOW
+                               creatinflags=subprocess.CREATE_NO_WINDOW
                                if sys.platform == "win32" else 0)
             except Exception:
                 pass

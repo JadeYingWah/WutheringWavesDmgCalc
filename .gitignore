@@ -21,3 +21,9 @@ config/error_log.json
 # 缓存
 .pytest_cache/
 .claude/
+
+# 图标中间产物（只保留源文件和最终 icon.ico）
+ico/Wico*.ico
+
+# OCR 模型（大文件，运行时下载或打包时从 models/ 复制）
+models/

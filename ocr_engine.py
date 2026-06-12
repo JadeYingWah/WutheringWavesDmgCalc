@@ -31,6 +31,594 @@ _ocr_error = None
 # 所有可识别的词条名称集合（从 OCR_STAT_ALIASES 的 canonical key 提取，用于模糊匹配）
 _ALL_STAT_NAMES = None  # lazy init below
 
+# ── OCR 生僻字字符修正表 ──
+# RapidOCR 默认移动端模型字符集有限（约 6600 字），游戏中生僻字可能
+# 被识别成形近或音近的常见字。此表按 OCR 误读结果 → 正确字符。
+# 仅修正游戏中实际出现的高频生僻字，避免过度泛化造成误伤。
+# ── OCR 生僻字修正系统 ──
+# 两层策略：
+#   1. 精确词条修正表 _OCR_TERM_FIX — 已知的高频 OCR 误读 → 正确词条
+#   2. 游戏词库模糊匹配 — 对 OCR 输出做字典比对，自动纠正生僻字
+# RapidOCR 默认移动端模型字符集有限（约 6600 字），不在词表中的字
+# 无法被识别。词库模糊匹配可弥补这一缺陷。
+
+# ═══════════════════════════════════════════════════════════════
+# 一、精确词条修正表（已知高频误读 → 正确）
+# ═══════════════════════════════════════════════════════════════
+_OCR_TERM_FIX = [
+    # ── 元素/伤害类型 ──
+    ("烟灭", "湮灭"), ("淹灭", "湮灭"), ("理灭", "湮灭"),
+    ("衔射", "衍射"), ("行射", "衍射"),
+    ("冷疑", "冷凝"), ("冷宁", "冷凝"),
+    ("热溶", "热熔"), ("热容", "热熔"), ("热格", "热熔"),
+    ("气幼", "气动"), ("导雷", "导电"), ("寻电", "导电"),
+    # ── 词条名 ──
+    ("共呜效率", "共鸣效率"), ("共呜", "共鸣"),
+    ("重去", "重击"), ("重市", "重击"),
+    ("增监", "增益"), ("增溢", "增益"), ("增兰", "增益"),
+    ("常往", "常驻"), ("常仕", "常驻"), ("常注", "常驻"),
+    ("触友", "触发"), ("触法", "触发"),
+    ("技自", "技能"), ("技施", "技能"),
+    ("治广", "治疗"), ("冶疗", "治疗"),
+    ("效辛", "效率"), ("效卒", "效率"),
+    ("伤言", "伤害"), ("伤喜", "伤害"),
+    ("暴去", "暴击"), ("暴市", "暴击"),
+    # ── 角色名 ──
+    ("秋秋", "秧秧"), ("映映", "秧秧"),
+    ("今夕", "今汐"),
+    ("织霞", "炽霞"), ("只霞", "炽霞"),
+    ("白止", "白芷"),
+    ("可菜塔", "柯莱塔"),
+    ("坎持蓄拉", "坎特蕾拉"), ("次特蕾拉", "坎特蕾拉"),
+    ("佛洛洛", "弗洛洛"), ("费洛洛", "弗洛洛"),
+    ("非比", "菲比"),
+    ("灵阳", "凌阳"),
+    ("忘炎", "忌炎"),
+    ("签心", "鉴心"), ("览心", "鉴心"),
+    ("开支", "折枝"),
+    ("可丁", "珂莱塔"),
+    ("守库人", "守岸人"), ("守岩人", "守岸人"),
+    ("洛可司", "洛可可"), ("络可可", "洛可可"),
+    # ── 声骸名 ──
+    ("噪鹛", "噪鹃"),
+    ("车刀镰", "车刃镰"),
+    ("角藏", "角赢"),
+    ("振锋", "振铎"),
+    ("残猿", "戏猿"),
+    ("奏论", "奏谕"),
+    ("蹈光", "踏光"),
+    ("游磷", "游鳞"),
+    ("呼梭", "呼棱"),
+    ("呜泣", "鸣泣"),
+    ("具渊", "冥渊"),
+    ("饶夔", "骁夔"),
+    ("聚城", "聚械"),
+    # ── 武器名 ──
+    ("水夜", "永夜"),
+    ("诸万", "诸方"),
+    ("时利", "时和"),
+    ("停往", "停驻"),
+    ("核溶", "核熔"),
+    ("令州", "今州"),
+    ("原火", "源火"),
+    ("箱华", "霜华"),
+    ("渊水", "渊冰"),
+    ("心恨", "心痕"),
+    ("苍磷", "苍鳞"),
+    ("暗欧", "暗殴"),
+    ("喊锋", "藏锋"),
+    ("慢师", "偃师"),
+    ("龙洲", "龙渊"),
+    ("星乐", "星烁"),
+    ("日冤", "日冕"),
+    # ── 通用词/技能名 ──
+    ("永动", "涌动"),
+    ("畏缩", "畏缩"),
+    ("热噪", "热噪"),
+    ("熔毁", "熔毁"),
+    # ── 游戏专有术语（ocr_training_data.txt） ──
+    ("协秦", "协奏"), ("协凑", "协奏"),
+    ("谐度", "谐度"), ("失谱", "失谐"),
+    ("抗打", "抗打断"), ("凝沸", "凝滞"),
+    ("共呜链", "共鸣链"), ("声核", "声骸"),
+    ("终瑞", "终瑞"), ("偏谐", "偏谐"),
+    ("疾霆", "疾霆"), ("穿林", "穿林"),
+    # ── 角色名补充（ocr_training_data.txt） ──
+    ("吟林", "吟霖"), ("吟淋", "吟霖"),
+    ("灯订", "灯灯"), ("丁灯", "灯灯"),
+    ("釉胡", "釉瑚"), ("油瑚", "釉瑚"),
+    ("千关", "千咲"), ("千笑", "千咲"),
+    ("桃祁", "桃祈"), ("桃折", "桃祈"),
+    ("丹理", "丹瑾"), ("丹懂", "丹瑾"),
+    ("露茜", "露西"),
+    ("赞姬", "赞妮"), ("赞妣", "赞妮"),
+    ("仇沅", "仇远"), ("仇元", "仇远"),
+    ("夏宝", "夏空"),
+    ("尤娜", "尤诺"),
+    ("春药", "椿"), ("桩", "椿"),
+    ("卡提希娅", "卡提希娅"),
+    ("布兰", "布兰特"),
+    ("绯雷", "绯雪"),
+    ("卜买", "卜灵"),
+    ("渊伍", "渊武"),
+    ("西格", "西格莉卡"),
+    ("嘉贝", "嘉贝莉娜"),
+    ("莫特", "莫特斐"), ("莫特飞", "莫特斐"),
+    ("奥古斯", "奥古斯塔"),
+    # ── 武器名补充（ocr_training_data.txt） ──
+    ("时和岁念", "时和岁稔"),
+    ("浩境磷光", "浩境粼光"),
+    ("苍磷千嶂", "苍鳞千嶂"),
+    ("千古状流", "千古洑流"), ("千古伏流", "千古洑流"),
+    ("赫亦流明", "赫奕流明"), ("赫奔流明", "赫奕流明"),
+    ("不死航路", "不灭航路"),
+    ("海的呢喃", "海的呢喃"),
+    ("制傀之手", "掣傀之手"),
+    ("漪兰浮录", "漪澜浮录"), ("漪澜浮绿", "漪澜浮录"),
+    ("琼枝冰消", "琼枝冰绡"),
+    ("异向空灵", "异响空灵"), ("异响空买", "异响空灵"),
+    ("重破刀-41型", "重破刃-41型"),
+    ("风流的寓", "风流的寓言诗"),
+    ("叙别的罗", "叙别的罗曼史"),
+    ("停论喷流", "悖论喷流"), ("倍论喷流", "悖论喷流"),
+    ("无眠烈", "无眠烈火"),
+    ("酩酊的英雄", "酩酊的英雄志"),
+    ("袍泽之", "袍泽之固"),
+    ("虚饰的华", "虚饰的华尔兹"),
+    ("核溶星盘", "核熔星盘"),
+    ("钧天正", "钧天正音"),
+    # ── 共鸣链/技能名（ocr_training_data.txt） ──
+    ("每明如朔", "晦明如朔"),
+    ("临渊死", "临渊死寂"),
+    ("万象崩", "万象崩落于风间"),
+    ("界限崩", "界限崩折于刹那"),
+    ("生灭交", "生灭交错于来路"),
+    ("流光乍", "流光乍隐于长夜"),
+    ("虚相陷", "虚相陷落于掌中"),
+    ("风止息于", "风止息于无明界"),
+    # ── PP-OCRv5 特有混淆（v5 字库更大但形近字仍会混淆） ──
+    ("唤取", "换取"), ("换能", "换能"),
+    ("骈臻", "骈臻"), ("辐辕", "辐辏"),
+    ("幕刃", "幕刃"), ("斩魔", "斩魔"),
+    ("哀声", "哀声"), ("邃夜", "邃夜"),
+    ("骤雨", "骤雨"), ("狂岚", "狂岚"),
+    ("残响", "残响"), ("唤声", "唤声"),
+    ("灭音", "灭音"), ("瞬刻", "瞬刻"),
+    ("震声", "震声"), ("绞息", "绞息"),
+    ("碧霄", "碧霄"), ("苍息", "苍息"),
+    # ── UI 元素干扰修正（v5 检测到更多 UI 字符） ──
+    ("更换声骸", "更换"),
+    ("+ 25", "+25"), ("+25%", "+25"),
+]
+
+# ═══════════════════════════════════════════════════════════════
+# 二、OCR 常见字符混淆矩阵
+# ── 用于模糊匹配时计算字符相似度 ──
+# 格式: OCR误读字符 → {候选正确字符, ...}
+# ═══════════════════════════════════════════════════════════════
+_CHAR_CONFUSION = {
+    # ── 偏旁部首混淆（基于 ocr_training_data.txt 生僻字集） ──
+    "拆": {"拆", "折", "抃", "拚", "扦"},
+    "折": {"拆", "折", "抃", "浙", "哲"},
+    "抃": {"拆", "折", "抃", "拼"},
+    # 氵 ↔ 冫 ↔ ？
+    "湮": {"烟", "淹", "湮", "理", "潭"},
+    "衍": {"行", "衔", "衍", "街"},
+    "凝": {"疑", "宁", "凝", "淩", "凌"},
+    "澜": {"兰", "栏", "澜", "拦"},
+    "漪": {"奇", "倚", "漪", "椅"},
+    "淬": {"卒", "碎", "淬", "翠"},
+    "瀚": {"翰", "汗", "瀚", "旱"},
+    "沅": {"元", "阮", "沅", "玩"},
+    "澧": {"礼", "澧", "豊"},
+    # 火 ↔ ？
+    "熔": {"溶", "容", "熔", "格", "榕"},
+    "炽": {"织", "只", "炽", "帜", "职"},
+    "烬": {"尽", "进", "烬", "近"},
+    # 口 ↔ 日
+    "鸣": {"呜", "鸣"},
+    "吟": {"今", "令", "吟", "铃", "玲"},
+    "啸": {"萧", "潇", "啸", "肃"},
+    # 禾 ↔ 木
+    "秧": {"映", "秋", "秧", "殃", "英"},
+    # 氵
+    "汐": {"夕", "汐", "砂"},
+    # 王/玉旁
+    "珑": {"龙", "尤", "珑", "陇"},
+    "珩": {"行", "衔", "珩", "街"},
+    "玦": {"决", "块", "玦", "诀"},
+    "琮": {"宗", "崇", "琮", "综"},
+    "璨": {"粲", "灿", "璨", "餐"},
+    "瑾": {"堇", "勤", "瑾", "仅"},
+    # 日旁
+    "曦": {"嘻", "义", "曦", "稀"},
+    "曙": {"暑", "署", "曙", "著"},
+    "晦": {"每", "海", "晦", "梅"},
+    "暄": {"宣", "宜", "暄", "渲"},
+    "晔": {"华", "叶", "晔", "桦"},
+    # 金旁
+    "铎": {"锋", "铎", "择", "泽"},
+    "钧": {"均", "钧", "钓"},
+    "鉴": {"签", "览", "鉴", "监", "篮"},
+    # 鱼旁
+    "鳞": {"磷", "鳞", "麟"},
+    # ── 其他结构相似 ──
+    "儛": {"舞", "潮", "侮", "梅"},
+    "夔": {"饶", "骁", "夔", "莫"},
+    "谕": {"论", "谕", "喻", "偷"},
+    "掣": {"制", "裂", "掣"},
+    "傀": {"鬼", "愧", "傀", "瑰"},
+    "酩": {"名", "铭", "酩", "茗"},
+    "酊": {"丁", "钉", "酊", "叮"},
+    "霁": {"齐", "济", "霁", "挤"},
+    "霓": {"尼", "泥", "霓", "呢"},
+    "霆": {"廷", "庭", "霆", "挺"},
+    "砚": {"见", "现", "砚", "观"},
+    "绽": {"定", "淀", "绽", "锭"},
+    "壑": {"容", "豁", "壑", "浴"},
+    "麓": {"鹿", "路", "麓", "露"},
+    "霖": {"林", "淋", "霖", "琳"},
+    "帧": {"侦", "贞", "帧", "真"},
+    "寰": {"还", "环", "寰", "缓"},
+    "朔": {"塑", "溯", "朔"},
+    "缥": {"票", "漂", "缥", "飘"},
+    "缈": {"秒", "渺", "缈", "妙"},
+    "笙": {"生", "声", "笙", "牲"},
+    "筱": {"条", "修", "筱", "悠"},
+    "敕": {"来", "刺", "敕", "策"},
+    "澹": {"詹", "淡", "澹", "檐"},
+    "肇": {"户", "启", "肇"},
+    "潼": {"童", "同", "潼", "撞"},
+    "绡": {"肖", "消", "绡", "销"},
+    "洑": {"伏", "犬", "洑", "状"},
+    "粼": {"磷", "鳞", "粼", "麟"},
+    "燧": {"遂", "隧", "燧", "邃"},
+    "鸾": {"亦", "鸾", "变"},
+    # ── PP-OCRv5 扩展混淆对（v5 字库 ≥15000，混淆更多发生在形近字之间） ──
+    "阖": {"阁", "合", "阖", "阂"},
+    "辏": {"秦", "奏", "辏", "凑"},
+    "骈": {"并", "拼", "骈", "饼"},
+    "臻": {"秦", "至", "臻", "榛"},
+    "辐": {"福", "幅", "辐", "副"},
+    "飓": {"具", "飓", "俱"},
+    "岚": {"风", "岚", "岗"},
+    "邃": {"遂", "隧", "邃", "燧"},
+    "斩": {"折", "斩", "轨"},
+    "骤": {"聚", "骤", "暴"},
+    "霄": {"宵", "霄", "销"},
+    "绞": {"交", "校", "绞", "效"},
+    "隙": {"陈", "希", "隙", "欷"},
+    "褶": {"习", "折", "褶", "摺"},
+    "冥": {"具", "冥", "寞"},
+    "渊": {"渊", "洲", "测"},
+    "骁": {"尧", "骁", "饶"},
+    "谕": {"论", "偷", "谕", "喻"},
+    "璨": {"粲", "餐", "璨", "灿"},
+    "瑾": {"仅", "勤", "瑾", "谨"},
+    "釉": {"由", "油", "釉", "轴"},
+    "瑚": {"胡", "湖", "瑚", "糊"},
+    "咲": {"关", "笑", "咲", "关"},
+    "洑": {"伏", "犬", "状", "洑"},
+    "徙": {"徒", "徙", "从"},
+    "祓": {"拔", "祓", "跋"},
+    "磔": {"桀", "磔", "碟"},
+    "砺": {"厉", "励", "砺", "蛎"},
+    "弑": {"杀", "试", "弑", "式"},
+    "锢": {"固", "锢", "涸"},
+    "铿": {"坚", "铿", "鉴"},
+    "锵": {"将", "锵", "枪"},
+    "罅": {"乎", "罅", "呼"},
+    "啮": {"齿", "啮", "龄"},
+    "魇": {"厌", "魔", "魇"},
+    "魈": {"肖", "鬼", "魈"},
+    "鬣": {"鼠", "猎", "鬣"},
+}
+
+# ═══════════════════════════════════════════════════════════════
+# 三、游戏词库（所有已知游戏术语，用于模糊匹配纠错）
+# ═══════════════════════════════════════════════════════════════
+_GAME_TERMS = set()
+# 构建词库（合并所有来源）
+def _build_game_terms():
+    """从所有数据源构建完整游戏词库（含 ocr_training_data.txt 全部术语）。"""
+    if _GAME_TERMS:
+        return _GAME_TERMS
+
+    # ── 声骸词条名 ──
+    _GAME_TERMS.update(_ALL_STAT_NAMES)
+    _GAME_TERMS.update(_OCR_STAT_ALIASES.keys())
+
+    # ── 元素 ──
+    _GAME_TERMS.update(["冷凝", "热熔", "气动", "导电", "衍射", "湮灭"])
+
+    # ── 技能类型 ──
+    _GAME_TERMS.update(["普攻", "重击", "共鸣技能", "共鸣解放", "变奏技能",
+                         "声骸技能", "常态攻击", "共鸣回路", "延奏技能",
+                         "空中攻击", "闪避", "极限闪避", "弹刀"])
+
+    # ── 异常效应 ──
+    _GAME_TERMS.update(["光噪", "风蚀", "虚湮", "聚爆", "霜渐", "电磁"])
+
+    # ── 词条类型 ──
+    _GAME_TERMS.update(["常驻", "触发", "治疗", "效率", "伤害",
+                         "增益", "攻击", "防御", "生命", "暴击"])
+
+    # ── 从 _OCR_TERM_FIX 提取所有正确词条 ──
+    for _, correct in _OCR_TERM_FIX:
+        _GAME_TERMS.add(correct)
+
+    # ══════════════════════════════════════════════════════════
+    # 角色名（完整，来自 ocr_training_data.txt）
+    # ══════════════════════════════════════════════════════════
+    _GAME_TERMS.update([
+        "漂泊者", "漂泊者·衍射", "漂泊者·湮灭", "漂泊者·气动",
+        "今汐", "露西", "赞妮", "菲比", "守岸人", "维里奈",
+        "卡提希娅", "夏空", "忌炎", "鉴心", "西格莉卡", "仇远",
+        "尤诺", "秧秧", "秋水",
+        "珂莱塔", "柯莱塔", "折枝", "凌阳", "绯雪", "散华", "釉瑚", "白芷",
+        "椿", "坎特蕾拉", "洛可可", "弗洛洛", "千咲", "丹瑾", "桃祈",
+        "长离", "布兰特", "露帕", "安可", "炽霞", "嘉贝莉娜", "莫特斐",
+        "吟霖", "卡卡罗", "相里要", "灯灯", "奥古斯塔", "卜灵", "渊武",
+    ])
+
+    # ══════════════════════════════════════════════════════════
+    # 武器名（完整，来自 ocr_training_data.txt）
+    # ══════════════════════════════════════════════════════════
+    _GAME_TERMS.update([
+        # 5星
+        "时和岁稔", "浩境粼光", "苍鳞千嶂", "千古洑流",
+        "赫奕流明", "不灭航路", "死与舞", "停驻之烟",
+        "悲喜剧", "擎渊怒涛", "诸方玄枢", "海的呢喃",
+        "和光回唱", "掣傀之手", "星序协响", "漪澜浮录", "琼枝冰绡",
+        # 4星
+        "容赦的沉思录", "凋亡频移", "东落", "异响空灵",
+        "永夜", "永夜长明", "纹秋", "重破刃-41型",
+        "风流的寓言诗", "心之锚", "永续坍缩", "不归孤军",
+        "行进序曲", "西升", "飞景", "瞬斩刀-18型",
+        "叙别的罗曼史", "悖论喷流", "华彩乐段", "奔雷",
+        "无眠烈火", "穿击枪-26型", "飞逝",
+        "酩酊的英雄志", "尘云旋臂", "呼啸重音", "袍泽之固",
+        "金掌", "钢影拳-21丁型", "骇行",
+        "渊海回声", "虚饰的华尔兹", "核熔星盘", "今州守望",
+        "奇幻变奏", "异度", "清音", "鸣动仪-25型",
+        # 3星
+        "钧天正音", "戍关长刃·定军", "暗夜长刃·玄明",
+        "源能长刃·测壹", "远行者长刃·辟路",
+        "原初长刃·朴石", "教学长刃",
+        "戍关迅刀·镇海", "暗夜迅刀·黑闪",
+        "源能迅刀·测贰", "远行者迅刀·旅迹",
+        "原初迅刀·鸣雨", "教学迅刀",
+        "戍关佩枪·平云", "暗夜佩枪·暗星",
+        "源能佩枪·测叁", "远行者佩枪·洞察",
+        "原初佩枪·穿林", "教学佩枪",
+        "戍关臂铠·拔山", "暗夜臂铠·夜芒",
+        "源能臂铠·测肆", "远行者臂铠·破障",
+        "原初臂铠·磐岩", "教学臂铠",
+        "戍关音感仪·留光", "暗夜矩阵·暝光",
+        "源能音感仪·测五", "远行者矩阵·探幽",
+        "原初音感仪·听浪", "教学音感仪",
+        # 别名
+        "诸方", "时和", "停驻", "核熔", "干面", "今州",
+        "源火", "霜华", "渊冰", "心痕", "苍鳞", "暗殴", "藏锋",
+        "偃师", "龙渊", "星烁", "日冕", "血誓盟约", "裁春",
+        "尘云", "不归", "浩境", "诸手", "渊海", "千音",
+        "静默", "深海", "尘世", "幻饵", "碎磷", "不返", "狂想", "重破",
+    ])
+
+    # ══════════════════════════════════════════════════════════
+    # 声骸名
+    # ══════════════════════════════════════════════════════════
+    _GAME_TERMS.update([
+        "噪鹃", "车刃镰", "角赢", "振铎", "戏猿", "奏谕",
+        "踏光", "游鳞", "呼棱", "鸣泣", "冥渊", "骁夔", "聚械",
+        "共眠", "啸叫", "幼岩", "裂变", "破阵", "云闪", "诛罗",
+        "抃风儛润", "芙露德莉斯", "审判", "寒岁", "灼热",
+        "残象", "声骸", "声骸技能", "声骸异能",
+    ])
+
+    # ══════════════════════════════════════════════════════════
+    # 合鸣效果/声骸套装名
+    # ══════════════════════════════════════════════════════════
+    _GAME_TERMS.update([
+        "流云逝尽之空", "浮星", "畏缩", "热噪", "熔毁", "涌动",
+        "流云", "逝尽", "浮星坠辰", "彻空", "彻空之雷",
+        "哀恸", "哀恸之声", "哀声鸷枭",
+        "邃夜", "邃夜逐冥", "斩魔", "斩魔之镰",
+        "狂岚", "狂岚骤雨", "残响", "残响之石",
+        "轻云", "轻云出月", "凝夜", "凝夜之霜",
+        "隐士", "隐士之叹", "裂变之雷", "啸叫之岩",
+        "幼岩之壳", "破阵之刃", "云闪之鳞", "诛罗之爪",
+        "共眠之火", "审判之锤", "寒岁之冰", "灼热之炎",
+        "衍射之塔", "湮灭之核", "气动之翼",
+    ])
+
+    # ══════════════════════════════════════════════════════════
+    # 技能名（漂泊者三条路线 + 战斗系统，来自 ocr_training_data.txt）
+    # ══════════════════════════════════════════════════════════
+    _GAME_TERMS.update([
+        # 漂泊者·衍射
+        "化声为型", "浮声千斩", "万物微尘", "回响奏鸣", "震声", "瞬刻",
+        # 漂泊者·湮灭
+        "灭音", "残响", "临渊死寂", "唤声",
+        # 漂泊者·气动
+        "抃风儛润", "缥缈无相", "万象归墟", "风蚀",
+        "苍息破象", "碧霄断行", "绞息",
+        # 共鸣链（漂泊者·衍射）
+        "始源纪行", "微物细语", "尘声百面", "连音扫弦", "回声流转", "长路归鸣",
+        # 共鸣链（漂泊者·湮灭）
+        "弦外知机", "晦明如朔", "声息涌动", "尘声湮灭", "万物寂听", "暗涌潮升",
+        # 共鸣链（漂泊者·气动）
+        "风止息于无明界", "流光乍隐于长夜", "虚相陷落于掌中",
+        "界限崩折于刹那", "生灭交错于来路", "万象崩落于风间",
+        # 战斗术语
+        "共鸣技能", "共鸣解放", "共鸣回路", "共鸣链",
+        "变奏技能", "延奏技能", "常态攻击",
+        "协奏", "协同攻击", "牵引", "共振摧毁",
+        "偏谐值", "失谐", "谐度破坏", "谐度破坏技", "谐度破坏伤害",
+        "凝滞", "抗打断",
+    ])
+
+    # ══════════════════════════════════════════════════════════
+    # 游戏专有词汇（来自 ocr_training_data.txt）
+    # ══════════════════════════════════════════════════════════
+    _GAME_TERMS.update([
+        "鸣潮", "漂泊者", "共鸣者", "共鸣", "声骸", "残象",
+        "岁主", "瑝珑", "今州", "黎那汐塔", "黑海岸",
+        "夜归", "天工", "巡宁所", "边庭", "军策府", "华胥研究院",
+        "无音区", "共鸣频率", "拉贝尔曲线", "超频", "声痕",
+        "今令尹", "鸣钟广场", "雪莲酥",
+        "召唤", "变身", "固有技能", "属性加成", "突破",
+    ])
+
+    # ══════════════════════════════════════════════════════════
+    # 通用游戏术语
+    # ══════════════════════════════════════════════════════════
+    _GAME_TERMS.update([
+        "倍率增加", "倍率提升", "伤害加成", "伤害加深", "伤害提升",
+        "抗性", "抗性减少", "抗性无视", "无视防御", "忽视防御",
+        "减少防御", "全属性", "共鸣链",
+        "谐振", "合鸣", "延奏", "变奏",
+        "百分比攻击", "百分比生命", "百分比防御",
+        "主力输出", "快速协奏", "生存治疗", "伤害加深",
+        "骇破响应", "共鸣解放充能",
+        "暴击率", "暴击伤害", "共鸣效率", "治疗效果加成",
+        # ── PROJECT_SUMMARY.md 补充：游戏系统术语 ──
+        "合鸣效果", "合鸣筛选", "声骸推荐", "声骸列表",
+        "装配声骸", "更换声骸", "强化声骸", "卸下声骸",
+        "排序", "筛选", "锁定", "解锁", "详情",
+        "切换配置", "一键装配", "一键卸下",
+        # ── 战斗机制 ──
+        "光噪效应", "风蚀效应", "虚湮效应", "聚爆效应", "霜渐效应", "电磁效应",
+        "极限闪避", "空中攻击", "弹刀", "闪避反击",
+        "协奏值", "共鸣值", "连携技",
+        # ── 面板/界面 ──
+        "基础属性", "进阶属性", "详细属性",
+        "声骸评分", "推荐度", "适用角色",
+        "主属性", "副属性", "随机属性",
+        # ── 数值描述 ──
+        "百分比", "固定值", "基础数值",
+        "当前值", "最大值", "最小值",
+        # ── 技能效果 ──
+        "技能伤害", "持续伤害", "爆发伤害",
+        "护盾", "减伤", "增伤", "易伤",
+        "回复生命", "回复耐力",
+        # ── 声骸相关补充 ──
+        "声骸等级", "声骸经验", "声骸突破",
+        "调谐", "湮灭回响", "残响石",
+        "无音区", "凝滞", "抗打断",
+    ])
+
+    return _GAME_TERMS
+
+
+# ═══════════════════════════════════════════════════════════════
+# 字符相似度计算
+# ═══════════════════════════════════════════════════════════════
+def _char_similar(c1, c2):
+    """判断两个字符是否 OCR 层面的相似（相同或来自已知混淆对）。"""
+    if c1 == c2:
+        return True
+    conf = _CHAR_CONFUSION.get(c1)
+    if conf and c2 in conf:
+        return True
+    conf = _CHAR_CONFUSION.get(c2)
+    if conf and c1 in conf:
+        return True
+    return False
+
+
+def _fuzzy_match_score(ocr_text, dict_term):
+    """计算 OCR 文本与词库术语的模糊匹配得分（越高越相似）。
+    使用 LCS 思路 + 字符混淆宽容，处理 OCR 的漏字/多字/误字。
+    返回 (score, dict_term)。
+    """
+    if not ocr_text or not dict_term:
+        return 0.0
+    if ocr_text == dict_term:
+        return 1.0
+
+    o_len, d_len = len(ocr_text), len(dict_term)
+    if o_len == 0 or d_len == 0:
+        return 0.0
+
+    # DP: 最长公共子序列（允许字符混淆宽容）
+    dp = [[0] * (d_len + 1) for _ in range(o_len + 1)]
+    for i in range(o_len):
+        for j in range(d_len):
+            if _char_similar(ocr_text[i], dict_term[j]):
+                dp[i + 1][j + 1] = dp[i][j] + 1
+            else:
+                dp[i + 1][j + 1] = max(dp[i][j + 1], dp[i + 1][j])
+
+    lcs = dp[o_len][d_len]
+    # 得分 = LCS 长度 / 较长字符串的长度（处理 OCR 漏字/多字）
+    score = lcs / max(o_len, d_len) if max(o_len, d_len) > 0 else 0.0
+    return score
+
+
+# ═══════════════════════════════════════════════════════════════
+# 词库模糊匹配修正
+# ═══════════════════════════════════════════════════════════════
+_FUZZY_MIN_LEN = 2        # 最短文本才做模糊匹配（过短无意义）
+_FUZZY_MIN_SCORE = 0.55   # 最低相似度阈值
+_FUZZY_MIN_LEN_RATIO = 0.4  # 长度比下限（OCR 漏字不能太严重）
+
+
+def _fuzzy_correct(ocr_text, game_terms):
+    """对 OCR 文本做词库模糊匹配修正。
+    若 OCR 文本与词库中某个术语高度相似但又不完全匹配，则返回纠正后的术语。
+    否则返回原文本。
+    """
+    if not ocr_text or len(ocr_text) < _FUZZY_MIN_LEN:
+        return ocr_text
+
+    # 已在词库中，无需修正
+    if ocr_text in game_terms:
+        return ocr_text
+
+    best_score = 0.0
+    best_term = None
+
+    for term in game_terms:
+        t_len = len(term)
+        o_len = len(ocr_text)
+        # 长度比过滤：差异太大直接跳过
+        if t_len == 0 or o_len == 0:
+            continue
+        len_ratio = min(o_len, t_len) / max(o_len, t_len)
+        if len_ratio < _FUZZY_MIN_LEN_RATIO:
+            continue
+
+        score = _fuzzy_match_score(ocr_text, term)
+        if score > best_score:
+            best_score = score
+            best_term = term
+
+    if best_score >= _FUZZY_MIN_SCORE and best_term is not None:
+        return best_term
+    return ocr_text
+
+
+def _apply_ocr_char_fix(text):
+    """对 OCR 识别文本做生僻字修正。
+    1. 精确词条修正（已知高频误读 → 正确）
+    2. 游戏词库模糊匹配（补充模型词表外的生僻字）
+    """
+    if not text:
+        return text
+
+    # 第一层：精确词条修正
+    for wrong, correct in _OCR_TERM_FIX:
+        if wrong in text:
+            text = text.replace(wrong, correct)
+
+    # 第二层：词库模糊匹配
+    game_terms = _build_game_terms()
+    text = _fuzzy_correct(text, game_terms)
+
+    return text
+
+
 # 常见的 OCR 混淆映射：OCR 可能把某些字符读错
 _OCR_STAT_ALIASES = {
     "攻击力": ["攻击力", "攻擊力", "攻击", "ATK", "atk"],
@@ -84,13 +672,37 @@ class _RapidOCRAdapter:
             if meipass and meipass not in sys.path:
                 sys.path.insert(0, meipass)
         from rapidocr_onnxruntime import RapidOCR
-        # 降低阈值以捕获大字 COST 数字、小字 Z/X 等被检测模型过滤的内容
+
+        # PP-OCRv5 模型（字符集 ≥15000，含生僻字）
+        # 策略：mobile 检测（快，4.6 MB）+ server 识别（准，81 MB）
+        _model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
+        _rec_model = os.path.join(_model_dir, 'ch_PP-OCRv5_rec_server_infer.onnx')
+        _det_mobile = os.path.join(_model_dir, 'ch_PP-OCRv5_mobile_det.onnx')
+        _det_server = os.path.join(_model_dir, 'ch_PP-OCRv5_server_det.onnx')
+
+        # 优先 mobile 检测（快 10 倍），不存在则用 server，都没有则回退默认
+        _rec_path = _rec_model if os.path.exists(_rec_model) else None
+        if os.path.exists(_det_mobile):
+            _det_path = _det_mobile
+            _logger.info("使用 PP-OCRv5 mobile 检测模型（高速）")
+        elif os.path.exists(_det_server):
+            _det_path = _det_server
+            _logger.info("使用 PP-OCRv5 server 检测模型")
+        else:
+            _det_path = None
+
+        if _rec_path:
+            _logger.info("使用 PP-OCRv5 server 识别模型: %s", _rec_path)
+
+        # det_limit_side_len=480：v5 检测模型精度更高，低分辨率即可；
+        # 全屏截图已在上游裁剪到目标区域，无需高分辨率检测
         self._ocr = RapidOCR(
             text_score=0.2,
             det_thresh=0.15,
             det_box_thresh=0.25,
-            det_model_path=None,
-            det_limit_side_len=1280,
+            det_model_path=_det_path,
+            rec_model_path=_rec_path,
+            det_limit_side_len=480,
         )
 
     def predict(self, image_path):
@@ -100,7 +712,9 @@ class _RapidOCRAdapter:
         rec_texts, rec_scores, dt_polys = [], [], []
         if result:
             for box, text, conf in result:
-                rec_texts.append(text)
+                # 生僻字词条修正
+                fixed_text = _apply_ocr_char_fix(text)
+                rec_texts.append(fixed_text)
                 rec_scores.append(conf)
                 dt_polys.append(box)
         return [{"rec_texts": rec_texts, "rec_scores": rec_scores, "dt_polys": dt_polys}]
@@ -129,12 +743,29 @@ def _qimage_to_temp_file(qimage):
 
 
 def _is_fullscreen_image(w, h):
-    """判断宽高是否接近常见显示器分辨率（±6% 容差）。"""
-    _monitor_res = [(1920, 1080), (2560, 1440), (3840, 2160),
-                    (1366, 768), (1680, 1050), (1920, 1200)]
+    """判断宽高是否接近常见显示器分辨率（±6% 容差）。
+    无法精确匹配时，检查是否超过 1M 像素且接近标准宽高比（16:9/16:10/21:9/3:2）。"""
+    _monitor_res = [
+        # 16:9
+        (1920, 1080), (2560, 1440), (3840, 2160), (1366, 768), (1280, 720),
+        # 16:10
+        (1920, 1200), (2560, 1600), (2880, 1800), (1680, 1050),
+        # 21:9 ultrawide
+        (3440, 1440), (2560, 1080), (3840, 1600), (5120, 2160),
+        # 3:2
+        (3000, 2000), (2256, 1504), (2160, 1440), (2736, 1824),
+        # 4:3
+        (1600, 1200), (2048, 1536),
+    ]
     for mw, mh in _monitor_res:
         if abs(w - mw) <= mw * 0.06 and abs(h - mh) <= mh * 0.06:
             return True
+    # 兜底：>1M 像素 + 标准宽高比
+    if w * h >= 1000000:
+        ratio = w / h
+        for std in (16/9, 16/10, 21/9, 3/2, 4/3):
+            if abs(ratio - std) < 0.05:
+                return True
     return False
 
 
@@ -147,8 +778,9 @@ def _crop_to_mult_region(input_path):
     w, h = img.size
     if not _is_fullscreen_image(w, h):
         return input_path
+    # 严格取左侧 1/3：倍率面板在屏幕左 33.3%
     left, top = 0, 0
-    right, bottom = w // 2, h
+    right, bottom = w // 3, h
     cropped = img.crop((left, top, right, bottom))
     fd, path = tempfile.mkstemp(suffix=".png")
     os.close(fd)
@@ -158,7 +790,8 @@ def _crop_to_mult_region(input_path):
 
 
 def _crop_to_echo_region(input_path):
-    """全屏截图 → 裁剪右上"口"字区域（声骸卡片所在位置）。
+    """全屏截图 → 裁剪右上 1/4 区域（声骸卡片所在位置）。
+    排除右下技能描述/套装效果/特征码等干扰信息。
     非全屏则返回原路径。"""
     from PIL import Image
     import tempfile
@@ -166,14 +799,14 @@ def _crop_to_echo_region(input_path):
     w, h = img.size
     if not _is_fullscreen_image(w, h):
         return input_path
-    # 裁剪右上 1/4："田"字的右上"口"
+    # 严格取右上 1/4：声骸卡片位于屏幕右上半区
     left, top = w // 2, 0
     right, bottom = w, h // 2
     cropped = img.crop((left, top, right, bottom))
     fd, path = tempfile.mkstemp(suffix=".png")
     os.close(fd)
     cropped.save(path, "PNG")
-    _logger.info("全屏截图 %d×%d → 声骸裁剪右上区域 (%d×%d)", w, h, right - left, bottom - top)
+    _logger.info("全屏截图 %d×%d → 声骸裁剪右上 1/4 (%d×%d)", w, h, right - left, bottom - top)
     return path
 
 
@@ -422,7 +1055,11 @@ def _parse_ocr_results(ocr_results):
                     break
             else:
                 # COST / +25 / 合鸣 / 声骸技能 / 简述 等 UI 污染
-                if re.search(r'COST|合鸣|声骸|简述|推荐|筛选|全部|冷却|召唤|装配|伤害加成提升|技能冷却|共鸣回响|鸣式|虚造|\+25', t, re.IGNORECASE):
+                # PP-OCRv5 检测范围更大，需覆盖更多 UI 标签
+                if re.search(r'COST|合鸣|声骸|简述|推荐|筛选|全部|冷却|召唤|装配|'
+                             r'伤害加成提升|技能冷却|共鸣回响|鸣式|虚造|更换|'
+                             r'切换|详情|强化|卸下|一键|排序|锁定|解锁|'
+                             r'\+25|\+\s*25', t, re.IGNORECASE):
                     continue
                 # 短文本（≤2字）可能是污染标签
                 if len(t) <= 2:
@@ -491,6 +1128,19 @@ def _parse_ocr_results(ocr_results):
     cost_line_idx = None
     _cost_label_re = re.compile(r'COST|费用?|費', re.IGNORECASE)
 
+    # 提前定义：后续 COST 候选评分需要用到
+    _value_re_early = re.compile(r'([\d,]+\.?\d*)\s*(%|％)?')
+
+    def _quick_stat_name(text):
+        """快速词条名匹配（COST 候选评分用，不依赖 _match_stat_name 的模糊匹配）"""
+        clean = re.sub(r'^[\s＋+\->↗]+', '', text.strip())
+        for alias, canonical in _SORTED_ALIASES:
+            if alias.lower() in clean.lower():
+                return canonical
+        return None
+
+    # 第一遍：收集所有 COST 候选行索引
+    _cost_candidates = []  # [(line_idx, cost_value or None), ...]
     for idx, line in enumerate(lines):
         m = cost_pattern.search(_line_text(line))
         if m:
@@ -500,66 +1150,69 @@ def _parse_ocr_results(ocr_results):
                     c = int(g)
                     break
             if c in (1, 3, 4):
-                cost = c
-                cost_line_idx = idx
-                break
+                _cost_candidates.append((idx, c))
+            elif _cost_label_re.search(_line_text(line)):
+                _cost_candidates.append((idx, None))
+        elif _cost_label_re.search(_line_text(line)):
+            # 只有 COST 标签，数字在相邻行
+            _cost_candidates.append((idx, None))
 
-    # 同一行没找到数字 → COST 标签和数字被 OCR 拆到相邻行
+    if _cost_candidates:
+        # 简单规则：同行有 COST+数字 > 同行 COST 无数字 > 无 COST
+        # 同行有数字的 COST 最可靠（如 "COST 4"），直接取它
+        _with_digit = [(idx, c) for idx, c in _cost_candidates if c is not None]
+        if _with_digit:
+            # 有同行数字：多个时选周围词条最多的
+            if len(_with_digit) == 1:
+                cost = _with_digit[0][1]
+                cost_line_idx = _with_digit[0][0]
+            else:
+                _best_idx, _best_cost, _best_score = _with_digit[0][0], _with_digit[0][1], -1
+                for cand_idx, cand_cost in _with_digit:
+                    _names_found = sum(1 for ahead in range(cand_idx + 1, min(cand_idx + 20, len(lines)))
+                                      if _quick_stat_name(_line_text(lines[ahead])))
+                    if _names_found > _best_score:
+                        _best_score, _best_idx, _best_cost = _names_found, cand_idx, cand_cost
+                cost, cost_line_idx = _best_cost, _best_idx
+        else:
+            # 全都没有同行数字（都是孤立的 "COST" 标签）→ 选周围词条最多的
+            _best_idx, _best_cost, _best_score = _cost_candidates[0][0], None, -1
+            for cand_idx, _ in _cost_candidates:
+                _names_found = sum(1 for ahead in range(cand_idx + 1, min(cand_idx + 20, len(lines)))
+                                  if _quick_stat_name(_line_text(lines[ahead])))
+                if _names_found > _best_score:
+                    _best_score, _best_idx = _names_found, cand_idx
+            cost, cost_line_idx = None, _best_idx
+    else:
+        # 没有候选 —— 走原来的逻辑，扫描全行找 COST 数字
+        cost = None
+        cost_line_idx = None
+
+    # 如果最佳候选没有直接读到的数字，从附近行提取
     if cost is None:
-        for idx, line in enumerate(lines):
-            lt = _line_text(line)
-            if _cost_label_re.search(lt):
-                # 按 Y 距离排序取最近的几行（COST 数字可能因字号不同被归到邻近行）
-                line_y = sum(e["y"] for e in line) / len(line)
-                nearby = sorted(
-                    [i for i in range(len(lines)) if i != idx],
-                    key=lambda i: abs(
-                        (sum(e["y"] for e in lines[i]) / len(lines[i])) - line_y
-                    )
-                )
-                for adj in nearby[:4]:
-                    adj_text = _line_text(lines[adj]).strip()
-                    nums = re.findall(r'\d+', adj_text)
-                    for ns in nums:
-                        n = int(ns)
-                        if n in (1, 3, 4):
-                            cost = n
-                            cost_line_idx = idx
-                            break
-                    if cost is not None:
-                        break
-                    # 短行纯数字但被 OCR 误读 → 尝试还原
-                    if len(adj_text) <= 4 and nums:
-                        for ns in nums:
-                            n = int(ns)
-                            # 两位数：30→3, 40→4, 33→3, 44→4
-                            if 10 <= n <= 99:
-                                d = n // 10 if n % 10 == 0 else n // 11
-                                if d in (1, 3, 4) and n in (d * 10, d * 11):
-                                    cost = d
-                                    cost_line_idx = idx
-                                    break
-                            # 三位数：300→3, 400→4, 150→(取首位)1
-                            if 100 <= n <= 999 and n % 10 == 0:
-                                d = n // 100
-                                if d in (1, 3, 4):
-                                    cost = d
-                                    cost_line_idx = idx
-                                    break
-                        if cost is not None:
-                            break
-                if cost is not None:
+        # 策略：从最佳 COST 候选行出发，向上下扫描附近行
+        # 先尝试直接提取数字 1/3/4，再尝试字符别名恢复（如 "G"→4）
+        _scan_center = _best_idx if _cost_candidates else 0
+        # 按 Y 距离从近到远检查周围行
+        _center_y = sum(e["y"] for e in lines[_scan_center]) / len(lines[_scan_center])
+        _nearby = sorted(
+            [i for i in range(len(lines)) if i != _scan_center],
+            key=lambda i: abs((sum(e["y"] for e in lines[i]) / len(lines[i])) - _center_y)
+        )
+        # 先尝试直接提取数字
+        for adj in _nearby[:5]:
+            adj_text = _line_text(lines[adj]).strip()
+            nums = re.findall(r'\d+', adj_text)
+            for ns in nums:
+                n = int(ns)
+                if n in (1, 3, 4):
+                    cost = n
+                    cost_line_idx = _scan_center
                     break
-
-    # COST 同行字符被 OCR 误读 → 字符级恢复（如 "1" 被读成 "Z"）
-    if cost is None:
-        for idx, line in enumerate(lines):
-            lt = _line_text(line)
-            if not _cost_label_re.search(lt):
-                continue
-            # 去掉 COST 标签，分析同行剩余文本
-            remainder = _cost_label_re.sub("", lt).strip()
-            # 逐个词条检查（保留原始分词顺序）
+            if cost is not None:
+                break
+        # 直接提取失败 → 字符别名恢复（处理 OCR 误读）
+        if cost is None:
             _digit_aliases = {
                 # ——— 1 ———
                 "Z": 1, "z": 1, "乙": 1, "l": 1, "I": 1, "|": 1,
@@ -568,22 +1221,26 @@ def _parse_ocr_results(ocr_results):
                 "了": 3, "ō": 3, "ヨ": 3, "Ξ": 3,
                 # ——— 4 ———
                 "乡": 4, "午": 4, "キ": 4,
+                "G": 4, "g": 4, "C": 4, "c": 4,  # PP-OCRv5 常见：4 → G/C
             }
-            for e in line:
-                t = e["text"].strip()
-                if t in _digit_aliases:
-                    cost = _digit_aliases[t]
-                    cost_line_idx = idx
-                    break
-                # 通用单字符匹配：单字母/符号被误读
-                if len(t) == 1 and t not in _digit_aliases:
-                    if t.isalpha() and t.upper() in ("Z", "I", "L"):
-                        # Z → 1, I → 1, L → 1 (common OCR confusion for "1")
-                        cost = 1
-                        cost_line_idx = idx
+            # 优先检查最佳 COST 候选行附近的字符（而非全图扫描）
+            _alias_scan = [_scan_center] + _nearby[:6]
+            for idx in _alias_scan:
+                line = lines[idx]
+                for e in line:
+                    t = e["text"].strip()
+                    if t in _digit_aliases:
+                        cost = _digit_aliases[t]
+                        cost_line_idx = _scan_center
                         break
-            if cost is not None:
-                break
+                    # 通用单字符匹配
+                    if len(t) == 1 and t not in _digit_aliases:
+                        if t.isalpha() and t.upper() in ("Z", "I", "L"):
+                            cost = 1
+                            cost_line_idx = _scan_center
+                            break
+                if cost is not None:
+                    break
 
     # —— 噪声行预过滤：如果总行数>10且已知词条命中率<30%，剔除明显是UI污染的整行 ——
     if len(lines) > 10:
@@ -591,7 +1248,9 @@ def _parse_ocr_results(ocr_results):
         _noise_kw = (
             r'声骸技能|合鸣效果|简述|推荐|筛选|全部|冷却|召唤|装配|伤害加成提升|'
             r'技能冷却|共鸣回响|鸣式|虚造|装配该|首位|对敌人|造成|伤害。|使用声骸|'
-            r'技能。|\+25'
+            r'技能。|攻击目标|破空幻|八段|九段|十段|的一段|并造成|'
+            r'更换|切换|详情|强化|卸下|一键|排序|锁定|解锁|'
+            r'\+25|\+\s*25'
         )
         _noise_re = re.compile(_noise_kw, re.IGNORECASE)
         valid_lines = []
@@ -599,7 +1258,15 @@ def _parse_ocr_results(ocr_results):
         for i, lt in enumerate(line_texts):
             if not lt.strip():
                 continue
-            if _noise_re.search(lt):
+            # COST 行保护：不删除
+            if i == cost_line_idx:
+                valid_lines.append(i)
+                _cost_line_kept = len(valid_lines) - 1
+                continue
+            # 已知词条名保护：含词条名别名的行不受噪声过滤（如 "攻击 +25"）
+            _has_stat_name = any(alias.lower() in lt.lower()
+                                for alias, _ in _SORTED_ALIASES)
+            if _noise_re.search(lt) and not _has_stat_name:
                 continue
             # 纯数字且不是合理的属性值 → 噪声
             clean = re.sub(r'\s*%?\s*$', '', lt.strip())
@@ -650,8 +1317,8 @@ def _parse_ocr_results(ocr_results):
     for idx in range(start, len(lines)):
         text = _line_text(lines[idx])
 
-        # 跳过纯 UI 元素
-        if re.match(r'^[ZzCc弃锁棄鎖\s\.]+$', text):
+        # 跳过纯 UI 元素（含 PP-OCRv5 误读的 COST 残影字符）
+        if re.match(r'^[ZzCcGg棄锁棄鎖鎖\s\.\,\;\:\-\—\+]+$', text):
             continue
 
         name, is_fixed = _find_stat_name(text)
@@ -716,16 +1383,25 @@ def _parse_ocr_results(ocr_results):
     if fixed_stat and fixed_stat.get("name", "").startswith("固定") and fixed_stat.get("value", 0) <= 0:
         fixed_stat = None
 
-    # —— 固定词条反推 COST（COST 数字未被识别时使用） ——
-    if cost is None and fixed_stat:
+    # —— 固定词条反推/纠正 COST ——
+    # 游戏铁律：4c→固定攻击150, 3c→固定攻击100, 1c→固定生命2280
+    # 固定词条数值大、易识别，比 OCR 直接读 COST 数字更可靠。
+    # 当 COST 未识别 或 COST 与固定词条冲突时，以固定词条为准。
+    if fixed_stat:
         fname = fixed_stat.get("name", "")
         fval = fixed_stat.get("value", 0)
+        _inferred = None
         if fname == "固定攻击" and abs(fval - 150) < 1:
-            cost = 4
+            _inferred = 4
         elif fname == "固定攻击" and abs(fval - 100) < 1:
-            cost = 3
+            _inferred = 3
         elif fname == "固定生命" and abs(fval - 2280) < 1:
-            cost = 1
+            _inferred = 1
+        if _inferred is not None:
+            if cost is None:
+                cost = _inferred
+            elif cost != _inferred:
+                cost = _inferred  # 固定词条纠错：以游戏铁律为准
 
     # 调试：将行文本和解析结果附加到 raw_lines 后方，方便定位问题
     debug_lines = raw_lines[:]
@@ -785,7 +1461,8 @@ def _parse_dmg_formula(formula):
 
 
 def _parse_dmg_mult_ocr_results(ocr_results):
-    """解析游戏伤害倍率界面 OCR 结果，返回 (list[dict], raw_text)"""
+    """解析游戏伤害倍率界面 OCR 结果，返回 (list[dict], debug_text)。
+    debug_text 包含逐行解析和识别倍率，用于 OCR 确认对话框显示。"""
     rec_texts = []
     for page in (ocr_results or []):
         rec_texts.extend(page.get("rec_texts", []))
@@ -793,6 +1470,12 @@ def _parse_dmg_mult_ocr_results(ocr_results):
         return [], ""
 
     full_text = "\n".join(rec_texts)
+    # 逐行调试文本
+    _debug_lines = ["--- 逐行解析结果 ---"]
+    for i, t in enumerate(rec_texts):
+        t = t.strip()
+        if t:
+            _debug_lines.append(f"  Line {i}: [{t}]")
 
     # 技能分类按行跟踪（全屏截图下多个标签同时可见，全局扫描会误判）
     current_skill = None
@@ -943,10 +1626,13 @@ def _parse_dmg_mult_ocr_results(ocr_results):
             continue
         _filtered.append(r)
 
-    # —— 去重：同一倍率+基准出现多次时，保留伤害名称最长（OCR 最完整）的 ——
+    # —— 去重：同一技能+倍率+基准出现多次时，保留伤害名称最长（OCR 最完整）的 ——
     _dedup = {}
     for r in _filtered:
-        key = (round(r["base_mult"], 4), r["basis"])
+        # 从 label 提取伤害名称（格式: 技能分类_伤害名称_倍率）
+        _parts = r["label"].split("_")
+        _dname = _parts[1] if len(_parts) > 1 else ""
+        key = (_dname, round(r["base_mult"], 4), r["basis"])
         if key not in _dedup:
             _dedup[key] = r
         else:
@@ -963,9 +1649,20 @@ def _parse_dmg_mult_ocr_results(ocr_results):
     # 有效数量检测：至少要有 1 条有效结果
     if len(_filtered) < 1:
         _logger.warning("倍率解析结果不足：0 条，判定为无效")
-        return [], full_text
+        _debug_lines.append("--- 识别倍率 ---")
+        _debug_lines.append("  (无有效倍率)")
+        return [], "\n".join(_debug_lines)
 
-    return _filtered, full_text
+    # 组装调试文本：逐行解析 + 识别倍率
+    _debug_lines.append("--- 识别倍率 ---")
+    for it in _filtered:
+        skill = it.get("skill") or "(无)"
+        elem = it.get("element") or "(无)"
+        _debug_lines.append(
+            f"  {it['label']}  |  倍率:{it.get('base_mult',0):.10g}%  |  "
+            f"基准:{it.get('basis','攻击力')}  |  技能:{skill}  |  元素:{elem}"
+        )
+    return _filtered, "\n".join(_debug_lines)
 
 
 class OCRWorker(QThread):
@@ -986,7 +1683,10 @@ class OCRWorker(QThread):
         self._abort = False
 
     def abort(self):
-        """请求中断 OCR 识别"""
+        """中断 OCR 识别：设置标志位，线程安全退出。
+        注意：不使用 terminate()——在 Windows 上会因 TerminateThread
+        导致 Python 解释器状态损坏，引起闪退。当前正在处理的图片会跑完，
+        但 run() 循环在下一轮检查到 _abort 后立即退出。"""
         self._abort = True
 
     def _process_one(self, ocr, source, is_qimage):
