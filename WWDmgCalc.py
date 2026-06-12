@@ -11036,16 +11036,19 @@ class DmgCalculator(QMainWindow):
             super().keyPressEvent(event)
 
     def closeEvent(self, event):
-        from PyQt6.QtCore import Qt as QtCore
         msg = QMessageBox(self)
         msg.setWindowTitle("退出程序")
         msg.setText("确定要退出程序吗？\n\n退出前是否需要保存当前数据？")
-        msg.setStandardButtons(QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard)
+        msg.setStandardButtons(
+            QMessageBox.StandardButton.Save |
+            QMessageBox.StandardButton.Discard |
+            QMessageBox.StandardButton.Cancel  # 隐藏，仅用于启用 X 按钮
+        )
         msg.button(QMessageBox.StandardButton.Save).setText("保存并退出")
         msg.button(QMessageBox.StandardButton.Discard).setText("不保存")
+        cancel_btn = msg.button(QMessageBox.StandardButton.Cancel)
+        cancel_btn.hide()  # 不显示，X 按钮自动绑定到它
         msg.setDefaultButton(QMessageBox.StandardButton.Save)
-        # 强制显示 X 按钮（QMessageBox 在两按钮模式下默认禁用）
-        msg.setWindowFlags(msg.windowFlags() | QtCore.WindowType.WindowCloseButtonHint)
         msg.exec()
         clicked = msg.clickedButton()
         if clicked is msg.button(QMessageBox.StandardButton.Save):
