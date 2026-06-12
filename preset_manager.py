@@ -84,7 +84,15 @@ class PresetManager:
                     fpath = os.path.join(cat_dir, fname)
                     try:
                         mtime = datetime.fromtimestamp(os.path.getmtime(fpath))
+                        # 优先读取 JSON 内存储的 name（可含 / 等文件名非法字符）
                         name = os.path.splitext(fname)[0]
+                        try:
+                            with open(fpath, "r", encoding="utf-8") as _f:
+                                _d = json.loads(_f.read())
+                                if _d.get("name"):
+                                    name = _d["name"]
+                        except Exception:
+                            pass
                         result.append({
                             "name": name,
                             "path": fpath,
@@ -325,6 +333,11 @@ class PresetManager:
                                      for v in values]
                         main_screen.page_indep_zone._add_group(group_name, converted)
 
+            # 应用结果列表（预设中保存的计算结果卡片）
+            result_list = char_data.get("result_list", [])
+            if result_list:
+                main_screen.page_result_list.apply_data(result_list)
+
         # ── 2. 应用武器 ──
         weapon_data = data.get("weapon", {})
         if weapon_data:
@@ -425,8 +438,8 @@ class PresetManager:
             QMessageBox.information(
                 parent_widget,
                 "暂无官方预设源",
-                "项目尚未上传到 GitHub，暂无官方预设可更新。\n\n"
-                "官方预设功能将在项目发布到 GitHub 后启用。\n"
+                "项目尚未完善此功能，暂无官方预设可更新。\n\n"
+                "官方预设功能将在后续开发中启用。\n"
                 "届时可通过此按钮一键从 GitHub 拉取最新预设配置。"
             )
             return False, "GitHub 仓库未配置"

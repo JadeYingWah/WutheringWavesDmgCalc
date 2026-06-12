@@ -1,10 +1,10 @@
 {
   "version": 1,
   "type": "preset",
-  "name": "漂泊者-风主-预设",
+  "name": "漂泊者-气动-官方预设",
   "category": "character",
   "character": {
-    "name": "漂泊者-风主",
+    "name": "漂泊者-气动",
     "element": "气动",
     "effect": "风蚀",
     "base_hp": 10775.0,

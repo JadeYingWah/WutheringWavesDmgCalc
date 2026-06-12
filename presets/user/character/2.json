@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "type": "preset",
+  "name": "2",
+  "category": "character",
+  "character": {
+    "name": "2",
+    "element": "冷凝",
+    "effect": "(无)",
+    "base_hp": 1.0,
+    "base_atk": 1.0,
+    "base_def": 1.0,
+    "multiplier": {
+      "base_mult": 100.0,
+      "mult_increase": 0.0,
+      "mult_boosts": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "resonance_chain": [
+      {
+        "effects": [],
+        "indep_zones": [],
+        "intro": ""
+      },
+      {
+        "effects": [],
+        "indep_zones": [],
+        "intro": ""
+      },
+      {
+        "effects": [],
+        "indep_zones": [],
+        "intro": ""
+      },
+      {
+        "effects": [],
+        "indep_zones": [],
+        "intro": ""
+      },
+      {
+        "effects": [],
+        "indep_zones": [],
+        "intro": ""
+      },
+      {
+        "effects": [],
+        "indep_zones": [],
+        "intro": ""
+      }
+    ],
+    "result_list": []
+  }
+}

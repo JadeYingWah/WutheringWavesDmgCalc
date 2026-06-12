@@ -41,6 +41,7 @@ class _PresetPreview(QScrollArea):
         self._title_label = QLabel("选择预设查看详情")
         self._title_label.setObjectName("sectionTitle")
         self._title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._title_label.setWordWrap(True)
         self._layout.addWidget(self._title_label)
 
         self._content_widget = QWidget()
@@ -58,7 +59,7 @@ class _PresetPreview(QScrollArea):
             return
 
         self._clear_content()
-        self._title_label.setText(preset_info["name"])
+        self._title_label.setText(data.get("name") or preset_info["name"])
 
         source_tag = "官方预设" if preset_info["source"] == "official" else "用户预设"
         info = QLabel(f"来源: {source_tag}  |  修改: {preset_info.get('mtime', '')}"
@@ -66,6 +67,7 @@ class _PresetPreview(QScrollArea):
         info.setObjectName("labelSecondary")
         info.setStyleSheet("font-size: 11px;")
         info.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        info.setWordWrap(True)
         self._content_layout.addWidget(info)
 
         char = data.get("character", {})

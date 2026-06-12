@@ -1497,8 +1497,12 @@ class _CharacterPresetWindow(QDialog):
         basic = QGroupBox("基本信息")
         basic_form = QFormLayout(basic)
         basic_form.setSpacing(6)
+        self.preset_name_edit = QLineEdit()
+        self.preset_name_edit.setPlaceholderText("预设文件名称")
+        basic_form.addRow("预设名称:", self.preset_name_edit)
         self.char_name = QLineEdit()
         self.char_name.setPlaceholderText("角色名称")
+        self.char_name.textChanged.connect(self._sync_chain_names)
         basic_form.addRow("角色名称:", self.char_name)
         elem_row = QHBoxLayout()
         self.char_element = QComboBox()
@@ -1556,6 +1560,16 @@ class _CharacterPresetWindow(QDialog):
         tab_layout = QVBoxLayout(self.tab_chain)
         tab_layout.setContentsMargins(0, 0, 0, 0)
         tab_layout.addWidget(self._resonance_page)
+
+    def _sync_chain_names(self):
+        """角色名称变更时自动联动更新所有共鸣链名称"""
+        if not hasattr(self, '_resonance_page'):
+            return
+        name = self.char_name.text().strip()
+        self._resonance_page._prefix = name if name else ""
+        for i, it in enumerate(self._resonance_page._items):
+            it["name"] = f"{name}的共鸣链{i + 1}" if name else f"共鸣链{i + 1}"
+        self._resonance_page._refresh_cards()
 
     # ── 页面3: 结果列表 ──
 
@@ -1825,6 +1839,9 @@ class _WeaponPresetWindow(QDialog):
         basic = QGroupBox("基本信息")
         basic_form = QFormLayout(basic)
         basic_form.setSpacing(6)
+        self.preset_name_edit = QLineEdit()
+        self.preset_name_edit.setPlaceholderText("预设文件名称")
+        basic_form.addRow("预设名称:", self.preset_name_edit)
         self.weapon_name = QLineEdit()
         self.weapon_name.setPlaceholderText("武器名称")
         basic_form.addRow("武器名称:", self.weapon_name)
@@ -2058,11 +2075,18 @@ class _CharacterBuffWindow(QDialog):
         layout.setContentsMargins(12, 12, 12, 12)
 
         name_row = QHBoxLayout()
-        name_row.addWidget(QLabel("增益名称:"))
+        name_row.addWidget(QLabel("预设名称:"))
+        self.preset_name_edit = QLineEdit()
+        self.preset_name_edit.setPlaceholderText("预设文件名称")
+        name_row.addWidget(self.preset_name_edit, stretch=1)
+        layout.addLayout(name_row)
+
+        name_row2 = QHBoxLayout()
+        name_row2.addWidget(QLabel("增益名称:"))
         self.buff_name = QLineEdit()
         self.buff_name.setPlaceholderText("例如：守岸人增益、维里奈增益")
-        name_row.addWidget(self.buff_name, stretch=1)
-        layout.addLayout(name_row)
+        name_row2.addWidget(self.buff_name, stretch=1)
+        layout.addLayout(name_row2)
 
         lbl = QLabel("编辑角色增益的介绍信息：")
         lbl.setObjectName("sectionTitle")
@@ -2383,6 +2407,9 @@ class _EchoSetEditor(QDialog):
         info = QGroupBox("套装信息")
         info_form = QFormLayout(info)
         info_form.setSpacing(6)
+        self.preset_name_edit = QLineEdit()
+        self.preset_name_edit.setPlaceholderText("预设文件名称")
+        info_form.addRow("预设名称:", self.preset_name_edit)
         self.set_name = QLineEdit()
         self.set_name.setPlaceholderText("声骸套装名称")
         info_form.addRow("套装名称:", self.set_name)
@@ -2687,8 +2714,8 @@ class PresetBuilderDialog(QDialog):
     def __init__(self, parent=None, edit_preset_data=None, edit_preset_path=None):
         super().__init__(parent)
         self.setWindowTitle("预设构建器")
-        self.setMinimumSize(1000, 750)
-        self.resize(1000, 750)
+        self.setMinimumSize(1000, 800)
+        self.resize(1000, 800)
         self._edit_preset_path = edit_preset_path
         self._animating = False
         self._auto_update_enabled = True  # 自动更新开关记忆
@@ -2966,6 +2993,14 @@ class PresetBuilderDialog(QDialog):
         self._edit_list_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         list_layout.addWidget(self._edit_list_label)
 
+        self._edit_search = QLineEdit()
+        self._edit_search.setPlaceholderText("搜索预设名称...")
+        self._edit_search.setObjectName("nameEdit")
+        self._edit_search.setClearButtonEnabled(True)
+        self._edit_search.textChanged.connect(self._filter_edit_list)
+        self._edit_search.setVisible(False)
+        list_layout.addWidget(self._edit_search)
+
         self._edit_list = QListWidget()
         self._edit_list.setMinimumHeight(160)
         self._edit_list.setMaximumHeight(260)
@@ -3024,21 +3059,39 @@ class PresetBuilderDialog(QDialog):
 
     def _select_edit_category(self, cat_key):
         """选中分类后，显示该分类下的预设列表"""
+        self._edit_category = cat_key
         self._edit_presets = PresetManager.list_presets()
-        cat_presets = [p for p in self._edit_presets if p["category"] == cat_key]
-        cat_names = {"character": "角色", "weapon": "武器", "echo_set": "声骸套装"}
+        self._edit_cat_presets = [p for p in self._edit_presets if p["category"] == cat_key]
+        cat_names = {"character": "角色", "weapon": "武器", "echo_set": "声骸套装", "character_buff": "角色增益"}
 
         self._edit_list.clear()
+        self._edit_search.clear()
+        self._edit_search.setVisible(True)
         self._edit_list_area.setVisible(True)
         self._edit_list_label.setText(f"── {cat_names.get(cat_key, '')}预设列表 ──")
 
-        if not cat_presets:
-            item = QListWidgetItem("（暂无该类型预设）")
+        self._populate_edit_list(self._edit_cat_presets)
+
+    def _filter_edit_list(self, text):
+        """搜索过滤编辑列表中的预设"""
+        if not hasattr(self, '_edit_cat_presets'):
+            return
+        if not text.strip():
+            self._populate_edit_list(self._edit_cat_presets)
+            return
+        keyword = text.strip().lower()
+        filtered = [p for p in self._edit_cat_presets if keyword in p["name"].lower()]
+        self._populate_edit_list(filtered)
+
+    def _populate_edit_list(self, presets):
+        """用给定的预设列表填充编辑列表"""
+        self._edit_list.clear()
+        if not presets:
+            item = QListWidgetItem("（无匹配预设）")
             item.setFlags(Qt.ItemFlag.NoItemFlags)
             self._edit_list.addItem(item)
             return
-
-        for p in cat_presets:
+        for p in presets:
             source_mark = "【官】" if p["source"] == "official" else "【户】"
             text = f"{source_mark} {p['name']}  ({p.get('mtime', '')})"
             item = QListWidgetItem(text)
@@ -3169,6 +3222,7 @@ class PresetBuilderDialog(QDialog):
         dlg.save_clicked.connect(lambda: self._save_from_window(dlg, "character"))
         if self._edit_preset_path:
             data, _ = PresetManager.load_preset(self._edit_preset_path)
+            dlg.preset_name_edit.setText(data.get("name", ""))
             if data and "character" in data:
                 dlg.load_data(data["character"])
         dlg.exec()
@@ -3180,6 +3234,7 @@ class PresetBuilderDialog(QDialog):
         dlg.save_clicked.connect(lambda: self._save_from_window(dlg, "weapon"))
         if self._edit_preset_path:
             data, _ = PresetManager.load_preset(self._edit_preset_path)
+            dlg.preset_name_edit.setText(data.get("name", ""))
             if data and "weapon" in data:
                 dlg.load_data(data["weapon"])
         dlg.exec()
@@ -3190,6 +3245,7 @@ class PresetBuilderDialog(QDialog):
         dlg.save_clicked.connect(lambda: self._validate_echo_save(dlg))
         if self._edit_preset_path:
             data, _ = PresetManager.load_preset(self._edit_preset_path)
+            dlg.preset_name_edit.setText(data.get("name", ""))
             if data and "echo_set" in data:
                 dlg.load_data(data["echo_set"])
         dlg.exec()
@@ -3201,6 +3257,7 @@ class PresetBuilderDialog(QDialog):
         dlg.save_clicked.connect(lambda: self._save_from_window(dlg, "character_buff"))
         if self._edit_preset_path:
             data, _ = PresetManager.load_preset(self._edit_preset_path)
+            dlg.preset_name_edit.setText(data.get("name", ""))
             if data and "character_buff" in data:
                 dlg.load_data(data["character_buff"])
         dlg.exec()
@@ -3221,6 +3278,9 @@ class PresetBuilderDialog(QDialog):
         cat_names = {"character": "角色", "weapon": "武器", "echo_set": "套装", "character_buff": "增益"}
         default_name = data.get("name", "") or f"未命名{cat_names.get(category, '')}"
 
+        # 从窗口读取预设名称（优先使用用户填写的）
+        user_name = window.preset_name_edit.text().strip() if hasattr(window, 'preset_name_edit') else ""
+
         preset = {
             "version": 1,
             "type": "preset",
@@ -3239,19 +3299,41 @@ class PresetBuilderDialog(QDialog):
                 preset[category] = data
 
         if self._edit_preset_path:
-            final_name = os.path.splitext(os.path.basename(self._edit_preset_path))[0]
-            preset["name"] = final_name
-            _fill_internal_name(final_name)
-            path, err = PresetManager.save_preset(preset, preset["name"], overwrite=True)
-            if err:
-                QMessageBox.warning(self, "保存失败", err)
-                return
+            # 编辑模式：使用窗口中的预设名称
+            raw_name = user_name if user_name else os.path.splitext(os.path.basename(self._edit_preset_path))[0]
+            # 清洗非法字符仅用于文件名对比和保存（/ 等符号文件名不支持，但 preset["name"] 保留原样）
+            safe_name = "".join(c for c in raw_name if c not in r'\/:*?"<>|') or raw_name
+            old_name = os.path.splitext(os.path.basename(self._edit_preset_path))[0]
+            preset["name"] = raw_name  # 保留原始名称（含 / 等符号）用于显示
+            _fill_internal_name(raw_name)
+
+            if safe_name != old_name:
+                # 重命名：保存新文件，删除旧文件
+                path, err = PresetManager.save_preset(preset, raw_name, overwrite=False)
+                if err:
+                    QMessageBox.warning(self, "保存失败", err)
+                    return
+                try:
+                    os.remove(self._edit_preset_path)
+                except OSError:
+                    pass
+                self._edit_preset_path = path
+            else:
+                # 名称未变（或仅非法字符差异）：直接覆盖
+                path, err = PresetManager.save_preset(preset, raw_name, overwrite=True)
+                if err:
+                    QMessageBox.warning(self, "保存失败", err)
+                    return
             QMessageBox.information(self, "保存成功", f"预设已保存到:\n{path}")
             window.accept()
+            # 刷新编辑列表
+            if hasattr(self, '_edit_category'):
+                self._select_edit_category(self._edit_category)
             return
 
+        # 新建模式：以窗口中的预设名称为默认
         name, ok = QInputDialog.getText(
-            self, "保存预设", "预设名称:", text=f"{default_name}-预设")
+            self, "保存预设", "预设名称:", text=user_name if user_name else f"{default_name}-预设")
         if not ok or not name.strip():
             return
         final_name = name.strip()
