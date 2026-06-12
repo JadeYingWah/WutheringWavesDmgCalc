@@ -25,6 +25,18 @@ jobs:
           pip install pyinstaller
           pip install PyQt6 opencv-python onnxruntime numpy pillow shapely pyclipper pyyaml six matplotlib psutil
 
+      - name: 创建 models 目录（OCR 模型）
+        run: |
+          mkdir models -Force
+          # 如果没有模型文件，下载默认的 PP-OCRv5 模型
+          if (-not (Test-Path "models/ch_PP-OCRv5_mobile_det.onnx")) {
+            Invoke-WebRequest -Uri "https://github.com/RapidOCR/RapidOCR/releases/download/v1.0/ch_PP-OCRv5_mobile_det.onnx" -OutFile "models/ch_PP-OCRv5_mobile_det.onnx" -TimeoutSec 60
+            Invoke-WebRequest -Uri "https://github.com/RapidOCR/RapidOCR/releases/download/v1.0/ch_PP-OCRv5_rec_server_infer.onnx" -OutFile "models/ch_PP-OCRv5_rec_server_infer.onnx" -TimeoutSec 60
+            echo "模型下载完成"
+          } else {
+            echo "模型已存在"
+          }
+
       - name: 打包主程序
         run: |
           cd packaging

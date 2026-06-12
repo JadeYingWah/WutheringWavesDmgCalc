@@ -10,7 +10,7 @@ a = Analysis(
     ('../error_handler', 'error_handler'),
     ('../damage_calc.py', '.'),
     ('../ico/icon.ico', '.'),
-    ('../models', 'models'),  # PP-OCRv5 自定义 ONNX 模型
+    ('../models', 'models'),  # OCR ONNX 模型
 ],
     hiddenimports=['onnxruntime', 'cv2', 'pyclipper', 'shapely', 'yaml', 'six',
                    'error_handler.error_system'],
@@ -57,7 +57,8 @@ a2 = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('../ico/icon.ico', '.'),  # 窗口图标
+        ('../ico/icon.ico', '.'),
+    ('../models', 'models'),  # OCR ONNX 模型  # 窗口图标
     ],
     hiddenimports=[],
     hookspath=[],
