@@ -1,0 +1,59 @@
+name: 自动打包发布
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号（如 v1.1）'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: 安装依赖
+        run: |
+          pip install pyinstaller
+          pip install PyQt6 opencv-python onnxruntime numpy pillow shapely pyclipper pyyaml six matplotlib psutil
+
+      - name: 打包主程序
+        run: |
+          cd packaging
+          python -m PyInstaller WWDmgCalc.spec --clean
+
+      - name: 打包辅助工具
+        run: |
+          cd packaging/tools_specs
+          python -m PyInstaller git_proxy_manager.spec --distpath ../dist_tools --workpath ../build_tools --clean
+          python -m PyInstaller preset_uploader.spec --distpath ../dist_tools --workpath ../build_tools --clean
+
+      - name: 重组结构
+        run: |
+          cd packaging
+          python after_build.py
+
+      - name: 压缩为 zip
+        run: |
+          cd dist
+          Compress-Archive -Path WutheringWavesDmgCalc -DestinationPath "WutheringWavesDmgCalc_${{ github.event.inputs.version }}.zip"
+
+      - name: 创建 Release 并上传
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: "鸣潮伤害计算器 ${{ github.event.inputs.version }}"
+          body: |
+            自动打包发布 ${{ github.event.inputs.version }}
+            
+            下载后解压运行 WutheringWavesDmgCalc/WWDmgCalc.exe
+          files: dist/WutheringWavesDmgCalc_*.zip
+          generate_release_notes: false
