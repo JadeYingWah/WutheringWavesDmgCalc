@@ -155,15 +155,6 @@ def main():
 
     print()
     print(f'Build complete: {OUT}')
-    print('Structure:')
-    for root, dirs, files in os.walk(OUT):
-        level = root.replace(OUT, '').count(os.sep)
-        indent = '  ' * level
-        print(f'{indent}{os.path.basename(root)}/')
-        if level < 3:
-            subindent = '  ' * (level + 1)
-            for f in sorted(files):
-                print(f'{subindent}{f}')
 
 
 if __name__ == '__main__':
