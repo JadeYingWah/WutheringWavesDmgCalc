@@ -9734,7 +9734,7 @@ class ManualDialog(QDialog):
         if base_css:
             css_parts.append(base_css)
 
-        parts = [f'src="images/{dest_name}"', f'alt="{dest_name}"']
+        parts = [f'src="manual/images/{dest_name}"', f'alt="{dest_name}"']
         if width > 0:
             parts.append(f'width="{width}"')
         if css_parts:
