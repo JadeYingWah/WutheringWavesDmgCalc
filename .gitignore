@@ -40,3 +40,6 @@ tools/.github_token
 packaging/build_tools/
 packaging/dist_tools/
 packaging/tools_specs/
+packaging/build_tools/
+packaging/dist_tools/
+packaging/tools_specs/
