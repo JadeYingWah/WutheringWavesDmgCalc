@@ -11,16 +11,18 @@ import os
 import json
 
 def _find_log_file():
-    """定位 error_log.json：开发时在 ../config/，打包后在 ../WWDmgCalc/config/"""
-    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    """定位 error_log.json。
+    开发时: ../config/error_log.json
+    打包后: ErrorViewer.exe 的父目录的父目录/config/error_log.json
+           (即主文件夹/config/error_log.json)"""
+    if getattr(sys, 'frozen', False):
+        # 打包后: ErrorViewer/ErrorViewer.exe → 上两级到主文件夹
+        base = os.path.dirname(os.path.dirname(sys.executable))
+    else:
+        # 开发时: error_handler/error_viewer.py → 上两级到项目根
+        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     path = os.path.join(base, "config", "error_log.json")
-    if os.path.exists(path):
-        return path
-    # 打包后 ErrorViewer.exe 与 WWDmgCalc 同级
-    alt = os.path.join(os.path.dirname(base), "WWDmgCalc", "config", "error_log.json")
-    if os.path.exists(alt):
-        return alt
-    return path  # fallback
+    return path
 
 LOG_FILE = _find_log_file()
 

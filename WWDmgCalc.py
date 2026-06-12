@@ -162,8 +162,10 @@ def _auto_keywords(label):
 #   _APP_DIR:    可写用户数据（存档/预设/配置）所在目录
 #   _DATA_DIR:   只读资源（使用手册/错误处理）所在目录
 if getattr(sys, 'frozen', False):
-    _APP_DIR = os.path.dirname(sys.executable)
-    # PyInstaller 打包后 data 文件在 _internal/ 目录
+    # 打包后结构: 主文件夹/WWDmgCalc/WWDmgCalc.exe
+    # 用户数据在主文件夹下（exe 的上两级）
+    _APP_DIR = os.path.dirname(os.path.dirname(sys.executable))
+    # PyInstaller 打包后只读数据在 _internal/ 目录
     _DATA_DIR = getattr(sys, '_MEIPASS', _APP_DIR)
 else:
     _APP_DIR = os.path.dirname(os.path.abspath(__file__))
