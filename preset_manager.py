@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 # 预设管理器 —— 预设核心逻辑（list/load/validate/apply/export/update_official）
 #
 # 预设 JSON 结构:
@@ -27,7 +27,8 @@ from PyQt6.QtCore import Qt, QTimer
 
 # ── 项目根目录定位 ──
 if getattr(sys, 'frozen', False):
-    _APP_DIR = os.path.dirname(sys.executable)
+    # 打包后: WWDmgCalc.exe 在 WWDmgCalc/ 子目录，presets/ 在上级
+    _APP_DIR = os.path.dirname(os.path.dirname(sys.executable))
 else:
     _APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -44,7 +45,7 @@ CATEGORY_LABELS = {
     "echo_set": "套装", "character_buff": "增益"}
 
 # GitHub 仓库配置（项目上传后可修改）
-GITHUB_REPO_OWNER = "YOUR_USERNAME"
+GITHUB_REPO_OWNER = "JadeYingWah"
 GITHUB_REPO_NAME = "WutheringWavesDmgCalc"
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/contents/presets/official"
 
@@ -444,7 +445,7 @@ class PresetManager:
             (success: bool, message: str)
         """
         # 检查是否配置了有效的 GitHub 仓库
-        if GITHUB_REPO_OWNER == "YOUR_USERNAME":
+        if not GITHUB_REPO_OWNER or GITHUB_REPO_OWNER == "YOUR_USERNAME":
             QMessageBox.information(
                 parent_widget,
                 "暂无官方预设源",

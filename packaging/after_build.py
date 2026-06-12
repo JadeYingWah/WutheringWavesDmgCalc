@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """打包后处理脚本：将 PyInstaller 扁平输出重组为用户友好的结构。
 
 目标结构：
@@ -97,7 +97,26 @@ def main():
         shutil.copy2(src_cfg, dst_cfg)
         print('[OK]config/auto_all_config.json 已复制')
 
-    # 5. 创建快捷方式
+
+    # 5. 复制官方预设文件到主文件夹 presets/official/
+    src_presets = os.path.join(ROOT, 'presets')
+    dst_presets = os.path.join(OUT, 'presets')
+    if os.path.exists(src_presets):
+        for cat in ['official', 'user']:
+            src_cat = os.path.join(src_presets, cat)
+            dst_cat = os.path.join(dst_presets, cat)
+            if os.path.exists(src_cat):
+                shutil.copytree(src_cat, dst_cat, dirs_exist_ok=True)
+                print(f'  presets/{cat} 已复制')
+
+    # 6. 复制存档文件
+    src_save = os.path.join(ROOT, 'save')
+    dst_save = os.path.join(OUT, 'save')
+    if os.path.exists(src_save):
+        shutil.copytree(src_save, dst_save, dirs_exist_ok=True)
+        print(f'  save/ 已复制')
+
+    # 7. 创建快捷方式
     create_shortcut(
         os.path.join(OUT, 'WWDmgCalc', 'WWDmgCalc.exe'),
         os.path.join(OUT, 'WWDmgCalc.lnk'),
