@@ -1722,3 +1722,171 @@ _resonanceChainEditDialog._save()
 - **过程 HTML 实时生成**：`_rebuild_process_html()` 从 zones 实时构建计算过程，倍率变更即时反映
 - **黑夜主题边框加强**：`border` #2a2a4a→#3d3d5e，QGroupBox 1px→2px
 - **按钮逻辑反转**：启用中显示「关闭」（蓝灰），未启用显示「启用」（暖橙），默认关闭
+
+
+# ===== v1.0 正式版新增内容（2026-06-12）=====
+
+﻿# WutheringWavesDmgCalc 项目总结
+
+> 开发起始: 2026-05-02 | 最后更新: 2026-06-12 | 版本: v1.0（正式版）
+
+---
+
+## 一、项目概览
+
+**WutheringWavesDmgCalc** 是《鸣潮》（Wuthering Waves）的伤害计算器桌面应用，基于 PyQt6 开发。项目从 2026 年 5 月 7 日开始构思，5 月 12 日正式动工，6 月 12 日发布 v1.0 正式版，历时约一个月。
+
+### 功能总览
+
+- **完整伤害计算引擎** — 9 大乘区（基础/加成/加深/暴击/倍率/防御/抗性/独立乘区/全伤害），damage_calc.py 为唯一真相来源
+- **OCR 图文识别** — 支持声骸属性截图识别、技能倍率截图识别（PP-OCRv5 + ONNX Runtime）
+- **预设系统** — 角色/武器/声骸套装/角色增益四类预设，含独立计算引擎和关键词关联
+- **官方预设同步** — 从 GitHub 一键拉取最新预设，多源 fallback（直连 + 镜像 + CDN），国内无需 VPN
+- **暗色/亮色双主题** — 全界面自适应配色
+- **存档系统** — 完整 JSON 存档，支持保存/加载/快速保存
+- **错误自动报告** — 崩溃时自动启动 ErrorViewer 弹窗，错误日志持久化
+- **自动化测试** — pytest 186 个用例，2.9 秒跑完
+- **Git 版本管理** — 内置版本快照，可随时回退
+- **辅助工具** — Git 代理管理工具 + 官方预设上传工具（均已打包为独立 exe）
+
+### 技术栈
+
+| 类别 | 技术 |
+|------|------|
+| 语言 | Python 3.13 |
+| GUI 框架 | PyQt6 |
+| OCR | OpenCV + ONNX Runtime + PP-OCRv5 |
+| 图表 | matplotlib |
+| 测试 | pytest |
+| 打包 | PyInstaller 6.20 |
+| 版本管理 | Git |
+| 代码量 | 主编 ~10862 行 + 7 个拆分模块，总计约 18000+ 行 |
+
+---
+
+
+
+## 六、辅助工具
+
+项目 `tools/` 目录下提供两个独立工具，均已打包为 exe：
+
+| 工具 | 路径 | 功能 |
+|------|------|------|
+| **Git 代理管理** | `tools/Git代理管理/GitProxyManager.exe` | 自动扫描代理端口，一键配置 git 代理 |
+| **上传官方预设** | `tools/上传官方预设/PresetUploader.exe` | GUI 界面上传 presets/official/ 到 GitHub |
+
+---
+
+## 七、打包规则
+
+使用 PyInstaller 打包，打包入口为 `packaging/WWDmgCalc.spec`，后处理脚本为 `packaging/after_build.py`。
+
+### 最终发布结构
+
+```
+dist/WutheringWavesDmgCalc/          ← 主文件夹
+├── WWDmgCalc.lnk                    ← 快捷方式 → WWDmgCalc/WWDmgCalc.exe
+├── ErrorViewer.lnk                  ← 快捷方式 → ErrorViewer/ErrorViewer.exe
+├── WWDmgCalc/                       ← 主程序
+│   ├── WWDmgCalc.exe
+│   └── _internal/                   ← 依赖库（PyQt6 / cv2 / numpy / onnxruntime / PIL ...）
+│       ├── manual/                  ← 使用手册
+│       ├── error_handler/           ← 错误处理模块
+│       ├── models/                  ← OCR 模型文件
+│       └── damage_calc.py           ← 计算引擎
+├── ErrorViewer/                     ← 错误报告程序
+│   ├── ErrorViewer.exe
+│   └── _internal/
+├── tools/                           ← 辅助工具
+│   ├── Git代理管理.lnk              ← 快捷方式 → GitProxyManager.exe
+│   ├── 上传官方预设.lnk             ← 快捷方式 → PresetUploader.exe
+│   ├── Git代理管理/                 ← Git 代理管理工具（独立 exe）
+│   │   ├── GitProxyManager.exe
+│   │   └── _internal/
+│   └── 上传官方预设/                ← 预设上传工具（独立 exe）
+│       ├── PresetUploader.exe
+│       └── _internal/
+├── config/
+│   └── auto_all_config.json         ← 用户配置
+├── presets/
+│   ├── official/                    ← 官方预设（含 JSON 文件 + manifest.json）
+│   │   ├── character/
+│   │   ├── weapon/
+│   │   ├── echo_set/
+│   │   └── character_buff/
+│   └── user/                        ← 用户预设（仅空目录，运行时创建）
+│       ├── character/
+│       ├── weapon/
+│       ├── echo_set/
+│       └── character_buff/
+└── save/                            ← 存档目录（空目录，运行时创建）
+```
+
+### 打包步骤
+
+```bash
+# 1. 安装依赖
+pip install pyinstaller
+
+# 2. 打包主程序
+cd packaging
+python -m PyInstaller WWDmgCalc.spec --clean
+
+# 3. 打包辅助工具（单独 spec）
+cd tools_specs
+python -m PyInstaller git_proxy_manager.spec --distpath ../dist_tools --workpath ../build_tools --clean
+python -m PyInstaller preset_uploader.spec --distpath ../dist_tools --workpath ../build_tools --clean
+
+# 4. 重组结构
+cd ..
+python after_build.py
+```
+
+### 路径说明（打包后）
+
+| 路径类型 | 取值 | 说明 |
+|----------|------|------|
+| 用户数据 | `_APP_DIR` = exe 的父级父级 | 存 save/ config/ presets/ |
+| 只读数据 | `_DATA_DIR` = `sys._MEIPASS`（即 _internal/） | 存 manual/ error_handler/ models/ |
+| 预设同步 | `presets/official/` | 从 GitHub 拉取更新，位于主文件夹下 |
+
+---
+
+## 八、GitHub 集成
+
+| 功能 | 状态 | 说明 |
+|------|------|------|
+| 源码仓库 | ✅ 已发布 | [github.com/JadeYingWah/WutheringWavesDmgCalc](https://github.com/JadeYingWah/WutheringWavesDmgCalc) |
+| Release 发布 | ✅ v0.15 → v1.0 | 含编译好的 exe 包，用户直接下载解压使用 |
+| 官方预设同步 | ✅ 已实现 | 在预设加载器点击「更新官方预设」从 GitHub 拉取 |
+| 预设上传工具 | ✅ 已实现 | `tools/上传官方预设/PresetUploader.exe`，GUI 界面一键上传 |
+| 同步 fallback | ✅ 多源自动重试 | raw.githubusercontent.com → raw.gitmirror.com → cdn.jsdelivr.net |
+
+---
+
+## 九、开发注意事项
+
+### 错误处理
+- 所有弹窗统一 `_center_window()` 居中屏幕
+- 崩溃捕获自动写入 error_log.json + 启动 ErrorViewer
+- 预设同步失败写入错误日志，侧边栏可查看
+
+### 退出保存
+- 关闭窗口时弹出「保存并退出/不保存/取消」对话框
+- X 按钮 = 取消（隐藏 Cancel 按钮绑定关闭事件）
+
+### 文件名规范
+- 存档名和预设名禁止包含 `\/:*?"<>|` 等非法字符
+- 输入时弹窗提示，不静默删除
+
+---
+
+## 十、版本历史
+
+| 版本 | 日期 | 主要内容 |
+|------|------|----------|
+| v0.9 | 06-09 | 初始开发，基础伤害计算框架 |
+| v0.12 | 06-11 | 预设系统乘区化改造、使用预设重设计 |
+| v0.14 | 06-11 | 角色增益预设、分页式编辑、OCR 分类 |
+| v0.15 | 06-12 | OCR PP-OCRv5 升级、打包重组、预设同步 |
+| v1.0 | 06-12 | 正式版：工具打包、Git 代理管理、预设上传工具 |
