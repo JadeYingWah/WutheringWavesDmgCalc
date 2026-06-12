@@ -236,10 +236,14 @@ class PresetManager:
             category = "character"
         target_dir = os.path.join(base_dir, category)
 
-        # 清理文件名
-        safe_name = "".join(c for c in name if c not in r'\/:*?"<>|')
+        # 检查文件名非法字符
+        _INVALID_CHARS = r'\/:*?"<>|'
+        _bad = [c for c in name if c in _INVALID_CHARS]
+        if _bad:
+            return None, f"预设名称不能包含以下字符：{' '.join(sorted(set(_bad)))}"
+        safe_name = name.strip()
         if not safe_name:
-            return None, "预设名称无效"
+            return None, "预设名称不能为空"
 
         fpath = os.path.join(target_dir, f"{safe_name}.json")
 

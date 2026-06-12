@@ -158,11 +158,16 @@ def _auto_keywords(label):
         return []
     return parts
 
-# 项目根目录定位（打包后用 sys.executable，开发时用脚本所在目录）
+# 项目根目录定位
+#   _APP_DIR:    可写用户数据（存档/预设/配置）所在目录
+#   _DATA_DIR:   只读资源（使用手册/错误处理）所在目录
 if getattr(sys, 'frozen', False):
     _APP_DIR = os.path.dirname(sys.executable)
+    # PyInstaller 打包后 data 文件在 _internal/ 目录
+    _DATA_DIR = getattr(sys, '_MEIPASS', _APP_DIR)
 else:
     _APP_DIR = os.path.dirname(os.path.abspath(__file__))
+    _DATA_DIR = _APP_DIR
 
 from error_handler.error_system import (
     _logger, _center_window, _show_toast, _set_new_error_callback,
@@ -8538,7 +8543,7 @@ class ResultPage(QWidget):
 from char_base_page import CharBasePage
 # ==================== 使用手册弹窗 ====================
 
-MANUAL_DIR = os.path.join(_APP_DIR, "manual")
+MANUAL_DIR = os.path.join(_DATA_DIR, "manual")
 MANUAL_CONTENT_FILE = os.path.join(MANUAL_DIR, "content.json")
 MANUAL_IMAGES_DIR = os.path.join(MANUAL_DIR, "images")
 
@@ -10603,9 +10608,16 @@ class MainScreen(QWidget):
         name, ok = QInputDialog.getText(self, "保存存档", "输入存档名称：", text=default_name)
         if not ok or not name:
             return
-        name = name.strip().replace("/", "_").replace("\\", "_")
+        name = name.strip()
+        _INVALID_CHARS = r'\/:*?"<>|'
+        _bad = [c for c in name if c in _INVALID_CHARS]
+        if _bad:
+            QMessageBox.warning(self, "名称无效",
+                f"存档名称不能包含以下字符：\n{' '.join(sorted(set(_bad)))}\n\n请修改后重试。")
+            return
         if not name:
-            name = "untitled"
+            QMessageBox.warning(self, "名称无效", "存档名称不能为空。")
+            return
         SaveManager.ensure_save_dir()
         filepath = os.path.join(SAVE_DIR, f"{name}.json")
         SaveManager.save_to_file(state, filepath)

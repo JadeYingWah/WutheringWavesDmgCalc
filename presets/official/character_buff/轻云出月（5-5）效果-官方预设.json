@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "type": "preset",
+  "name": "轻云出月(5/5)效果",
+  "category": "character_buff",
+  "character_buff": {
+    "name": "轻云出月(5/5)效果",
+    "intro": "轻云出月(5/5)\n使用延奏技能后，下一个登场的共鸣者攻击提升22.5%，持续15秒",
+    "effects": [
+      {
+        "name": "攻击力加成",
+        "value": 22.5,
+        "type": "触发",
+        "source": "角色效果",
+        "sub_name": "轻云出月(5/5)\n使用延奏技能后，下一个登场的共\n鸣者攻击提升22.5%，持续15秒"
+      }
+    ],
+    "indep_zones": []
+  }
+}
