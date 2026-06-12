@@ -518,6 +518,7 @@ class PresetManager:
             PresetManager.ensure_dirs()
             downloaded = 0
             failed = 0
+            failed_details = []  # [(cat, fname, reason), ...]
 
             # 2. 遍历 manifest，从 raw URL 下载每个预设文件
             for cat in CATEGORY_DIRS:
@@ -526,6 +527,8 @@ class PresetManager:
                     continue
                 target_dir = os.path.join(OFFICIAL_DIR, cat)
                 for fname in file_list:
+                    if progress and progress.wasCanceled():
+                        break
                     if progress:
                         progress.setLabelText(f"正在下载: {cat}/{fname}")
                     raw_url = f"{working_url}/{cat}/{fname}"
@@ -535,31 +538,52 @@ class PresetManager:
                         with urllib.request.urlopen(req2, timeout=15) as resp:
                             content = resp.read().decode("utf-8")
                         data = json.loads(content)
-                        valid, _ = PresetManager.validate_preset(data)
+                        valid, err_msg = PresetManager.validate_preset(data)
                         if not valid:
                             failed += 1
+                            failed_details.append((cat, fname, f"校验失败: {err_msg}"))
                             continue
                         os.makedirs(target_dir, exist_ok=True)
                         dest = os.path.join(target_dir, fname)
                         with open(dest, "w", encoding="utf-8") as f:
                             f.write(content)
                         downloaded += 1
-                    except Exception:
+                    except urllib.error.HTTPError as e:
                         failed += 1
+                        failed_details.append((cat, fname, f"HTTP {e.code}"))
+                    except urllib.error.URLError as e:
+                        failed += 1
+                        failed_details.append((cat, fname, f"网络错误: {e.reason}"))
+                    except Exception as e:
+                        failed += 1
+                        failed_details.append((cat, fname, str(e)[:80]))
 
             if progress:
                 progress.close()
 
+            # 3. 写入错误日志（供侧边栏"错误日志"查看）
+            if failed_details:
+                try:
+                    from error_handler.error_system import _add_log_entry
+                    detail_lines = [f"预设同步: {downloaded} 成功, {failed} 失败"]
+                    for cat, fname, reason in failed_details:
+                        detail_lines.append(f"  [{cat}] {fname}: {reason}")
+                    _add_log_entry("WARNING", f"预设同步部分失败 ({failed}/{downloaded+failed})",
+                                   "\n".join(detail_lines))
+                except Exception:
+                    pass
+
             if downloaded > 0:
-                QMessageBox.information(
-                    parent_widget,
-                    "更新完成",
-                    f"成功下载 {downloaded} 个官方预设。\n"
-                    + (f"{failed} 个下载失败。" if failed else "")
-                )
+                msg = f"成功下载 {downloaded} 个官方预设。"
+                if failed:
+                    msg += f"\n{failed} 个下载失败（可点击侧边栏「错误日志」查看详情）。"
+                QMessageBox.information(parent_widget, "更新完成", msg)
                 return True, f"成功 {downloaded} 个"
             else:
-                QMessageBox.warning(parent_widget, "更新失败", "所有预设文件下载失败，请检查网络后重试。")
+                # 全部失败 → 详细信息写入日志并弹窗
+                QMessageBox.warning(parent_widget, "更新失败",
+                    "所有预设文件下载失败，请检查网络后重试。\n\n"
+                    "可点击侧边栏「错误日志」查看失败详情。")
                 return False, "下载全部失败"
 
         except ImportError:
