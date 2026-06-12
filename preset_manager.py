@@ -47,7 +47,11 @@ CATEGORY_LABELS = {
 # GitHub 仓库配置（项目上传后可修改）
 GITHUB_REPO_OWNER = "JadeYingWah"
 GITHUB_REPO_NAME = "WutheringWavesDmgCalc"
-GITHUB_RAW_URL = f"https://raw.githubusercontent.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/main/presets/official"
+# 下载源列表（自动按顺序重试）
+GITHUB_RAW_URLS = [
+    f"https://raw.githubusercontent.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/main/presets/official",
+    f"https://raw.gitmirror.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/main/presets/official",
+]
 
 
 class PresetManager:
@@ -472,28 +476,38 @@ class PresetManager:
             import urllib.request
             import urllib.error
 
-            # 1. 从 raw URL 拉取 manifest.json（无 API 限流）
-            manifest_url = f"{GITHUB_RAW_URL}/manifest.json"
-            try:
-                req = urllib.request.Request(manifest_url)
-                req.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
-                with urllib.request.urlopen(req, timeout=15) as resp:
-                    manifest = json.loads(resp.read().decode("utf-8"))
-            except urllib.error.HTTPError as e:
+            # 1. 从 raw URL 拉取 manifest.json（多源自动 fallback）
+            manifest = None
+            working_url = None  # 记录可用的源，后续下载复用
+            last_error = None
+            for base_url in GITHUB_RAW_URLS:
+                manifest_url = f"{base_url}/manifest.json"
+                try:
+                    req = urllib.request.Request(manifest_url)
+                    req.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
+                    with urllib.request.urlopen(req, timeout=10) as resp:
+                        manifest = json.loads(resp.read().decode("utf-8"))
+                    working_url = base_url
+                    break  # 成功，跳出循环
+                except urllib.error.HTTPError as e:
+                    last_error = e
+                    if e.code == 404:
+                        break  # 404 不重试其他 URL
+                    continue
+                except Exception as e:
+                    last_error = e
+                    continue
+
+            if manifest is None:
                 if progress:
                     progress.close()
-                if e.code == 404:
+                if isinstance(last_error, urllib.error.HTTPError) and last_error.code == 404:
                     QMessageBox.information(parent_widget, "暂无官方预设",
                         "GitHub 仓库中尚未上传官方预设文件。")
-                    return False, "manifest 不存在"
-                QMessageBox.warning(parent_widget, "网络错误", f"访问 GitHub 失败 (HTTP {e.code})")
-                return False, f"HTTP {e.code}"
-            except urllib.error.URLError as e:
-                if progress:
-                    progress.close()
-                QMessageBox.warning(parent_widget, "网络错误",
-                    f"无法连接到 GitHub:\n{e.reason}\n\n请检查网络连接后重试。")
-                return False, str(e.reason)
+                else:
+                    QMessageBox.warning(parent_widget, "网络错误",
+                        "无法连接到 GitHub 预设源。\n\n请检查网络连接后重试。")
+                return False, "manifest 下载失败"
 
             if not isinstance(manifest, dict):
                 if progress:
@@ -514,7 +528,7 @@ class PresetManager:
                 for fname in file_list:
                     if progress:
                         progress.setLabelText(f"正在下载: {cat}/{fname}")
-                    raw_url = f"{GITHUB_RAW_URL}/{cat}/{fname}"
+                    raw_url = f"{working_url}/{cat}/{fname}"
                     try:
                         req2 = urllib.request.Request(raw_url)
                         req2.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
