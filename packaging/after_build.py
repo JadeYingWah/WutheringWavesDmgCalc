@@ -43,7 +43,7 @@ $s.WorkingDirectory = "{os.path.dirname(target)}"
 $s.Save()
 '''
     subprocess.run(['powershell', '-Command', ps], check=True, capture_output=True)
-    print(f'  快捷方式: {os.path.basename(link_lnk)} -> {target}')
+    print(f'    Shortcut: {os.path.basename(link_lnk)} -> {target}')
 
 
 def main():
@@ -58,7 +58,7 @@ def main():
     ]
     for f in folders:
         os.makedirs(f, exist_ok=True)
-    print('[OK]文件夹结构已创建')
+    print('[OK] Folders created')
 
     # 2. 移动 WWDmgCalc 到子目录
     src_ww = os.path.join(DIST, 'WWDmgCalc')
@@ -73,7 +73,7 @@ def main():
             else:
                 shutil.move(s, d)
         shutil.rmtree(src_ww, ignore_errors=True)
-        print('[OK]WWDmgCalc 已移入子目录')
+        print('[OK] WWDmgCalc moved')
 
     # 3. 移动 ErrorViewer 到子目录
     src_ev = os.path.join(DIST, 'ErrorViewer')
@@ -88,14 +88,14 @@ def main():
             else:
                 shutil.move(s, d)
         shutil.rmtree(src_ev, ignore_errors=True)
-        print('[OK]ErrorViewer 已移入子目录')
+        print('[OK] ErrorViewer moved')
 
     # 4. 复制 config
     src_cfg = os.path.join(ROOT, 'config', 'auto_all_config.json')
     dst_cfg = os.path.join(OUT, 'config', 'auto_all_config.json')
     if os.path.exists(src_cfg):
         shutil.copy2(src_cfg, dst_cfg)
-        print('[OK]config/auto_all_config.json 已复制')
+        print('[OK] config copied')
 
 
     # 5. 复制官方预设文件到主文件夹 presets/official/
@@ -114,7 +114,7 @@ def main():
     dst_save = os.path.join(OUT, 'save')
     if os.path.exists(src_save):
         shutil.copytree(src_save, dst_save, dirs_exist_ok=True)
-        print(f'  save/ 已复制')
+        print(f'    save/ copied')
 
     # 7. 移入工具目录（Git 代理 + 上传预设）
     TOOLS_DIR = os.path.join(OUT, 'tools')
@@ -154,8 +154,8 @@ def main():
             create_shortcut(exe_path, link_path, folder_label)
 
     print()
-    print(f'打包完成: {OUT}')
-    print('结构:')
+    print(f'Build complete: {OUT}')
+    print('Structure:')
     for root, dirs, files in os.walk(OUT):
         level = root.replace(OUT, '').count(os.sep)
         indent = '  ' * level
