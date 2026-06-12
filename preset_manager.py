@@ -51,6 +51,7 @@ GITHUB_REPO_NAME = "WutheringWavesDmgCalc"
 GITHUB_RAW_URLS = [
     f"https://raw.githubusercontent.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/main/presets/official",
     f"https://raw.gitmirror.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/main/presets/official",
+    f"https://cdn.jsdelivr.net/gh/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}@main/presets/official",
 ]
 
 
@@ -475,6 +476,7 @@ class PresetManager:
         try:
             import urllib.request
             import urllib.error
+            from urllib.parse import quote
 
             # 1. 从 raw URL 拉取 manifest.json（多源自动 fallback）
             manifest = None
@@ -531,7 +533,7 @@ class PresetManager:
                         break
                     if progress:
                         progress.setLabelText(f"正在下载: {cat}/{fname}")
-                    raw_url = f"{working_url}/{cat}/{fname}"
+                    raw_url = f"{working_url}/{cat}/{quote(fname)}"
                     try:
                         req2 = urllib.request.Request(raw_url)
                         req2.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
