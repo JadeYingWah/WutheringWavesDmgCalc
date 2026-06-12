@@ -58,6 +58,52 @@ def unset_git_proxy():
     subprocess.run(["git", "config", "--global", "--unset", "https.proxy"], capture_output=True)
 
 
+class _TestThread(QThread):
+    """后台测试代理连通性，不阻塞 UI。"""
+    result = pyqtSignal(str, str)
+
+    def __init__(self, proto, port, proxy_url):
+        super().__init__()
+        self._proto = proto
+        self._port = port
+        self._proxy_url = proxy_url
+
+    def run(self):
+        import urllib.request
+        try:
+            if self._proto == "socks5":
+                handler = urllib.request.ProxyHandler({})
+            else:
+                handler = urllib.request.ProxyHandler({"http": self._proxy_url, "https": self._proxy_url})
+            opener = urllib.request.build_opener(handler)
+            req = urllib.request.Request("https://github.com")
+            with opener.open(req, timeout=8) as resp:
+                if resp.status == 200:
+                    self.result.emit("✅ 测试成功，可以访问 GitHub", "green")
+                else:
+                    self.result.emit(f"❌ 访问失败 (HTTP {resp.status})", "red")
+        except Exception as e:
+            if self._proto == "socks5" and "socks" not in str(e).lower():
+                try:
+                    import socks, socket
+                    socks.set_default_proxy(socks.SOCKS5, "127.0.0.1", self._port)
+                    socket.socket = socks.socksocket
+                    req = urllib.request.Request("https://github.com")
+                    with urllib.request.urlopen(req, timeout=8) as resp:
+                        if resp.status == 200:
+                            self.result.emit("✅ 测试成功，可以访问 GitHub", "green")
+                        else:
+                            self.result.emit(f"❌ 访问失败 (HTTP {resp.status})", "red")
+                        return
+                except Exception:
+                    pass
+            msg = str(e)
+            if "timed out" in msg or "Connection refused" in msg:
+                self.result.emit("❌ 连接超时，代理不可用", "red")
+            else:
+                self.result.emit(f"❌ 测试失败：{msg[:50]}", "red")
+
+
 class GitProxyManager(QWidget):
     def __init__(self):
         super().__init__()
