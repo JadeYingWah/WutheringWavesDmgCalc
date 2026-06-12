@@ -149,7 +149,7 @@ def main():
         ('上传官方预设', 'PresetUploader'),
     ]:
         exe_path = os.path.join(OUT, 'tools', folder_label, exe_name + '.exe')
-        link_path = os.path.join(OUT, folder_label + '.lnk')
+        link_path = os.path.join(OUT, 'tools', folder_label + '.lnk')
         if os.path.exists(exe_path):
             create_shortcut(exe_path, link_path, folder_label)
 
