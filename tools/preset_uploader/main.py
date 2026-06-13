@@ -179,20 +179,33 @@ class PresetUploader(QWidget):
         title.setStyleSheet("font-size: 18px; font-weight: bold;")
         layout.addWidget(title)
 
-        # ── Token 状态 ──
-        gb_token = QGroupBox("工具状态")
-        gb_token_layout = QVBoxLayout(gb_token)
+        # ── 工具状态（可折叠） ──
+        self._cfg_header = QPushButton()
+        self._cfg_header.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._cfg_header.setStyleSheet(
+            "QPushButton{text-align:left;padding:6px 10px;border:1px solid #ccc;border-radius:4px;"
+            "background:#f5f5f5;font-size:12px;}"
+            "QPushButton:hover{background:#e8e8e8;}")
         if self._author_token:
-            self._token_status = QLabel("✅ 工具已配置，可直接使用")
-            self._token_status.setStyleSheet("color:#2e7d32;font-size:12px;")
+            self._cfg_header.setText("▼ 工具状态  ✅ 已配置")
+        else:
+            self._cfg_header.setText("▼ 工具状态  ⚠ 未配置")
+        self._cfg_body = QWidget()
+        self._cfg_body.setStyleSheet("border:1px solid #ccc;border-top:0;border-radius:0 0 4px 4px;padding:6px 10px;")
+        cfg_body_lay = QVBoxLayout(self._cfg_body)
+        cfg_body_lay.setContentsMargins(0, 0, 0, 0)
+        if self._author_token:
+            self._token_status = QLabel("Token 已加载，工具可正常使用。\n如需更新 Token，请替换 tools/preset_uploader/.upload_token 文件。")
         else:
             self._token_status = QLabel(
-                "⚠️ 未配置 Token。请在工具目录创建 .upload_token 文件，"
-                "写入 JadeYingWah 的 GitHub Token（仅作者使用）")
-            self._token_status.setWordWrap(True)
-            self._token_status.setStyleSheet("color:#c62828;font-size:12px;")
-        gb_token_layout.addWidget(self._token_status)
-        layout.addWidget(gb_token)
+                "⚠ 未配置 Token。请在 tools/preset_uploader/ 目录创建 .upload_token 文件，\n"
+                "写入 JadeYingWah 的 GitHub Token（仅作者使用）。")
+        self._token_status.setWordWrap(True)
+        self._token_status.setStyleSheet("color:#666;font-size:11px;border:0;")
+        cfg_body_lay.addWidget(self._token_status)
+        self._cfg_header.clicked.connect(self._toggle_cfg)
+        layout.addWidget(self._cfg_header)
+        layout.addWidget(self._cfg_body)
 
         # ── 你的 GitHub 用户名 ──
         gb_user = QGroupBox("你的信息")
@@ -270,6 +283,18 @@ class PresetUploader(QWidget):
             except Exception:
                 pass
         return ""
+
+    # ── 折叠面板 ──
+
+    def _toggle_cfg(self):
+        visible = self._cfg_body.isVisible()
+        self._cfg_body.setVisible(not visible)
+        if self._author_token:
+            prefix = "▶" if not visible else "▼"
+            self._cfg_header.setText(f"{prefix} 工具状态  ✅ 已配置")
+        else:
+            prefix = "▶" if not visible else "▼"
+            self._cfg_header.setText(f"{prefix} 工具状态  ⚠ 未配置")
 
     # ── 选择文件 ──
 
