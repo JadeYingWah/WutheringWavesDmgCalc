@@ -488,74 +488,56 @@ class PresetManager:
             import urllib.error
             from urllib.parse import quote
 
-            # ── 阶段1：从 GitHub git tree API 一次获取全部文件（仅 1 次 API 请求） ──
-            file_map = {}  # {category: [filename, ...]}
+            # ── 阶段1：拉取 manifest.json ──
             if progress:
-                progress.setLabelText("正在获取预设列表...")
+                progress.setLabelText("正在连接预设源...")
                 QApplication.processEvents()
-            try:
-                tree_url = f"https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/git/trees/main?recursive=1"
-                req = urllib.request.Request(tree_url)
-                req.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
-                req.add_header("Accept", "application/vnd.github.v3+json")
-                with urllib.request.urlopen(req, timeout=15) as resp:
-                    tree_data = json.loads(resp.read().decode("utf-8"))
-                for entry in tree_data.get("tree", []):
-                    path = entry.get("path", "")
-                    if not path.startswith("presets/official/"):
-                        continue
-                    parts = path.split("/")
-                    if len(parts) != 4:
-                        continue
-                    cat = parts[2]
-                    fname = parts[3] if len(parts) > 3 else ""
-                    if cat not in CATEGORY_DIRS or not fname.endswith(".json") or fname == "manifest.json":
-                        continue
-                    file_map.setdefault(cat, []).append(fname)
-            except urllib.error.HTTPError as e:
-                if progress: progress.close()
-                if e.code == 403:
-                    QMessageBox.warning(parent_widget, "API 限流",
-                        "GitHub API 请求次数超限，请稍后重试。")
+
+            manifest = None
+            working_url = None
+            last_error = None
+            for base_url in GITHUB_RAW_URLS:
+                manifest_url = f"{base_url}/manifest.json?_=" + str(int(__import__("time").time()))
+                try:
+                    req = urllib.request.Request(manifest_url)
+                    req.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
+                    with urllib.request.urlopen(req, timeout=10) as resp:
+                        manifest = json.loads(resp.read().decode("utf-8"))
+                    working_url = base_url
+                    break
+                except urllib.error.HTTPError as e:
+                    last_error = e
+                    if e.code == 404:
+                        break
+                    continue
+                except Exception as e:
+                    last_error = e
+                    continue
+
+            if manifest is None:
+                if progress:
+                    progress.close()
+                if isinstance(last_error, urllib.error.HTTPError) and last_error.code == 404:
+                    QMessageBox.information(parent_widget, "暂无官方预设",
+                        "GitHub 仓库中尚未上传官方预设文件。")
                 else:
                     QMessageBox.warning(parent_widget, "网络错误",
-                        f"无法连接 GitHub API (HTTP {e.code})。\n请检查网络后重试。")
-                return False, f"API 错误: {e.code}"
-            except Exception as e:
-                if progress: progress.close()
-                QMessageBox.warning(parent_widget, "网络错误",
-                    "无法连接到 GitHub。\n\n请检查网络连接后重试。")
-                return False, str(e)
+                        "无法连接到 GitHub 预设源。\n\n请检查网络连接后重试。")
+                return False, "manifest 下载失败"
 
-            # ── 阶段2：统计并下载 ──
+            if not isinstance(manifest, dict):
+                if progress:
+                    progress.close()
+                QMessageBox.warning(parent_widget, "格式错误", "manifest 格式异常")
+                return False, "格式错误"
+
+            # ── 阶段2：统计 + 下载 ──
+            # 计算总文件数，切换为有进度的进度条
             PresetManager.ensure_dirs()
-            total_files = sum(len(v) for v in file_map.values())
+            total_files = sum(len(v) for v in manifest.values() if isinstance(v, list))
             downloaded = 0
             failed = 0
             failed_details = []
-            working_url = None
-
-            # Use raw.githubusercontent.com for file downloads (faster, no API rate limit)
-            raw_base = GITHUB_RAW_URLS[0]
-            # Verify raw is accessible
-            try:
-                test_req = urllib.request.Request(raw_base + "/manifest.json")
-                test_req.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
-                urllib.request.urlopen(test_req, timeout=10)
-                working_url = raw_base
-            except Exception:
-                # Try mirrors
-                for alt_base in GITHUB_RAW_URLS[1:]:
-                    try:
-                        test_req = urllib.request.Request(alt_base + "/manifest.json")
-                        test_req.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
-                        urllib.request.urlopen(test_req, timeout=10)
-                        working_url = alt_base
-                        break
-                    except Exception:
-                        continue
-            if not working_url:
-                working_url = raw_base  # fallback
 
             if progress and total_files > 0:
                 progress.setLabelText(f"准备下载 {total_files} 个预设文件...")
@@ -565,7 +547,9 @@ class PresetManager:
                 QApplication.processEvents()
 
             for cat in CATEGORY_DIRS:
-                file_list = file_map.get(cat, [])
+                file_list = manifest.get(cat, [])
+                if not isinstance(file_list, list):
+                    continue
                 target_dir = os.path.join(OFFICIAL_DIR, cat)
                 for fname in file_list:
                     if progress and progress.wasCanceled():
@@ -598,12 +582,18 @@ class PresetManager:
                         failed_details.append((cat, fname, f"HTTP {e.code}"))
                     except urllib.error.URLError as e:
                         failed += 1
-                        failed_details.append((cat, fname, "网络错误"))
+                        failed_details.append((cat, fname, f"网络错误"))
                     except Exception as e:
                         failed += 1
                         failed_details.append((cat, fname, str(e)[:80]))
                     if progress:
                         progress.setValue(downloaded + failed)
+
+            if progress:
+                progress.setLabelText("同步完成！" if downloaded > 0 else "同步失败")
+                progress.setValue(total_files)
+                QApplication.processEvents()
+                progress.close()
 
             # 3. 写入错误日志（供侧边栏"错误日志"查看）
             if failed_details:
