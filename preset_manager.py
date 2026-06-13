@@ -693,7 +693,7 @@ class PresetManager:
             '',
             '> 📌 此文件由预设上传工具自动更新，每次投稿合并后贡献者名单自动追加。',
         ]
-        contrib_path = os.path.abspath(os.path.join(OFFICIAL_DIR, '..', 'CONTRIBUTORS.md'))
+        contrib_path = os.path.join(_APP_DIR, 'CONTRIBUTORS.md')
         try:
             with open(contrib_path, 'w', encoding='utf-8') as f:
                 f.write(newline.join(md_lines) + newline)
