@@ -1,4 +1,4 @@
-﻿name: 自动打包发布
+name: 自动打包发布
 
 on:
   workflow_dispatch:
@@ -28,45 +28,57 @@ jobs:
           pip install pyinstaller
           pip install PyQt6 opencv-python onnxruntime numpy pillow shapely pyclipper pyyaml six matplotlib psutil
 
-      - name: 创建 models 目录（OCR 模型）
+      - name: 下载 OCR 模型
         run: |
-          mkdir models -Force
+          if (-not (Test-Path "models")) { New-Item -ItemType Directory -Path "models" -Force | Out-Null }
           if (-not (Test-Path "models/ch_PP-OCRv5_mobile_det.onnx")) {
+            Write-Host "下载检测模型..."
             curl.exe -L -o "models/ch_PP-OCRv5_mobile_det.onnx" "https://github.com/RapidOCR/RapidOCR/releases/download/v1.0/ch_PP-OCRv5_mobile_det.onnx" -H "Accept: application/octet-stream" -A "WWDmgCalc-CI/1.0"
-            curl.exe -L -o "models/ch_PP-OCRv5_rec_server_infer.onnx" "https://github.com/RapidOCR/RapidOCR/releases/download/v1.0/ch_PP-OCRv5_rec_server_infer.onnx" -H "Accept: application/octet-stream" -A "WWDmgCalc-CI/1.0"
-            echo "模型下载完成"
-          } else {
-            echo "模型已存在"
           }
+          if (-not (Test-Path "models/ch_PP-OCRv5_rec_server_infer.onnx")) {
+            Write-Host "下载识别模型..."
+            curl.exe -L -o "models/ch_PP-OCRv5_rec_server_infer.onnx" "https://github.com/RapidOCR/RapidOCR/releases/download/v1.0/ch_PP-OCRv5_rec_server_infer.onnx" -H "Accept: application/octet-stream" -A "WWDmgCalc-CI/1.0"
+          }
+          Write-Host "模型就绪"
+          Get-ChildItem models | Select-Object Name, Length
 
-      - name: 打包主程序
+      - name: 打包主程序 + ErrorViewer
         run: |
           cd packaging
-          python -m PyInstaller WWDmgCalc.spec --clean
+          python -m PyInstaller WWDmgCalc.spec --distpath ../dist --workpath ../build/WWDmgCalc_build --clean
 
-      - name: 打包辅助工具
+      - name: 打包 Git 代理管理
         run: |
           cd packaging
-          python -m PyInstaller git_proxy_manager.spec --distpath ../dist_tools --workpath ../build_tools --clean
-          python -m PyInstaller preset_uploader.spec --distpath ../dist_tools --workpath ../build_tools --clean
+          python -m PyInstaller git_proxy_manager.spec --distpath dist_tools --workpath build_tools --clean
 
-      - name: 重组结构
+      - name: 打包预设上传工具
+        run: |
+          cd packaging
+          python -m PyInstaller preset_uploader.spec --distpath dist_tools --workpath build_tools --clean
+
+      - name: 重组目录结构
         run: |
           cd packaging
           python after_build.py
+
+      - name: 验证打包产物
+        run: |
+          Write-Host "=== dist/WutheringWavesDmgCalc/ 结构 ==="
+          Get-ChildItem dist/WutheringWavesDmgCalc -Recurse -Depth 2 | Select-Object FullName
+          if (-not (Test-Path "dist/WutheringWavesDmgCalc/WWDmgCalc/WWDmgCalc.exe")) {
+            Write-Host "ERROR: 主程序 exe 不存在！"
+            exit 1
+          }
+          Write-Host "`n✅ 打包验证通过"
 
       - name: 压缩为 zip
         run: |
           cd dist
           Compress-Archive -Path WutheringWavesDmgCalc -DestinationPath "..\WutheringWavesDmgCalc_${{ github.event.inputs.version }}.zip"
           cd ..
-          if (Test-Path "WutheringWavesDmgCalc_${{ github.event.inputs.version }}.zip") {
-            Write-Host "Zip created successfully"
-            (Get-Item "WutheringWavesDmgCalc_${{ github.event.inputs.version }}.zip").Length
-          } else {
-            Write-Host "ERROR: Zip not found!"
-            exit 1
-          }
+          $sizeMB = [math]::Round((Get-Item "WutheringWavesDmgCalc_${{ github.event.inputs.version }}.zip").Length / 1MB, 0)
+          Write-Host "Zip: WutheringWavesDmgCalc_${{ github.event.inputs.version }}.zip  ($sizeMB MB)"
 
       - name: 创建 Release 并上传
         uses: softprops/action-gh-release@v2
@@ -74,8 +86,10 @@ jobs:
           tag_name: ${{ github.event.inputs.version }}
           name: "鸣潮伤害计算器 ${{ github.event.inputs.version }}"
           body: |
-            自动打包发布 ${{ github.event.inputs.version }}
-            
-            下载后解压运行 WutheringWavesDmgCalc/WWDmgCalc.exe
+            ## 鸣潮伤害计算器 ${{ github.event.inputs.version }}
+
+            下载后解压，运行 `WutheringWavesDmgCalc/WWDmgCalc.exe` 即可使用。
+
+            > 本 Release 由 GitHub Actions 自动打包生成。
           files: WutheringWavesDmgCalc_${{ github.event.inputs.version }}.zip
           generate_release_notes: false
