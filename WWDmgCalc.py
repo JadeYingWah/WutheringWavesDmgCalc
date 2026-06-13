@@ -10836,12 +10836,6 @@ class DmgCalculator(QMainWindow):
 
         self.stack.setCurrentWidget(self.welcome_screen)
 
-        # 启动时更新贡献者名单
-        try:
-            PresetManager.rebuild_contributors_md()
-        except Exception:
-            pass
-
         # 必须先创建 theme_btn，避免 resizeEvent 先触发导致访问不到而崩溃
         self.theme_btn = QPushButton("切换到白天模式", self)
         self.theme_btn.setObjectName("themeButton")
