@@ -14,9 +14,13 @@
   ├── config/
   │   └── auto_all_config.json
   ├── presets/
-  │   ├── official/
-  │   └── user/
-  └── save/
+  │   ├── official/                    ← 含官方预设 JSON 文件（复制）
+  │   └── user/                        ← 仅空子目录，不含任何文件
+  │       ├── character/
+  │       ├── character_buff/
+  │       ├── echo_set/
+  │       └── weapon/
+  └── save/                            ← 仅空目录，不含任何存档文件
 """
 
 import os
@@ -52,7 +56,10 @@ def main():
         os.path.join(OUT, 'WWDmgCalc'),
         os.path.join(OUT, 'ErrorViewer'),
         os.path.join(OUT, 'presets', 'official'),
-        os.path.join(OUT, 'presets', 'user'),
+        os.path.join(OUT, 'presets', 'user', 'character'),
+        os.path.join(OUT, 'presets', 'user', 'character_buff'),
+        os.path.join(OUT, 'presets', 'user', 'echo_set'),
+        os.path.join(OUT, 'presets', 'user', 'weapon'),
         os.path.join(OUT, 'config'),
         os.path.join(OUT, 'save'),
     ]
@@ -98,23 +105,20 @@ def main():
         print('[OK] config copied')
 
 
-    # 5. 复制官方预设文件到主文件夹 presets/official/
+    # 5. 复制官方预设文件——只复制 official/，user/ 仅保留空目录
     src_presets = os.path.join(ROOT, 'presets')
     dst_presets = os.path.join(OUT, 'presets')
     if os.path.exists(src_presets):
-        for cat in ['official', 'user']:
-            src_cat = os.path.join(src_presets, cat)
-            dst_cat = os.path.join(dst_presets, cat)
-            if os.path.exists(src_cat):
-                shutil.copytree(src_cat, dst_cat, dirs_exist_ok=True)
-                print(f'  presets/{cat} copied')
+        src_official = os.path.join(src_presets, 'official')
+        dst_official = os.path.join(dst_presets, 'official')
+        if os.path.exists(src_official):
+            shutil.copytree(src_official, dst_official, dirs_exist_ok=True)
+            print('  presets/official copied')
+        # user/ 子目录已在步骤1建好（空目录），不复制任何文件
 
-    # 6. 复制存档文件
-    src_save = os.path.join(ROOT, 'save')
-    dst_save = os.path.join(OUT, 'save')
-    if os.path.exists(src_save):
-        shutil.copytree(src_save, dst_save, dirs_exist_ok=True)
-        print(f'    save/ copied')
+    # 6. 存档目录——仅保留空目录，不复制任何存档文件
+    # save/ 已在步骤1建好，不复制文件
+    print('    save/ (空目录，不复制文件)')
 
     # 7. 移入工具目录（Git 代理 + 上传预设）
     TOOLS_DIR = os.path.join(OUT, 'tools')
