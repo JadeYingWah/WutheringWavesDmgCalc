@@ -8,7 +8,6 @@
 
 | 贡献者 | 贡献内容 | 贡献时间 |
 |--------|---------|----------|
-| JadeBrookYuyanxi | character/漂泊者-气动-官方预设.json<br>character_buff/轻云出月（5-5）效果-官方预设.json<br>character/贡献者名单与预设同步测试.json<br>character/贡献者名单与预设同步测试2.json | 2026-06-13 |
 | JadeBrookYuyanxi | weapon/贡献者名单与预设同步测试2.json | 2026-06-13 |
 
 ---
