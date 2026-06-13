@@ -331,6 +331,9 @@ class WelcomeScreen(QWidget):
         lay.addWidget(close_btn, alignment=Qt.AlignmentFlag.AlignCenter)
         dlg.exec()
 
+# ==================== 带搜索功能的下拉框 ====================
+
+class SearchCombo(QComboBox):
     def __init__(self, items=None, parent=None):
         super().__init__(parent)
         self.setEditable(True)
