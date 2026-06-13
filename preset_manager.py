@@ -704,7 +704,7 @@ class PresetManager:
             if n not in existing:
                 has = True
                 md_lines.append(f'| {n} | {"<br>".join(sorted(from_presets[n]))} | {today} |')
-        if not has:
+        if not has and not os.path.exists(contrib_path):
             md_lines.append('| *(虚位以待)* | | |')
         md_lines += [
             '',
