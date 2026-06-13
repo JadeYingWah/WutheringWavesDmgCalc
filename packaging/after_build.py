@@ -120,7 +120,14 @@ def main():
     # save/ 已在步骤1建好，不复制文件
     print('    save/ (空目录，不复制文件)')
 
-    # 7. 移入工具目录（Git 代理 + 上传预设）
+    # 7. 复制 CONTRIBUTORS.md
+    src_contrib = os.path.join(ROOT, 'CONTRIBUTORS.md')
+    dst_contrib = os.path.join(OUT, 'CONTRIBUTORS.md')
+    if os.path.exists(src_contrib):
+        shutil.copy2(src_contrib, dst_contrib)
+        print('  CONTRIBUTORS.md copied')
+
+    # 8. 移入工具目录（Git 代理 + 上传预设）
     TOOLS_DIR = os.path.join(OUT, 'tools')
     TOOLS_SRC = os.path.join(DIST, '..', 'packaging', 'dist_tools')
     for src_name, exe_name, folder_label in [
