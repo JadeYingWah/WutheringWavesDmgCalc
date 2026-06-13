@@ -192,14 +192,60 @@ class UploadThread(QThread):
                 success += 1
             else:
                 failed += 1
-            self.progress_signal.emit(i + 1, total + 1)
+            self.progress_signal.emit(i + 1, total + 2)
 
         if failed > 0:
             self.log_signal.emit(f"\n  {success} 成功, {failed} 失败")
             self.done_signal.emit(success, "")
             return
 
-        self.log_signal.emit(f"[{total+1}/{total+1}] 创建 Pull Request...")
+        # ── 更新 CONTRIBUTORS.md ──
+        self.log_signal.emit(f"[{total+1}/{total+2}] 更新 CONTRIBUTORS.md...")
+        from datetime import datetime, timezone, timedelta
+        today = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
+        contrib_path = "CONTRIBUTORS.md"
+        contrib_url = f"https://api.github.com/repos/{OWNER}/{REPO}/contents/{quote(contrib_path, safe='/')}"
+        try:
+            contrib_existing = self._api("GET", f"{contrib_url}?ref=main")
+            if contrib_existing and "content" in contrib_existing:
+                old_md = base64.b64decode(contrib_existing["content"]).decode("utf-8")
+                contrib_sha = contrib_existing["sha"]
+                # Find the first empty row or end of table
+                insert_pos = old_md.find("| *(虚位以待) *|")
+                if insert_pos < 0:
+                    # No placeholder, append before the last ---
+                    insert_pos = old_md.rfind("---")
+                if insert_pos < 0:
+                    insert_pos = old_md.find("## 如何成为贡献者")
+                if insert_pos >= 0:
+                    file_list_str = "<br>".join(f"{cat}/{fn}" for cat, fn, _ in self.file_list)
+                    if "(虚位以待)" in old_md[insert_pos:insert_pos+30]:
+                        new_entry = f"| {self.contributor} | {file_list_str} | {today} |\n"
+                        new_md = old_md[:insert_pos] + new_entry + old_md[insert_pos:]
+                    else:
+                        new_entry = f"| {self.contributor} | {file_list_str} | {today} |\n"
+                        insert_line = old_md.rfind("|", 0, insert_pos)
+                        if insert_line >= 0:
+                            insert_line = old_md.find("\n", insert_line) + 1
+                            new_md = old_md[:insert_line] + new_entry + old_md[insert_line:]
+                        else:
+                            new_md = old_md + "\n" + new_entry
+                    contrib_data = {
+                        "message": f"投稿 ({self.contributor}): 更新 CONTRIBUTORS.md",
+                        "content": base64.b64encode(new_md.encode("utf-8")).decode("ascii"),
+                        "branch": self.branch,
+                        "sha": contrib_sha,
+                    }
+                    self._api("PUT", contrib_url, contrib_data)
+                    self.log_signal.emit(f"  ✓ CONTRIBUTORS.md 已更新")
+                else:
+                    self.log_signal.emit("  ⚠ 未找到插入位置，跳过")
+            else:
+                self.log_signal.emit("  ⚠ CONTRIBUTORS.md 不存在，跳过")
+        except Exception as e:
+            self.log_signal.emit(f"  ⚠ CONTRIBUTORS.md 更新失败: {e}")
+
+        self.log_signal.emit(f"[{total+1}/{total+2}] 创建 Pull Request...")
         authors = set()
         file_lines = []
         for cat, fname, content in self.file_list:
@@ -229,7 +275,7 @@ class UploadThread(QThread):
         if pr_resp and "html_url" in pr_resp:
             pr_url = pr_resp["html_url"]
             self.log_signal.emit(f"  ✓ PR 已创建: {pr_url}")
-            self.progress_signal.emit(total + 1, total + 1)
+            self.progress_signal.emit(total + 2, total + 2)
             self.done_signal.emit(success, pr_url)
         else:
             self.log_signal.emit("  ✗ PR 创建失败")
