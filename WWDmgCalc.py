@@ -304,8 +304,8 @@ class WelcomeScreen(QWidget):
                 root_dir = os.path.dirname(os.path.abspath(__file__))
             contrib_path = os.path.join(root_dir, "CONTRIBUTORS.md")
             if os.path.exists(contrib_path):
-                with open(contrib_path, "r", encoding="utf-8") as f:
-                    for line in f:
+                with open(contrib_path, "r", encoding="utf-8-sig") as cf:
+                    for line in cf:
                         line = line.strip()
                         if not line.startswith("|"):
                             continue
@@ -323,7 +323,8 @@ class WelcomeScreen(QWidget):
                                 if item and item not in author_map[name]:
                                     author_map[name].append(item)
         except Exception:
-            pass
+            import traceback
+            traceback.print_exc()
         if not author_map:
             QMessageBox.information(self, "贡献者名单", "暂无贡献者记录。\n欢迎你成为第一位贡献者！")
             return
