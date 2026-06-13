@@ -8,10 +8,10 @@ from urllib.parse import quote
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QGroupBox, QMessageBox, QTextEdit, QLineEdit,
-    QProgressBar, QFileDialog,
+    QCheckBox, QProgressBar, QFileDialog,
     QListWidget, QListWidgetItem,
 )
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QThread, QTimer, pyqtSignal
 
 OWNER = "JadeYingWah"
 REPO = "WutheringWavesDmgCalc"
