@@ -74,6 +74,12 @@ def build_stylesheet(theme):
     }}
     QPushButton#startButton:hover {{ background-color: {c["btn_hover"]}; }}
     QPushButton#startButton:pressed {{ background-color: {c["btn_pressed"]}; }}
+    QPushButton#contribButton {{
+        background-color: transparent; border: 2px solid {c["accent"]};
+        color: {c["accent"]}; padding: 10px 40px; font-size: 14px;
+        font-weight: 500; border-radius: 8px;
+    }}
+    QPushButton#contribButton:hover {{ background-color: {c["accent"]}; color: white; }}
     QPushButton#themeButton {{
         background-color: transparent; border: 1px solid {c["border"]};
         color: {c["text_secondary"]}; padding: 3px 8px; border-radius: 6px; font-size: 13px;
