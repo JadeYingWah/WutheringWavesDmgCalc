@@ -374,7 +374,7 @@ class PresetUploader(QWidget):
         gb_file_layout.setSpacing(6)
 
         btn_row = QHBoxLayout()
-        add_btn = QPushButton("＋ 选择文件")
+        add_btn = QPushButton("选择文件 ＋")
         add_btn.setStyleSheet(
             "QPushButton{background:transparent;color:#89b4fa;border:1px solid #89b4fa;padding:6px 14px;font-size:13px;border-radius:4px;}"
             "QPushButton:hover{background:#313244;color:#b4befe;}")

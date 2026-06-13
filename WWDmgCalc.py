@@ -283,46 +283,53 @@ class WelcomeScreen(QWidget):
         except ImportError:
             return
         presets = PresetManager.list_presets()
-        authors = set()
+        # 按作者分组：{author: [(name, category), ...]}
+        author_map = {}
         for p in presets:
             a = p.get("author", "").strip()
             if a:
-                authors.add(a)
-        if not authors:
-            QMessageBox.information(self, "贡献者名单", "暂无贡献者记录。\\n欢迎你成为第一位贡献者！")
+                if a not in author_map:
+                    author_map[a] = []
+                cat_label = {"character":"角色","weapon":"武器","echo_set":"套装","character_buff":"增益"}.get(p["category"], p["category"])
+                author_map[a].append(f"[{cat_label}] {p['name']}")
+        if not author_map:
+            QMessageBox.information(self, "贡献者名单", "暂无贡献者记录。\n欢迎你成为第一位贡献者！")
             return
         dlg = QDialog(self)
         dlg.setWindowTitle("🎖️ 贡献者名单")
-        dlg.resize(320, 360)
-        dlg.setMinimumSize(280, 200)
+        dlg.resize(380, 420)
+        dlg.setMinimumSize(300, 240)
+        dlg.setStyleSheet("QDialog{background:#1e1e2e;}")
         lay = QVBoxLayout(dlg)
         lay.setSpacing(12)
         title = QLabel("感谢以下贡献者")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 8px;")
+        title.setStyleSheet("font-size:16px;font-weight:bold;color:#cdd6f4;background:transparent;")
         lay.addWidget(title)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setStyleSheet("QScrollArea{background:transparent;border:0;}")
         inner = QWidget()
+        inner.setStyleSheet("background:transparent;")
         inner_lay = QVBoxLayout(inner)
-        inner_lay.setSpacing(6)
-        for name in sorted(authors):
-            label = QLabel(f"  ✦  {name}")
-            label.setStyleSheet("font-size: 14px; padding: 4px 8px;")
-            inner_lay.addWidget(label)
+        inner_lay.setSpacing(10)
+        for name in sorted(author_map.keys()):
+            name_label = QLabel(f"✦  {name}")
+            name_label.setStyleSheet("font-size:14px;font-weight:bold;color:#f5c2e7;background:transparent;padding:2px 8px;")
+            inner_lay.addWidget(name_label)
+            for item in author_map[name]:
+                item_label = QLabel(f"     {item}")
+                item_label.setStyleSheet("font-size:12px;color:#a6adc8;background:transparent;padding:1px 16px;")
+                inner_lay.addWidget(item_label)
         inner_lay.addStretch()
         scroll.setWidget(inner)
         lay.addWidget(scroll)
         close_btn = QPushButton("关闭")
+        close_btn.setStyleSheet("QPushButton{background:#45475a;color:#cdd6f4;border:0;padding:6px 20px;border-radius:4px;}QPushButton:hover{background:#585b70;}")
         close_btn.clicked.connect(dlg.accept)
         lay.addWidget(close_btn, alignment=Qt.AlignmentFlag.AlignCenter)
         dlg.exec()
-
-# ==================== 带搜索功能的下拉框 ====================
-
-class SearchCombo(QComboBox):
-    """可搜索的下拉框：输入文字模糊筛选，右侧箭头切换展开/收起，滚轮可循环浏览"""
 
     def __init__(self, items=None, parent=None):
         super().__init__(parent)
