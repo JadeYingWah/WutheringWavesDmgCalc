@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QGroupBox, QMessageBox, QTextEdit, QLineEdit,
     QCheckBox, QProgressBar, QFileDialog, QFrame,
+    QListWidget, QListWidgetItem,
 )
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 
