@@ -62,8 +62,10 @@ class _PresetPreview(QScrollArea):
         self._title_label.setText(data.get("name") or preset_info["name"])
 
         source_tag = "官方预设" if preset_info["source"] == "official" else "用户预设"
+        author = data.get("author", "")
+        author_part = f"  |  作者: {author}" if author else ""
         info = QLabel(f"来源: {source_tag}  |  修改: {preset_info.get('mtime', '')}"
-                      f"  |  类别: {data.get('category', '综合')}")
+                      f"  |  类别: {data.get('category', '综合')}{author_part}")
         info.setObjectName("labelSecondary")
         info.setStyleSheet("font-size: 11px;")
         info.setAlignment(Qt.AlignmentFlag.AlignCenter)

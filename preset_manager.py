@@ -3,7 +3,7 @@
 #
 # 预设 JSON 结构:
 # {
-#   "version": 1, "type": "preset", "name": "...",
+#   "version": 1, "type": "preset", "name": "...", "author": "...",
 #   "character": { "name", "element", "effect", "base_hp", "base_atk", "base_def",
 #                  "multiplier": { "base_mult", "mult_increase", "mult_boosts": [...] },
 #                  "resonance_chain": [ { "effects": [...], "indep_zones": [...] }, ... ] },
@@ -99,12 +99,14 @@ class PresetManager:
                                     name = _d["name"]
                         except Exception:
                             pass
+                        author = _d.get("author", "")
                         result.append({
                             "name": name,
                             "path": fpath,
                             "source": source,
                             "category": cat,
                             "mtime": mtime.strftime("%Y-%m-%d %H:%M"),
+                            "author": author,
                         })
                     except OSError:
                         continue

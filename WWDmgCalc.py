@@ -266,7 +266,58 @@ class WelcomeScreen(QWidget):
         start_btn.clicked.connect(on_start)
         layout.addWidget(start_btn, alignment=Qt.AlignmentFlag.AlignCenter)
 
+        layout.addSpacing(12)
+
+        contrib_btn = QPushButton("🎖️ 贡献者名单")
+        contrib_btn.setObjectName("contribButton")
+        contrib_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        contrib_btn.clicked.connect(self._show_contributors)
+        layout.addWidget(contrib_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+
         layout.addStretch(3)
+
+    def _show_contributors(self):
+        """弹出贡献者名单窗口"""
+        try:
+            from preset_manager import PresetManager
+        except ImportError:
+            return
+        presets = PresetManager.list_presets()
+        authors = set()
+        for p in presets:
+            a = p.get("author", "").strip()
+            if a:
+                authors.add(a)
+        if not authors:
+            QMessageBox.information(self, "贡献者名单", "暂无贡献者记录。\\n欢迎你成为第一位贡献者！")
+            return
+        dlg = QDialog(self)
+        dlg.setWindowTitle("🎖️ 贡献者名单")
+        dlg.resize(320, 360)
+        dlg.setMinimumSize(280, 200)
+        lay = QVBoxLayout(dlg)
+        lay.setSpacing(12)
+        title = QLabel("感谢以下贡献者")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 8px;")
+        lay.addWidget(title)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        inner = QWidget()
+        inner_lay = QVBoxLayout(inner)
+        inner_lay.setSpacing(6)
+        for name in sorted(authors):
+            label = QLabel(f"  ✦  {name}")
+            label.setStyleSheet("font-size: 14px; padding: 4px 8px;")
+            inner_lay.addWidget(label)
+        inner_lay.addStretch()
+        scroll.setWidget(inner)
+        lay.addWidget(scroll)
+        close_btn = QPushButton("关闭")
+        close_btn.clicked.connect(dlg.accept)
+        lay.addWidget(close_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+        dlg.exec()
 
 # ==================== 带搜索功能的下拉框 ====================
 

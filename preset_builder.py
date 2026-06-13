@@ -1544,6 +1544,9 @@ class _CharacterPresetWindow(QDialog):
         self.preset_name_edit = QLineEdit()
         self.preset_name_edit.setPlaceholderText("预设文件名称")
         basic_form.addRow("预设名称:", self.preset_name_edit)
+        self.author_edit = QLineEdit()
+        self.author_edit.setPlaceholderText("你的名字（可选）")
+        basic_form.addRow("作者:", self.author_edit)
         self.char_name = QLineEdit()
         self.char_name.setPlaceholderText("角色名称")
         self.char_name.textChanged.connect(self._sync_chain_names)
@@ -2063,6 +2066,9 @@ class _WeaponPresetWindow(QDialog):
         self.preset_name_edit = QLineEdit()
         self.preset_name_edit.setPlaceholderText("预设文件名称")
         basic_form.addRow("预设名称:", self.preset_name_edit)
+        self.author_edit = QLineEdit()
+        self.author_edit.setPlaceholderText("你的名字（可选）")
+        basic_form.addRow("作者:", self.author_edit)
         self.weapon_name = QLineEdit()
         self.weapon_name.setPlaceholderText("武器名称")
         basic_form.addRow("武器名称:", self.weapon_name)
@@ -2302,6 +2308,13 @@ class _CharacterBuffWindow(QDialog):
         self.preset_name_edit.setPlaceholderText("预设文件名称")
         name_row.addWidget(self.preset_name_edit, stretch=1)
         layout.addLayout(name_row)
+
+        author_row = QHBoxLayout()
+        author_row.addWidget(QLabel("作者:"))
+        self.author_edit = QLineEdit()
+        self.author_edit.setPlaceholderText("你的名字（可选）")
+        author_row.addWidget(self.author_edit, stretch=1)
+        layout.addLayout(author_row)
 
         name_row2 = QHBoxLayout()
         name_row2.addWidget(QLabel("增益名称:"))
@@ -2633,6 +2646,9 @@ class _EchoSetEditor(QDialog):
         self.preset_name_edit = QLineEdit()
         self.preset_name_edit.setPlaceholderText("预设文件名称")
         info_form.addRow("预设名称:", self.preset_name_edit)
+        self.author_edit = QLineEdit()
+        self.author_edit.setPlaceholderText("你的名字（可选）")
+        info_form.addRow("作者:", self.author_edit)
         self.set_name = QLineEdit()
         self.set_name.setPlaceholderText("声骸套装名称")
         info_form.addRow("套装名称:", self.set_name)
@@ -3447,6 +3463,10 @@ class PresetBuilderDialog(QDialog):
         if self._edit_preset_path:
             data, _ = PresetManager.load_preset(self._edit_preset_path)
             dlg.preset_name_edit.setText(data.get("name", ""))
+            dlg.author_edit.setText(data.get("author", ""))
+            dlg.author_edit.setText(data.get("author", ""))
+            dlg.author_edit.setText(data.get("author", ""))
+            dlg.author_edit.setText(data.get("author", ""))
             if data and "character" in data:
                 dlg.load_data(data["character"])
         dlg.exec()
@@ -3505,10 +3525,12 @@ class PresetBuilderDialog(QDialog):
         # 从窗口读取预设名称（优先使用用户填写的）
         user_name = window.preset_name_edit.text().strip() if hasattr(window, 'preset_name_edit') else ""
 
+        author = window.author_edit.text().strip() if hasattr(window, 'author_edit') else ""
         preset = {
             "version": 1,
             "type": "preset",
             "name": default_name,
+            "author": author,
             "category": category,
             category: data,
         }
