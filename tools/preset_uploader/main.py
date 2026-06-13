@@ -201,7 +201,7 @@ class UploadThread(QThread):
                 success += 1
             else:
                 failed += 1
-            self.progress_signal.emit(i + 1, total + 2)
+            self.progress_signal.emit(i + 1, total + 3)
 
         if failed > 0:
             self.log_signal.emit(f"\n  {success} 成功, {failed} 失败")
@@ -284,7 +284,7 @@ class UploadThread(QThread):
         if pr_resp and "html_url" in pr_resp:
             pr_url = pr_resp["html_url"]
             self.log_signal.emit(f"  ✓ PR 已创建: {pr_url}")
-            self.progress_signal.emit(total + 2, total + 2)
+            self.progress_signal.emit(total + 2, total + 3)
             self.done_signal.emit(success, pr_url)
         else:
             self.log_signal.emit("  ✗ PR 创建失败")
