@@ -184,12 +184,12 @@ class PresetUploader(QWidget):
         self._cfg_header.setCursor(Qt.CursorShape.PointingHandCursor)
         self._cfg_header.setStyleSheet(
             "QPushButton{text-align:left;padding:6px 10px;border:1px solid #ccc;border-radius:4px;"
-            "background:#f5f5f5;font-size:12px;}"
+            "background:#f5f5f5;color:#333;font-size:12px;}"
             "QPushButton:hover{background:#e8e8e8;}")
         has_token = bool(self._author_token)
         self._cfg_header.setText(("▼" if has_token else "▶") + (" 工具状态  ✅ 已配置" if has_token else " 工具状态  ⚠ 未配置"))
         self._cfg_body = QWidget()
-        self._cfg_body.setStyleSheet("border:1px solid #ccc;border-top:0;border-radius:0 0 4px 4px;padding:8px 10px;")
+        self._cfg_body.setStyleSheet("border:1px solid #ccc;border-top:0;border-radius:0 0 4px 4px;padding:8px 10px;background:#fafafa;color:#333;")
         self._cfg_body.setVisible(has_token)  # 已配置默认展开，未配置收起
         cfg_body_lay = QVBoxLayout(self._cfg_body)
         cfg_body_lay.setContentsMargins(0, 0, 0, 0)
