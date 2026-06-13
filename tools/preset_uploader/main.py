@@ -179,30 +179,52 @@ class PresetUploader(QWidget):
         title.setStyleSheet("font-size: 18px; font-weight: bold;")
         layout.addWidget(title)
 
-        # ── 工具状态（可折叠） ──
+        # ── 工具状态（可折叠，可编辑 Token） ──
         self._cfg_header = QPushButton()
         self._cfg_header.setCursor(Qt.CursorShape.PointingHandCursor)
         self._cfg_header.setStyleSheet(
             "QPushButton{text-align:left;padding:6px 10px;border:1px solid #ccc;border-radius:4px;"
             "background:#f5f5f5;font-size:12px;}"
             "QPushButton:hover{background:#e8e8e8;}")
-        if self._author_token:
-            self._cfg_header.setText("▼ 工具状态  ✅ 已配置")
-        else:
-            self._cfg_header.setText("▼ 工具状态  ⚠ 未配置")
+        has_token = bool(self._author_token)
+        self._cfg_header.setText(("▼" if has_token else "▶") + (" 工具状态  ✅ 已配置" if has_token else " 工具状态  ⚠ 未配置"))
         self._cfg_body = QWidget()
-        self._cfg_body.setStyleSheet("border:1px solid #ccc;border-top:0;border-radius:0 0 4px 4px;padding:6px 10px;")
+        self._cfg_body.setStyleSheet("border:1px solid #ccc;border-top:0;border-radius:0 0 4px 4px;padding:8px 10px;")
+        self._cfg_body.setVisible(has_token)  # 已配置默认展开，未配置收起
         cfg_body_lay = QVBoxLayout(self._cfg_body)
         cfg_body_lay.setContentsMargins(0, 0, 0, 0)
-        if self._author_token:
-            self._token_status = QLabel("Token 已加载，工具可正常使用。\n如需更新 Token，请替换 tools/preset_uploader/.upload_token 文件。")
-        else:
-            self._token_status = QLabel(
-                "⚠ 未配置 Token。请在 tools/preset_uploader/ 目录创建 .upload_token 文件，\n"
-                "写入 JadeYingWah 的 GitHub Token（仅作者使用）。")
+        cfg_body_lay.setSpacing(6)
+        self._token_status = QLabel()
         self._token_status.setWordWrap(True)
         self._token_status.setStyleSheet("color:#666;font-size:11px;border:0;")
+        self._refresh_token_status()
         cfg_body_lay.addWidget(self._token_status)
+        # Token 输入行
+        tok_row = QHBoxLayout()
+        tok_row.addWidget(QLabel("Token:"))
+        self._cfg_token_input = QLineEdit()
+        self._cfg_token_input.setPlaceholderText("粘贴 ghp_xxx 或 github_pat_xxx ...")
+        self._cfg_token_input.setEchoMode(QLineEdit.EchoMode.Password)
+        if self._author_token:
+            self._cfg_token_input.setText(self._author_token)
+        tok_row.addWidget(self._cfg_token_input, 1)
+        tok_show_cb = QCheckBox("显示")
+        tok_show_cb.toggled.connect(
+            lambda c: self._cfg_token_input.setEchoMode(
+                QLineEdit.EchoMode.Normal if c else QLineEdit.EchoMode.Password))
+        tok_row.addWidget(tok_show_cb)
+        cfg_body_lay.addLayout(tok_row)
+        # 保存按钮
+        save_row = QHBoxLayout()
+        self._cfg_save_btn = QPushButton("保存 Token")
+        self._cfg_save_btn.setStyleSheet(
+            "QPushButton{background:#4CAF50;color:white;padding:4px 12px;border-radius:3px;font-size:12px;}")
+        self._cfg_save_btn.clicked.connect(self._save_token)
+        save_row.addWidget(self._cfg_save_btn)
+        self._cfg_save_msg = QLabel()
+        self._cfg_save_msg.setStyleSheet("color:#2e7d32;font-size:11px;")
+        save_row.addWidget(self._cfg_save_msg, 1)
+        cfg_body_lay.addLayout(save_row)
         self._cfg_header.clicked.connect(self._toggle_cfg)
         layout.addWidget(self._cfg_header)
         layout.addWidget(self._cfg_body)
@@ -284,17 +306,51 @@ class PresetUploader(QWidget):
                 pass
         return ""
 
+    def _save_token_to_file(self, t):
+        try:
+            with open(TOKEN_FILE, "w", encoding="utf-8") as f:
+                f.write(t)
+            self._author_token = t
+            return True
+        except Exception as e:
+            QMessageBox.warning(self, "保存失败", str(e))
+            return False
+
     # ── 折叠面板 ──
 
     def _toggle_cfg(self):
         visible = self._cfg_body.isVisible()
         self._cfg_body.setVisible(not visible)
-        if self._author_token:
-            prefix = "▶" if not visible else "▼"
-            self._cfg_header.setText(f"{prefix} 工具状态  ✅ 已配置")
+        has = bool(self._author_token)
+        prefix = "▶" if visible else "▼"  # after toggle
+        self._cfg_header.setText(prefix + (" 工具状态  ✅ 已配置" if has else " 工具状态  ⚠ 未配置"))
+
+    def _refresh_token_status(self):
+        has = bool(self._author_token)
+        if has:
+            self._token_status.setText("Token 已加载，工具可正常使用。")
         else:
-            prefix = "▶" if not visible else "▼"
-            self._cfg_header.setText(f"{prefix} 工具状态  ⚠ 未配置")
+            self._token_status.setText("⚠ 未配置 Token，请粘贴作者 Token 并保存。")
+
+    def _save_token(self):
+        t = self._cfg_token_input.text().strip()
+        if not t:
+            QMessageBox.warning(self, "提示", "Token 不能为空")
+            return
+        try:
+            with open(TOKEN_FILE, "w", encoding="utf-8") as f:
+                f.write(t)
+            self._author_token = t
+            self._refresh_token_status()
+            has = bool(self._author_token)
+            visible = self._cfg_body.isVisible()
+            prefix = "▼" if visible else "▶"
+            self._cfg_header.setText(prefix + (" 工具状态  ✅ 已配置" if has else " 工具状态  ⚠ 未配置"))
+            self._cfg_save_msg.setText("✅ 已保存")
+            QTimer.singleShot(2000, lambda: self._cfg_save_msg.setText(""))
+            self._update_state()
+        except Exception as e:
+            QMessageBox.warning(self, "保存失败", str(e))
 
     # ── 选择文件 ──
 
