@@ -115,3 +115,4 @@ cd .. && python packaging/after_build.py
 ## 📬 联系
 
 - GitHub Issues: [反馈 / 建议 / Bug](https://github.com/JadeYingWah/WutheringWavesDmgCalc/issues)
+- QQ群: 698544665
