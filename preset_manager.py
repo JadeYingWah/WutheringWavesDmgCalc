@@ -612,6 +612,7 @@ class PresetManager:
                 if failed:
                     msg += f"\n{failed} 个下载失败（可点击侧边栏「错误日志」查看详情）。"
                 QMessageBox.information(parent_widget, "更新完成", msg)
+                PresetManager.rebuild_contributors_md()
                 return True, f"成功 {downloaded} 个"
             else:
                 # 全部失败 → 详细信息写入日志并弹窗
@@ -634,6 +635,71 @@ class PresetManager:
     # ═══════════════════════════════════════════════════════════════
     # 提交为官方预设（Fork & PR 引导）
     # ═══════════════════════════════════════════════════════════════
+
+
+    @staticmethod
+    def rebuild_contributors_md():
+        import datetime
+        authors = {}
+        for cat in CATEGORY_DIRS:
+            d = os.path.join(OFFICIAL_DIR, cat)
+            if not os.path.isdir(d):
+                continue
+            for fname in sorted(os.listdir(d)):
+                if not fname.endswith('.json'):
+                    continue
+                try:
+                    with open(os.path.join(d, fname), 'r', encoding='utf-8') as f:
+                        data = json.loads(f.read())
+                    a = data.get('author', '').strip()
+                    if a:
+                        if a not in authors:
+                            authors[a] = []
+                        authors[a].append(f'{cat}/{fname}')
+                except Exception:
+                    pass
+        today = datetime.date.today().strftime('%Y-%m-%d')
+        newline = chr(10)
+        md_lines = [
+            '# 🎖️ 贡献者名单',
+            '',
+            '感谢每一位为鸣潮伤害计算器贡献预设的朋友！',
+            '',
+            '---',
+            '',
+            '## 贡献列表',
+            '',
+            '| 贡献者 | 贡献内容 | 贡献时间 |',
+            '|--------|---------|----------|',
+        ]
+        if authors:
+            for name in sorted(authors.keys()):
+                content = '<br>'.join(authors[name])
+                md_lines.append(f'| {name} | {content} | {today} |')
+        else:
+            md_lines.append('| *(虚位以待)* | | |')
+        md_lines += [
+            '',
+            '---',
+            '',
+            '## 如何成为贡献者',
+            '',
+            '1. 使用「**预设构建器**」制作预设，填写作者名',
+            '2. 打开「**官方预设上传工具**」，填入你的 GitHub 用户名',
+            '3. 选择预设文件 → 提交投稿',
+            '4. 等待审核合并后，你的名字会自动出现在这里',
+            '',
+            '---',
+            '',
+            '> 📌 此文件由预设上传工具自动更新，每次投稿合并后贡献者名单自动追加。',
+        ]
+        contrib_path = os.path.abspath(os.path.join(OFFICIAL_DIR, '..', 'CONTRIBUTORS.md'))
+        try:
+            with open(contrib_path, 'w', encoding='utf-8') as f:
+                f.write(newline.join(md_lines) + newline)
+        except Exception:
+            pass
+
 
     @staticmethod
     def submit_as_official(parent_widget, preset_path):
