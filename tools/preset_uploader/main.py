@@ -200,6 +200,15 @@ class UploadThread(QThread):
             return
 
         # ── 更新 CONTRIBUTORS.md ──
+        # ── 将投稿人 GitHub 用户名写入预设 JSON author 字段 ──
+        for idx, (cat, fname, content) in enumerate(self.file_list):
+            try:
+                d = json.loads(content)
+                d["author"] = self.contributor
+                self.file_list[idx] = (cat, fname, json.dumps(d, ensure_ascii=False, indent=2))
+            except Exception:
+                pass
+
         self.log_signal.emit(f"[{total+1}/{total+2}] 更新 CONTRIBUTORS.md...")
         from datetime import datetime, timezone, timedelta
         today = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
