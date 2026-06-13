@@ -122,6 +122,7 @@ class PresetUploader(QWidget):
         cb.toggled.connect(lambda c: self._token_input.setEchoMode(
             QLineEdit.EchoMode.Normal if c else QLineEdit.EchoMode.Password))
         token_row.addWidget(cb)
+        self._token_input.textChanged.connect(self._update_state)
         gb_token_layout.addLayout(token_row)
         layout.addWidget(gb_token)
 
