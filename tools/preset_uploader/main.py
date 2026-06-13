@@ -9,16 +9,92 @@ from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QPushButton, QGroupBox, QMessageBox, QTextEdit, QLineEdit,
     QCheckBox, QProgressBar, QFileDialog,
-    QListWidget, QListWidgetItem,
+    QListWidget, QListWidgetItem, QFrame,
 )
 from PyQt6.QtCore import Qt, QThread, QTimer, pyqtSignal
+from PyQt6.QtGui import QFont
 
 OWNER = "JadeYingWah"
 REPO = "WutheringWavesDmgCalc"
 CATEGORIES = {"character": "角色", "weapon": "武器", "echo_set": "声骸套装", "character_buff": "角色增益"}
-
-# 工具目录下的 token 文件（由项目作者维护）
 TOKEN_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".upload_token")
+
+# ═════════════ 统一样式表 ═════════════
+STYLE = """
+QWidget {
+    background: #f7f8fa;
+    color: #2c3e50;
+    font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+    font-size: 13px;
+}
+QGroupBox {
+    font-weight: bold;
+    font-size: 13px;
+    border: 1px solid #dcdde1;
+    border-radius: 6px;
+    margin-top: 10px;
+    padding-top: 14px;
+    background: #ffffff;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 14px;
+    padding: 0 6px;
+    color: #2c3e50;
+}
+QLineEdit {
+    border: 1px solid #dcdde1;
+    border-radius: 4px;
+    padding: 7px 10px;
+    background: #ffffff;
+    color: #2c3e50;
+}
+QLineEdit:focus {
+    border-color: #3498db;
+}
+QPushButton {
+    border-radius: 4px;
+    padding: 7px 16px;
+    font-size: 13px;
+}
+QListWidget {
+    border: 1px solid #dcdde1;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #2c3e50;
+}
+QListWidget::item {
+    padding: 4px 8px;
+}
+QListWidget::item:selected {
+    background: #d6eaf8;
+    color: #2c3e50;
+}
+QTextEdit {
+    border: 1px solid #dcdde1;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #2c3e50;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12px;
+}
+QProgressBar {
+    border: 1px solid #dcdde1;
+    border-radius: 4px;
+    background: #ecf0f1;
+    height: 8px;
+    text-align: center;
+    font-size: 11px;
+}
+QProgressBar::chunk {
+    background: #3498db;
+    border-radius: 3px;
+}
+QCheckBox {
+    spacing: 6px;
+    color: #2c3e50;
+}
+"""
 
 
 # ═══════════════════════════════════════════════
@@ -28,13 +104,13 @@ TOKEN_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".upload_t
 class UploadThread(QThread):
     log_signal = pyqtSignal(str)
     progress_signal = pyqtSignal(int, int)
-    done_signal = pyqtSignal(int, str)  # success, pr_url
+    done_signal = pyqtSignal(int, str)
 
     def __init__(self, token, contributor, file_list):
         super().__init__()
         self.token = token
-        self.contributor = contributor  # 投稿人 GitHub 用户名
-        self.file_list = file_list       # [(cat, fname, content), ...]
+        self.contributor = contributor
+        self.file_list = file_list
         self.branch = f"preset-{contributor}-{int(time.time())}"
 
     def _api(self, method, url, data=None):
@@ -51,7 +127,7 @@ class UploadThread(QThread):
             err = e.read().decode("utf-8", errors="replace")
             msg = {403: "Token 权限不足", 404: "路径不存在", 422: "已存在或格式错误"}.get(
                 e.code, f"HTTP {e.code}")
-            self.log_signal.emit(f"  x {msg}: {err[:80]}")
+            self.log_signal.emit(f"  ✗ {msg}: {err[:80]}")
             return None
 
     def run(self):
@@ -62,29 +138,26 @@ class UploadThread(QThread):
             self.done_signal.emit(0, "")
 
     def _do_upload(self):
-        # ── 1. 获取 main 最新 SHA ──
-        self.log_signal.emit("获取仓库最新状态...")
+        self.log_signal.emit("▶ 获取 main 分支状态...")
         main_ref = self._api("GET",
             f"https://api.github.com/repos/{OWNER}/{REPO}/git/ref/heads/main")
         if not main_ref or "object" not in main_ref:
-            self.log_signal.emit("  x 无法获取 main 分支，请检查 Token 权限")
+            self.log_signal.emit("  ✗ 无法获取 main 分支，请检查 Token 权限")
             self.done_signal.emit(0, "")
             return
         main_sha = main_ref["object"]["sha"]
-        self.log_signal.emit(f"  v main 分支: {main_sha[:7]}")
+        self.log_signal.emit(f"  ✓ main: {main_sha[:7]}")
 
-        # ── 2. 创建新分支 ──
-        self.log_signal.emit(f"创建分支: {self.branch}")
+        self.log_signal.emit(f"▶ 创建分支: {self.branch}")
         new_ref = self._api("POST",
             f"https://api.github.com/repos/{OWNER}/{REPO}/git/refs",
             {"ref": f"refs/heads/{self.branch}", "sha": main_sha})
         if not new_ref:
-            self.log_signal.emit("  x 创建分支失败")
+            self.log_signal.emit("  ✗ 创建分支失败")
             self.done_signal.emit(0, "")
             return
-        self.log_signal.emit(f"  v 分支已创建")
+        self.log_signal.emit("  ✓ 分支已创建")
 
-        # ── 3. 上传预设文件到分支 ──
         success = failed = 0
         total = len(self.file_list)
         for i, (cat, fname, content) in enumerate(self.file_list):
@@ -93,7 +166,6 @@ class UploadThread(QThread):
                    f"{quote(path, safe='/')}")
             self.log_signal.emit(f"[{i+1}/{total}] {cat}/{fname}")
 
-            # 检查 main 上是否已有同名文件
             existing = self._api("GET", f"{url}?ref=main")
             data = {
                 "message": f"投稿 ({self.contributor}): {cat}/{fname}",
@@ -102,8 +174,6 @@ class UploadThread(QThread):
             }
             if existing and "sha" in existing:
                 data["sha"] = existing["sha"]
-                self.log_signal.emit(f"    （覆盖已有文件）")
-
             if self._api("PUT", url, data):
                 success += 1
             else:
@@ -115,9 +185,7 @@ class UploadThread(QThread):
             self.done_signal.emit(success, "")
             return
 
-        # ── 4. 创建 Pull Request ──
         self.log_signal.emit(f"[{total+1}/{total+1}] 创建 Pull Request...")
-        # 收集作者信息
         authors = set()
         file_lines = []
         for cat, fname, content in self.file_list:
@@ -140,21 +208,17 @@ class UploadThread(QThread):
             f"> 投稿人 GitHub：@{self.contributor}\n"
         )
 
-        pr_data = {
-            "title": f"📦 预设投稿 by {self.contributor}（{len(self.file_list)} 个文件）",
-            "head": self.branch,
-            "base": "main",
-            "body": pr_body,
-        }
         pr_resp = self._api("POST",
-            f"https://api.github.com/repos/{OWNER}/{REPO}/pulls", pr_data)
+            f"https://api.github.com/repos/{OWNER}/{REPO}/pulls",
+            {"title": f"📦 预设投稿 by {self.contributor}（{len(self.file_list)} 个文件）",
+             "head": self.branch, "base": "main", "body": pr_body})
         if pr_resp and "html_url" in pr_resp:
             pr_url = pr_resp["html_url"]
-            self.log_signal.emit(f"  v PR 已创建: {pr_url}")
+            self.log_signal.emit(f"  ✓ PR 已创建: {pr_url}")
             self.progress_signal.emit(total + 1, total + 1)
             self.done_signal.emit(success, pr_url)
         else:
-            self.log_signal.emit("  x PR 创建失败")
+            self.log_signal.emit("  ✗ PR 创建失败")
             self.done_signal.emit(success, "")
 
 
@@ -166,134 +230,139 @@ class PresetUploader(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("官方预设上传工具")
-        self.setFixedSize(680, 580)
-        self._pending_files = []  # [(cat, fname, content), ...]
-
-        # 读取作者 Token
+        self.setFixedSize(620, 560)
+        self._pending_files = []
         self._author_token = self._load_token()
 
-        layout = QVBoxLayout(self)
-        layout.setSpacing(10)
+        self._build_ui()
+        self._update_state()
 
-        title = QLabel("官方预设上传工具")
-        title.setStyleSheet("font-size: 18px; font-weight: bold;")
+    def _build_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(18, 14, 18, 14)
+        layout.setSpacing(12)
+
+        # ── 标题 ──
+        title = QLabel("📦 官方预设上传")
+        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #2c3e50; background: transparent;")
         layout.addWidget(title)
 
-        # ── 工具状态（可折叠，可编辑 Token） ──
-        self._cfg_header = QPushButton()
-        self._cfg_header.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._cfg_header.setStyleSheet(
-            "QPushButton{text-align:left;padding:6px 10px;border:1px solid #ccc;border-radius:4px;"
-            "background:#f5f5f5;color:#333;font-size:12px;}"
-            "QPushButton:hover{background:#e8e8e8;}")
-        has_token = bool(self._author_token)
-        self._cfg_header.setText(("▼" if has_token else "▶") + (" 工具状态  ✅ 已配置" if has_token else " 工具状态  ⚠ 未配置"))
-        self._cfg_body = QWidget()
-        self._cfg_body.setStyleSheet("border:1px solid #ccc;border-top:0;border-radius:0 0 4px 4px;padding:8px 10px;background:#fafafa;color:#333;")
-        self._cfg_body.setVisible(has_token)  # 已配置默认展开，未配置收起
-        cfg_body_lay = QVBoxLayout(self._cfg_body)
-        cfg_body_lay.setContentsMargins(0, 0, 0, 0)
-        cfg_body_lay.setSpacing(6)
-        self._token_status = QLabel()
-        self._token_status.setWordWrap(True)
-        self._token_status.setStyleSheet("color:#666;font-size:11px;border:0;")
-        self._refresh_token_status()
-        cfg_body_lay.addWidget(self._token_status)
-        # Token 输入行
-        tok_row = QHBoxLayout()
-        tok_row.addWidget(QLabel("Token:"))
-        self._cfg_token_input = QLineEdit()
-        self._cfg_token_input.setPlaceholderText("粘贴 ghp_xxx 或 github_pat_xxx ...")
-        self._cfg_token_input.setEchoMode(QLineEdit.EchoMode.Password)
-        if self._author_token:
-            self._cfg_token_input.setText(self._author_token)
-        tok_row.addWidget(self._cfg_token_input, 1)
-        tok_show_cb = QCheckBox("显示")
-        tok_show_cb.toggled.connect(
-            lambda c: self._cfg_token_input.setEchoMode(
-                QLineEdit.EchoMode.Normal if c else QLineEdit.EchoMode.Password))
-        tok_row.addWidget(tok_show_cb)
-        cfg_body_lay.addLayout(tok_row)
-        # 保存按钮
-        save_row = QHBoxLayout()
-        self._cfg_save_btn = QPushButton("保存 Token")
-        self._cfg_save_btn.setStyleSheet(
-            "QPushButton{background:#4CAF50;color:white;padding:4px 12px;border-radius:3px;font-size:12px;}")
-        self._cfg_save_btn.clicked.connect(self._save_token)
-        save_row.addWidget(self._cfg_save_btn)
-        self._cfg_save_msg = QLabel()
-        self._cfg_save_msg.setStyleSheet("color:#2e7d32;font-size:11px;")
-        save_row.addWidget(self._cfg_save_msg, 1)
-        cfg_body_lay.addLayout(save_row)
-        self._cfg_header.clicked.connect(self._toggle_cfg)
-        layout.addWidget(self._cfg_header)
-        layout.addWidget(self._cfg_body)
+        # ── 工具状态：一行状态条 ──
+        status_frame = QFrame()
+        status_frame.setStyleSheet(
+            "QFrame{background:#ffffff;border:1px solid #dcdde1;border-radius:6px;padding:8px 12px;}")
+        status_row = QHBoxLayout(status_frame)
+        status_row.setContentsMargins(0, 0, 0, 0)
+        status_row.setSpacing(6)
 
-        # ── 你的 GitHub 用户名 ──
+        has = bool(self._author_token)
+        self._status_label = QLabel("● 已配置" if has else "● 未配置")
+        self._status_label.setStyleSheet(
+            f"color:{'#27ae60' if has else '#e74c3c'};font-size:12px;font-weight:bold;background:transparent;")
+        status_row.addWidget(self._status_label)
+
+        self._cfg_input = QLineEdit()
+        self._cfg_input.setPlaceholderText("粘贴 Token (ghp_xxx)...")
+        self._cfg_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self._cfg_input.setMaximumWidth(280)
+        self._cfg_input.setStyleSheet(
+            "QLineEdit{font-size:11px;padding:4px 8px;border:1px solid #dcdde1;border-radius:4px;background:#f7f8fa;}")
+        if self._author_token:
+            self._cfg_input.setText(self._author_token)
+        status_row.addWidget(self._cfg_input)
+
+        show_cb = QCheckBox("显示")
+        show_cb.setStyleSheet("font-size:11px;background:transparent;")
+        show_cb.toggled.connect(
+            lambda c: self._cfg_input.setEchoMode(
+                QLineEdit.EchoMode.Normal if c else QLineEdit.EchoMode.Password))
+        status_row.addWidget(show_cb)
+
+        self._save_btn = QPushButton("保存")
+        self._save_btn.setStyleSheet(
+            "QPushButton{background:#3498db;color:white;border:0;padding:4px 14px;font-size:11px;border-radius:4px;}"
+            "QPushButton:hover{background:#2980b9;}")
+        self._save_btn.clicked.connect(self._save_token)
+        status_row.addWidget(self._save_btn)
+
+        status_row.addStretch()
+        layout.addWidget(status_frame)
+
+        # ── 你的信息 ──
         gb_user = QGroupBox("你的信息")
         gb_user_layout = QVBoxLayout(gb_user)
+        gb_user_layout.setSpacing(8)
         user_row = QHBoxLayout()
-        user_row.addWidget(QLabel("GitHub 用户名:"))
+        user_row.addWidget(QLabel("GitHub 用户名："))
         self._user_input = QLineEdit()
-        self._user_input.setPlaceholderText("输入你的 GitHub 用户名（如 JadeYingWah）")
+        self._user_input.setPlaceholderText("输入你的 GitHub 用户名（如 JadeBrookYuyanxi）")
         self._user_input.textChanged.connect(self._update_state)
         user_row.addWidget(self._user_input, 1)
         gb_user_layout.addLayout(user_row)
-        hint = QLabel("💡 无需 Token，只需填写你的 GitHub 用户名即可投稿")
-        hint.setStyleSheet("color:#888;font-size:11px;")
+        hint = QLabel("  只需填写你的 GitHub 用户名，无需 Token")
+        hint.setStyleSheet("color:#95a5a6;font-size:11px;background:transparent;")
         gb_user_layout.addWidget(hint)
         layout.addWidget(gb_user)
 
-        # ── 选择文件 ──
-        gb_file = QGroupBox("选择预设文件")
+        # ── 文件列表 ──
+        gb_file = QGroupBox("预设文件")
         gb_file_layout = QVBoxLayout(gb_file)
+        gb_file_layout.setSpacing(6)
 
-        pick_row = QHBoxLayout()
-        pick_btn = QPushButton("选择文件")
-        pick_btn.setStyleSheet("QPushButton{padding:8px 16px;font-size:14px;}")
-        pick_btn.clicked.connect(self._pick_file)
-        pick_row.addWidget(pick_btn)
-        self._clear_btn = QPushButton("清空列表")
-        self._clear_btn.clicked.connect(self._clear_files)
-        pick_row.addWidget(self._clear_btn)
-        pick_row.addStretch()
-        gb_file_layout.addLayout(pick_row)
-
-        self._pending_label = QLabel("待上传文件（为空，请点击「选择文件」添加）")
-        self._pending_label.setStyleSheet("color:#888;padding:4px 0;")
-        gb_file_layout.addWidget(self._pending_label)
+        btn_row = QHBoxLayout()
+        add_btn = QPushButton("＋ 选择文件")
+        add_btn.setStyleSheet(
+            "QPushButton{background:#ffffff;color:#3498db;border:1px dashed #3498db;padding:6px 14px;font-size:13px;border-radius:4px;}"
+            "QPushButton:hover{background:#eaf2f8;}")
+        add_btn.clicked.connect(self._pick_file)
+        btn_row.addWidget(add_btn)
+        clear_btn = QPushButton("清空")
+        clear_btn.setStyleSheet(
+            "QPushButton{background:#ffffff;color:#7f8c8d;border:1px solid #dcdde1;padding:6px 14px;font-size:13px;border-radius:4px;}"
+            "QPushButton:hover{background:#f0f0f0;}")
+        clear_btn.clicked.connect(self._clear_files)
+        btn_row.addWidget(clear_btn)
+        btn_row.addStretch()
+        gb_file_layout.addLayout(btn_row)
 
         self._pending_list = QListWidget()
-        self._pending_list.setMaximumHeight(140)
+        self._pending_list.setMaximumHeight(130)
+        self._pending_list.setAlternatingRowColors(True)
         gb_file_layout.addWidget(self._pending_list)
+
+        self._pending_label = QLabel("尚未添加文件")
+        self._pending_label.setStyleSheet("color:#95a5a6;font-size:11px;background:transparent;")
+        gb_file_layout.addWidget(self._pending_label)
 
         layout.addWidget(gb_file)
 
-        # ── 提交按钮 ──
-        upload_row = QHBoxLayout()
+        # ── 提交 ──
+        action_row = QHBoxLayout()
+        action_row.setSpacing(10)
         self._upload_btn = QPushButton("提交投稿")
         self._upload_btn.setStyleSheet(
-            "QPushButton{background:#2196F3;color:white;padding:8px 20px;font-size:14px;border-radius:5px;}"
-            "QPushButton:disabled{background:#ccc;}")
+            "QPushButton{background:#2980b9;color:white;border:0;padding:10px 28px;font-size:14px;font-weight:bold;border-radius:6px;}"
+            "QPushButton:hover{background:#2471a3;}"
+            "QPushButton:disabled{background:#bdc3c7;color:#ecf0f1;}")
         self._upload_btn.clicked.connect(self._start_upload)
         self._upload_btn.setEnabled(False)
-        upload_row.addWidget(self._upload_btn)
+        action_row.addWidget(self._upload_btn)
         self._progress = QProgressBar()
         self._progress.setVisible(False)
-        upload_row.addWidget(self._progress, 1)
-        layout.addLayout(upload_row)
+        self._progress.setFixedHeight(8)
+        action_row.addWidget(self._progress, 1)
+        layout.addLayout(action_row)
 
         # ── 日志 ──
         gb_log = QGroupBox("上传日志")
         gb_log_layout = QVBoxLayout(gb_log)
         self._log = QTextEdit()
         self._log.setReadOnly(True)
+        self._log.setMaximumHeight(130)
         gb_log_layout.addWidget(self._log)
         layout.addWidget(gb_log)
 
-        self._update_state()
-
-    # ── Token ──
+    # ═════════════ Token ═════════════
 
     def _load_token(self):
         if os.path.exists(TOKEN_FILE):
@@ -306,34 +375,8 @@ class PresetUploader(QWidget):
                 pass
         return ""
 
-    def _save_token_to_file(self, t):
-        try:
-            with open(TOKEN_FILE, "w", encoding="utf-8") as f:
-                f.write(t)
-            self._author_token = t
-            return True
-        except Exception as e:
-            QMessageBox.warning(self, "保存失败", str(e))
-            return False
-
-    # ── 折叠面板 ──
-
-    def _toggle_cfg(self):
-        visible = self._cfg_body.isVisible()
-        self._cfg_body.setVisible(not visible)
-        has = bool(self._author_token)
-        prefix = "▶" if visible else "▼"  # after toggle
-        self._cfg_header.setText(prefix + (" 工具状态  ✅ 已配置" if has else " 工具状态  ⚠ 未配置"))
-
-    def _refresh_token_status(self):
-        has = bool(self._author_token)
-        if has:
-            self._token_status.setText("Token 已加载，工具可正常使用。")
-        else:
-            self._token_status.setText("⚠ 未配置 Token，请粘贴作者 Token 并保存。")
-
     def _save_token(self):
-        t = self._cfg_token_input.text().strip()
+        t = self._cfg_input.text().strip()
         if not t:
             QMessageBox.warning(self, "提示", "Token 不能为空")
             return
@@ -341,18 +384,14 @@ class PresetUploader(QWidget):
             with open(TOKEN_FILE, "w", encoding="utf-8") as f:
                 f.write(t)
             self._author_token = t
-            self._refresh_token_status()
-            has = bool(self._author_token)
-            visible = self._cfg_body.isVisible()
-            prefix = "▼" if visible else "▶"
-            self._cfg_header.setText(prefix + (" 工具状态  ✅ 已配置" if has else " 工具状态  ⚠ 未配置"))
-            self._cfg_save_msg.setText("✅ 已保存")
-            QTimer.singleShot(2000, lambda: self._cfg_save_msg.setText(""))
+            self._status_label.setText("● 已配置")
+            self._status_label.setStyleSheet(
+                "color:#27ae60;font-size:12px;font-weight:bold;background:transparent;")
             self._update_state()
         except Exception as e:
             QMessageBox.warning(self, "保存失败", str(e))
 
-    # ── 选择文件 ──
+    # ═════════════ 文件选择 ═════════════
 
     def _pick_file(self):
         fpath, _ = QFileDialog.getOpenFileName(
@@ -381,11 +420,11 @@ class PresetUploader(QWidget):
         cat_label = CATEGORIES[category]
         display = f"[{cat_label}]  {fname}"
         if author:
-            display += f"  （作者：{author}）"
+            display += f"  — 作者：{author}"
 
         for i in range(self._pending_list.count()):
             if self._pending_list.item(i).text() == display:
-                QMessageBox.information(self, "已存在", f"该文件已在待上传列表中。")
+                QMessageBox.information(self, "已存在", "该文件已在待上传列表中。")
                 return
 
         self._pending_list.addItem(display)
@@ -402,21 +441,20 @@ class PresetUploader(QWidget):
     def _update_state(self):
         n = len(self._pending_files)
         if n == 0:
-            self._pending_label.setText("待上传文件（为空，请点击「选择文件」添加）")
-            self._pending_label.setStyleSheet("color:#888;padding:4px 0;")
+            self._pending_label.setText("尚未添加文件")
+            self._pending_label.setStyleSheet("color:#95a5a6;font-size:11px;background:transparent;")
         else:
-            self._pending_label.setText(f"待上传文件（{n} 个）")
-            self._pending_label.setStyleSheet("color:#333;font-weight:bold;padding:4px 0;")
+            self._pending_label.setText(f"共 {n} 个文件待上传")
+            self._pending_label.setStyleSheet("color:#2c3e50;font-weight:bold;font-size:11px;background:transparent;")
         has_user = bool(self._user_input.text().strip())
         ready = has_user and n > 0 and bool(self._author_token)
         self._upload_btn.setEnabled(ready)
-        self._clear_btn.setEnabled(n > 0)
 
-    # ── 提交 ──
+    # ═════════════ 提交 ═════════════
 
     def _start_upload(self):
         if not self._author_token:
-            QMessageBox.warning(self, "未配置", "工具未配置作者 Token，无法上传。")
+            QMessageBox.warning(self, "未配置", "工具未配置 Token，无法上传。")
             return
         contributor = self._user_input.text().strip()
         if not contributor:
@@ -426,12 +464,10 @@ class PresetUploader(QWidget):
             QMessageBox.information(self, "提示", "没有待上传的文件")
             return
 
-        # 确认弹窗
         reply = QMessageBox.question(
             self, "确认投稿",
-            f"将用 @{contributor} 的身份提交 {len(self._pending_files)} 个预设文件。\n\n"
-            f"提交后将在 GitHub 创建一个 Pull Request，\n"
-            f"等待作者审核合并后即可生效。\n\n确认提交？",
+            f"以 @{contributor} 的身份提交 {len(self._pending_files)} 个预设文件。\n\n"
+            "提交后将创建 Pull Request，等待审核合并后生效。\n\n确认提交？",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if reply != QMessageBox.StandardButton.Yes:
             return
@@ -441,14 +477,12 @@ class PresetUploader(QWidget):
         self._progress.setValue(0)
         self._log.clear()
         self._log.append(f"投稿人: @{contributor}")
-        self._log.append(f"待上传: {len(self._pending_files)} 个文件\n")
+        self._log.append(f"文件数: {len(self._pending_files)}\n")
 
-        self._thread = UploadThread(
-            self._author_token, contributor, list(self._pending_files))
+        self._thread = UploadThread(self._author_token, contributor, list(self._pending_files))
         self._thread.log_signal.connect(self._log.append)
         self._thread.progress_signal.connect(
-            lambda c, t: (self._progress.setMaximum(t),
-                          self._progress.setValue(c)))
+            lambda c, t: (self._progress.setMaximum(t), self._progress.setValue(c)))
         self._thread.done_signal.connect(self._on_done)
         self._thread.start()
 
@@ -456,21 +490,18 @@ class PresetUploader(QWidget):
         self._progress.setVisible(False)
         self._update_state()
         if pr_url:
-            self._log.append(f"\n{'='*40}\n PR 链接: {pr_url}")
+            self._log.append(f"\n{'─'*40}\nPR: {pr_url}")
             QMessageBox.information(
                 self, "提交成功",
-                f"已创建 Pull Request！\n\n"
-                f"等待作者审核合并即可。\n\n"
-                f"PR 链接：\n{pr_url}")
+                f"已创建 Pull Request！\n\n等待审核合并即可。\n\n{pr_url}")
         else:
-            self._log.append("\n" + "="*40 + f"\n 上传完成: 成功 {success}")
-            QMessageBox.information(
-                self, "提交完成",
-                f"成功 {success} 个文件\n\n请检查日志了解详情。")
+            self._log.append(f"\n{'─'*40}\n完成: 成功 {success}")
+            QMessageBox.information(self, "提交完成", f"成功 {success} 个文件，请检查日志。")
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyleSheet(STYLE)
     w = PresetUploader()
     w.show()
     sys.exit(app.exec())
