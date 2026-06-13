@@ -394,6 +394,14 @@ class PresetUploader(QWidget):
         if not t:
             QMessageBox.warning(self, "提示", "Token 不能为空")
             return
+
+        reply = QMessageBox.question(
+            self, "确认更改",
+            "确认更新 Token？\n\n这将会覆盖当前已保存的 Token。",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
         try:
             with open(TOKEN_FILE, "w", encoding="utf-8") as f:
                 f.write(t)
@@ -401,9 +409,20 @@ class PresetUploader(QWidget):
             self._status_label.setText("● 已配置")
             self._status_label.setStyleSheet(
                 "color:#a6e3a1;font-size:12px;font-weight:bold;background:transparent;")
+            self._save_btn.setText("✓ 已保存")
+            self._save_btn.setStyleSheet(
+                "QPushButton{background:#a6e3a1;color:#1e1e2e;border:0;padding:4px 14px;font-size:11px;font-weight:bold;border-radius:4px;}"
+                "QPushButton:hover{background:#a6e3a1;}")
+            QTimer.singleShot(2000, self._restore_save_btn)
             self._update_state()
         except Exception as e:
             QMessageBox.warning(self, "保存失败", str(e))
+
+    def _restore_save_btn(self):
+        self._save_btn.setText("保存")
+        self._save_btn.setStyleSheet(
+            "QPushButton{background:#89b4fa;color:#1e1e2e;border:0;padding:4px 14px;font-size:11px;font-weight:bold;border-radius:4px;}"
+            "QPushButton:hover{background:#74c7ec;}")
 
     # ═════════════ 文件选择 ═════════════
 
