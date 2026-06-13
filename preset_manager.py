@@ -638,9 +638,32 @@ class PresetManager:
 
 
     @staticmethod
+    @staticmethod
     def rebuild_contributors_md():
+        """重建 CONTRIBUTORS.md，合并已有记录 + 预设 JSON author"""
         import datetime
-        authors = {}
+        newline = chr(10)
+        contrib_path = os.path.join(_APP_DIR, 'CONTRIBUTORS.md')
+
+        # 读取已有记录（不覆盖已有贡献者）
+        existing = {}
+        try:
+            if os.path.exists(contrib_path):
+                with open(contrib_path, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line.startswith('|'):
+                            continue
+                        if line.startswith('|-'):
+                            continue
+                        parts = [p.strip() for p in line.split('|') if p.strip()]
+                        if len(parts) >= 3 and parts[0] not in ('贡献者',) and parts[0] != '*(虚位以待)*':
+                            existing[parts[0]] = parts[1]  # name -> content
+        except Exception:
+            pass
+
+        # 扫描当前官方预设的 author 字段
+        from_presets = {}
         for cat in CATEGORY_DIRS:
             d = os.path.join(OFFICIAL_DIR, cat)
             if not os.path.isdir(d):
@@ -653,13 +676,14 @@ class PresetManager:
                         data = json.loads(f.read())
                     a = data.get('author', '').strip()
                     if a:
-                        if a not in authors:
-                            authors[a] = []
-                        authors[a].append(f'{cat}/{fname}')
+                        if a not in from_presets:
+                            from_presets[a] = set()
+                        from_presets[a].add(f'{cat}/{fname}')
                 except Exception:
                     pass
+
+        # 合并：已有记录保留，预设新增追加
         today = datetime.date.today().strftime('%Y-%m-%d')
-        newline = chr(10)
         md_lines = [
             '# 🎖️ 贡献者名单',
             '',
@@ -672,11 +696,15 @@ class PresetManager:
             '| 贡献者 | 贡献内容 | 贡献时间 |',
             '|--------|---------|----------|',
         ]
-        if authors:
-            for name in sorted(authors.keys()):
-                content = '<br>'.join(authors[name])
-                md_lines.append(f'| {name} | {content} | {today} |')
-        else:
+        has = False
+        for n in sorted(existing.keys()):
+            has = True
+            md_lines.append(f'| {n} | {existing[n]} | {today} |')
+        for n in sorted(from_presets.keys()):
+            if n not in existing:
+                has = True
+                md_lines.append(f'| {n} | {"<br>".join(sorted(from_presets[n]))} | {today} |')
+        if not has:
             md_lines.append('| *(虚位以待)* | | |')
         md_lines += [
             '',
@@ -692,16 +720,14 @@ class PresetManager:
             '---',
             '',
             '> 📌 此文件由预设上传工具自动更新，每次投稿合并后贡献者名单自动追加。',
+            '',
         ]
-        contrib_path = os.path.join(_APP_DIR, 'CONTRIBUTORS.md')
         try:
             with open(contrib_path, 'w', encoding='utf-8') as f:
-                f.write(newline.join(md_lines) + newline)
+                f.write(newline.join(md_lines))
         except Exception:
             pass
 
-
-    @staticmethod
     def submit_as_official(parent_widget, preset_path):
         """引导用户通过 Fork & Pull Request 提交预设为官方预设。"""
         # 先导出到临时目录

@@ -297,7 +297,8 @@ class WelcomeScreen(QWidget):
                 author_map[a].append(f"[{cat_label}] {p['name']}")
         # 补充：从 CONTRIBUTORS.md 读取已有记录
         try:
-            contrib_path = os.path.join(preset_manager._APP_DIR, "CONTRIBUTORS.md")
+            root_dir = os.path.dirname(os.path.abspath(__file__))
+            contrib_path = os.path.join(root_dir, "CONTRIBUTORS.md")
             if os.path.exists(contrib_path):
                 with open(contrib_path, "r", encoding="utf-8") as f:
                     for line in f:
