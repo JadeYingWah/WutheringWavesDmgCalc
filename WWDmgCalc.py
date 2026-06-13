@@ -279,6 +279,7 @@ class WelcomeScreen(QWidget):
     def _show_contributors(self):
         """弹出贡献者名单窗口"""
         try:
+            import preset_manager
             from preset_manager import PresetManager
         except ImportError:
             return
@@ -294,6 +295,30 @@ class WelcomeScreen(QWidget):
                     author_map[a] = []
                 cat_label = {"character":"角色","weapon":"武器","echo_set":"套装","character_buff":"增益"}.get(p["category"], p["category"])
                 author_map[a].append(f"[{cat_label}] {p['name']}")
+        # 补充：从 CONTRIBUTORS.md 读取已有记录
+        try:
+            contrib_path = os.path.join(preset_manager._APP_DIR, "CONTRIBUTORS.md")
+            if os.path.exists(contrib_path):
+                with open(contrib_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line.startswith("|"):
+                            continue
+                        if line.startswith("|-"):
+                            continue
+                        parts = [p.strip() for p in line.split("|") if p.strip()]
+                        if len(parts) >= 3 and parts[0] not in ("贡献者") and parts[0] != "*(虚位以待)*":
+                            name = parts[0]
+                            content = parts[1] if len(parts) > 1 else ""
+                            if name not in author_map:
+                                author_map[name] = []
+                            raw_items = content.replace("<br>", chr(10)).split(chr(10))
+                            for item in raw_items:
+                                item = item.strip()
+                                if item and item not in author_map[name]:
+                                    author_map[name].append(item)
+        except Exception:
+            pass
         if not author_map:
             QMessageBox.information(self, "贡献者名单", "暂无贡献者记录。\n欢迎你成为第一位贡献者！")
             return
