@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "type": "preset",
+  "name": "贡献者名单与预设同步测试2",
+  "author": "JadeBrookYuyanxi",
+  "category": "weapon",
+  "weapon": {
+    "name": "贡献者名单与预设同步测试2",
+    "base_atk": 0.0,
+    "bonus_type": "",
+    "bonus_value": 0.0,
+    "refinement": [
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      },
+      {
+        "resonance_desc": "",
+        "effects": [],
+        "indep_zones": []
+      }
+    ]
+  }
+}
