@@ -97,9 +97,9 @@ class PresetManager:
                                 _d = json.loads(_f.read())
                                 if _d.get("name"):
                                     name = _d["name"]
+                            author = _d.get("author", "")
                         except Exception:
-                            pass
-                        author = _d.get("author", "")
+                            author = ""
                         result.append({
                             "name": name,
                             "path": fpath,
