@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
     QCheckBox, QProgressBar, QFileDialog, QFrame,
     QListWidget, QListWidgetItem,
 )
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QThread, QTimer, pyqtSignal
 
 OWNER = "JadeYingWah"
 REPO = "WutheringWavesDmgCalc"
@@ -122,8 +122,11 @@ class PresetUploader(QWidget):
         cb.toggled.connect(lambda c: self._token_input.setEchoMode(
             QLineEdit.EchoMode.Normal if c else QLineEdit.EchoMode.Password))
         token_row.addWidget(cb)
-        self._token_input.textChanged.connect(self._update_state)
+        self._token_input.textChanged.connect(self._on_token_changed)
         gb_token_layout.addLayout(token_row)
+        self._token_user = QLabel()
+        self._token_user.setStyleSheet("color:#666;font-size:11px;padding:2px 0;")
+        gb_token_layout.addWidget(self._token_user)
         layout.addWidget(gb_token)
 
         # ── 选择文件 ──
@@ -224,6 +227,42 @@ class PresetUploader(QWidget):
         self._pending_files.clear()
         self._pending_list.clear()
         self._update_state()
+
+    def _on_token_changed(self):
+        self._update_state()
+        if hasattr(self, "_token_timer"):
+            self._token_timer.stop()
+        self._token_timer = QTimer()
+        self._token_timer.setSingleShot(True)
+        self._token_timer.timeout.connect(self._verify_token)
+        self._token_timer.start(600)
+
+    def _verify_token(self):
+        token = self._token_input.text().strip()
+        if not token:
+            self._token_user.setText("")
+            return
+        try:
+            req = urllib.request.Request("https://api.github.com/user")
+            req.add_header("Authorization", f"Bearer {token}")
+            req.add_header("Accept", "application/vnd.github.v3+json")
+            req.add_header("User-Agent", "WWDmgCalc/1.0")
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                login = data.get("login", "")
+                if login:
+                    self._token_user.setText(f"当前用户: {login}")
+                    self._token_user.setStyleSheet("color:#2e7d32;font-size:11px;padding:2px 0;")
+                else:
+                    self._token_user.setText("验证失败：无法获取用户名")
+                    self._token_user.setStyleSheet("color:#c62828;font-size:11px;padding:2px 0;")
+        except Exception as e:
+            msg = str(e)
+            if "401" in msg or "403" in msg:
+                self._token_user.setText("Token 无效或权限不足")
+            else:
+                self._token_user.setText(f"网络错误：{msg[:40]}")
+            self._token_user.setStyleSheet("color:#c62828;font-size:11px;padding:2px 0;")
 
     def _update_state(self):
         n = len(self._pending_files)
