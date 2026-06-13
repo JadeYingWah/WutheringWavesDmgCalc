@@ -286,6 +286,8 @@ class WelcomeScreen(QWidget):
         # 按作者分组：{author: [(name, category), ...]}
         author_map = {}
         for p in presets:
+            if p.get("source") != "official":
+                continue
             a = p.get("author", "").strip()
             if a:
                 if a not in author_map:
