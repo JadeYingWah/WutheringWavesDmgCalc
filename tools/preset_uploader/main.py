@@ -209,52 +209,77 @@ class UploadThread(QThread):
             return
 
         # ── 更新 CONTRIBUTORS.md ──
-        self.log_signal.emit(f"[{total+1}/{total+2}] 更新 CONTRIBUTORS.md...")
+        self.log_signal.emit(f"[{total+1}/{total+3}] 更新 CONTRIBUTORS.md...")
         from datetime import datetime, timezone, timedelta
         today = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
-        contrib_path = "CONTRIBUTORS.md"
-        contrib_url = f"https://api.github.com/repos/{OWNER}/{REPO}/contents/{quote(contrib_path, safe='/')}"
+        contrib_path_gh = "CONTRIBUTORS.md"
+        contrib_url_gh = f"https://api.github.com/repos/{OWNER}/{REPO}/contents/{quote(contrib_path_gh, safe='/')}"
         try:
-            contrib_existing = self._api("GET", f"{contrib_url}?ref=main")
-            if contrib_existing and "content" in contrib_existing:
-                old_md = base64.b64decode(contrib_existing["content"]).decode("utf-8")
-                contrib_sha = contrib_existing["sha"]
-                # Find the first empty row or end of table
-                insert_pos = old_md.find("| *(虚位以待) *|")
-                if insert_pos < 0:
-                    # No placeholder, append before the last ---
-                    insert_pos = old_md.rfind("---")
-                if insert_pos < 0:
-                    insert_pos = old_md.find("## 如何成为贡献者")
-                if insert_pos >= 0:
-                    file_list_str = "<br>".join(f"{cat}/{fn}" for cat, fn, _ in self.file_list)
-                    if "(虚位以待)" in old_md[insert_pos:insert_pos+30]:
-                        new_entry = f"| {self.contributor} | {file_list_str} | {today} |\n"
-                        new_md = old_md[:insert_pos] + new_entry + old_md[insert_pos:]
+            ce = self._api("GET", f"{contrib_url_gh}?ref=main")
+            if ce and "content" in ce:
+                old_md = base64.b64decode(ce["content"]).decode("utf-8")
+                lines = old_md.split(chr(10))
+                file_list_str = "<br>".join(f"{cat}/{fn}" for cat, fn, _ in self.file_list)
+                new_entry = f"| {self.contributor} | {file_list_str} | {today} |"
+                new_lines = []
+                inserted = False
+                for i, line in enumerate(lines):
+                    s = line.strip()
+                    if s == "| *(虚位以待)* | | |":
+                        new_lines.append(new_entry)
+                        inserted = True
                     else:
-                        new_entry = f"| {self.contributor} | {file_list_str} | {today} |\n"
-                        insert_line = old_md.rfind("|", 0, insert_pos)
-                        if insert_line >= 0:
-                            insert_line = old_md.find("\n", insert_line) + 1
-                            new_md = old_md[:insert_line] + new_entry + old_md[insert_line:]
-                        else:
-                            new_md = old_md + "\n" + new_entry
-                    contrib_data = {
-                        "message": f"投稿 ({self.contributor}): 更新 CONTRIBUTORS.md",
-                        "content": base64.b64encode(new_md.encode("utf-8")).decode("ascii"),
-                        "branch": self.branch,
-                        "sha": contrib_sha,
-                    }
-                    self._api("PUT", contrib_url, contrib_data)
-                    self.log_signal.emit(f"  ✓ CONTRIBUTORS.md 已更新")
-                else:
-                    self.log_signal.emit("  ⚠ 未找到插入位置，跳过")
-            else:
-                self.log_signal.emit("  ⚠ CONTRIBUTORS.md 不存在，跳过")
+                        new_lines.append(line)
+                    # 在表格最后一行数据后插入（下一行是 ---）
+                    if not inserted and s.startswith("|") and s not in ("| *(虚位以待)* | | |", "| 贡献者 | 贡献内容 | 贡献时间 |"):
+                        if i + 1 < len(lines) and lines[i+1].strip().startswith("---"):
+                            new_lines.append(new_entry)
+                            inserted = True
+                if not inserted:
+                    new_lines.append(new_entry)
+                new_md = chr(10).join(new_lines)
+                data = {
+                    "message": f"投稿 ({self.contributor}): 更新 CONTRIBUTORS.md",
+                    "content": base64.b64encode(new_md.encode("utf-8")).decode("ascii"),
+                    "branch": self.branch,
+                    "sha": ce["sha"],
+                }
+                self._api("PUT", contrib_url_gh, data)
+                self.log_signal.emit("  ✓ CONTRIBUTORS.md 已更新")
         except Exception as e:
-            self.log_signal.emit(f"  ⚠ CONTRIBUTORS.md 更新失败: {e}")
+            self.log_signal.emit(f"  ⚠ CONTRIBUTORS.md: {e}")
 
-        self.log_signal.emit(f"[{total+1}/{total+2}] 创建 Pull Request...")
+        # ── 更新 manifest.json ──
+        self.log_signal.emit(f"[{total+2}/{total+3}] 更新 manifest.json...")
+        try:
+            man_path = "presets/official/manifest.json"
+            man_url = f"https://api.github.com/repos/{OWNER}/{REPO}/contents/{quote(man_path, safe='/')}"
+            man_exist = self._api("GET", f"{man_url}?ref=main")
+            old_man = {}
+            man_sha = None
+            if man_exist and "content" in man_exist:
+                old_man = json.loads(base64.b64decode(man_exist["content"]).decode("utf-8"))
+                man_sha = man_exist.get("sha")
+            for cat in CATEGORIES:
+                if cat not in old_man:
+                    old_man[cat] = []
+            for cat, fn, ct in self.file_list:
+                if fn not in old_man.get(cat, []):
+                    old_man.setdefault(cat, []).append(fn)
+            new_man = json.dumps(old_man, ensure_ascii=False, indent=2)
+            man_data = {
+                "message": f"投稿 ({self.contributor}): 更新 manifest.json",
+                "content": base64.b64encode(new_man.encode("utf-8")).decode("ascii"),
+                "branch": self.branch,
+            }
+            if man_sha:
+                man_data["sha"] = man_sha
+            if self._api("PUT", man_url, man_data):
+                self.log_signal.emit("  ✓ manifest.json 已更新")
+        except Exception as e:
+            self.log_signal.emit(f"  ⚠ manifest.json: {e}")
+
+        self.log_signal.emit(f"[{total+3}/{total+3}] 创建 Pull Request...")
         authors = set()
         file_lines = []
         for cat, fname, content in self.file_list:
