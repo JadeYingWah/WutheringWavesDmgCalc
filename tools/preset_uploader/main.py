@@ -356,6 +356,7 @@ class PresetUploader(QWidget):
         user_row.addWidget(QLabel("GitHub 用户名："))
         self._user_input = QLineEdit()
         self._user_input.setPlaceholderText("输入你的 GitHub 用户名（如 JadeBrookYuyanxi）")
+        self._user_input.setStyleSheet("QLineEdit{padding:6px 10px;background:#313244;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;}")
         self._user_input.textChanged.connect(self._update_state)
         user_row.addWidget(self._user_input, 1)
         gb_user_layout.addLayout(user_row)
@@ -372,14 +373,14 @@ class PresetUploader(QWidget):
         btn_row = QHBoxLayout()
         add_btn = QPushButton("＋ 选择文件")
         add_btn.setStyleSheet(
-            "QPushButton{background:transparent;color:#89b4fa;border:1px dashed #89b4fa;padding:6px 14px;font-size:13px;border-radius:4px;}"
-            "QPushButton:hover{background:#313244;}")
+            "QPushButton{background:transparent;color:#89b4fa;border:1px solid #89b4fa;padding:6px 14px;font-size:13px;border-radius:4px;}"
+            "QPushButton:hover{background:#313244;color:#b4befe;}")
         add_btn.clicked.connect(self._pick_file)
         btn_row.addWidget(add_btn)
         clear_btn = QPushButton("清空")
         clear_btn.setStyleSheet(
             "QPushButton{background:transparent;color:#a6adc8;border:1px solid #45475a;padding:6px 14px;font-size:13px;border-radius:4px;}"
-            "QPushButton:hover{background:#313244;}")
+            "QPushButton:hover{background:#313244;color:#b4befe;}")
         clear_btn.clicked.connect(self._clear_files)
         btn_row.addWidget(clear_btn)
         btn_row.addStretch()
