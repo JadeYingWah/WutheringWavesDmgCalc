@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "type": "preset",
+  "name": "贡献者名单与预设同步测试3",
+  "author": "JadeBrookYuyanxi",
+  "category": "echo_set",
+  "echo_set": {
+    "name": "贡献者名单与预设同步测试3",
+    "stages": [
+      {
+        "required_count": 1,
+        "effects": [],
+        "desc": ""
+      },
+      {
+        "required_count": 2,
+        "effects": [],
+        "desc": ""
+      }
+    ],
+    "first_echo_bonus": {
+      "name": "",
+      "intro": "",
+      "effects": [],
+      "indep_zones": []
+    }
+  }
+}
