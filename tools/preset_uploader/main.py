@@ -40,7 +40,7 @@ class UploadThread(QThread):
     def _api(self, method, url, data=None):
         body = json.dumps(data).encode("utf-8") if data else None
         req = urllib.request.Request(url, data=body, method=method)
-        req.add_header("Authorization", f"Bearer {self.token}")
+        req.add_header("Authorization", "Bearer " + self.token)
         req.add_header("Accept", "application/vnd.github.v3+json")
         req.add_header("User-Agent", "WWDmgCalc/1.0")
         try:
@@ -263,7 +263,7 @@ class PresetUploader(QWidget):
     def _load_token(self):
         if os.path.exists(TOKEN_FILE):
             try:
-                with open(TOKEN_FILE, "r", encoding="utf-8") as f:
+                with open(TOKEN_FILE, "r", encoding="utf-8-sig") as f:
                     t = f.read().strip()
                     if t:
                         return t
