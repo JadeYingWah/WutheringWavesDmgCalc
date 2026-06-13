@@ -22,35 +22,35 @@ TOKEN_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".upload_t
 # ═════════════ 统一样式表 ═════════════
 STYLE = """
 QWidget {
-    background: #f7f8fa;
-    color: #2c3e50;
+    background: #1e1e2e;
+    color: #cdd6f4;
     font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
     font-size: 13px;
 }
 QGroupBox {
     font-weight: bold;
     font-size: 13px;
-    border: 1px solid #dcdde1;
+    border: 1px solid #45475a;
     border-radius: 6px;
     margin-top: 10px;
     padding-top: 14px;
-    background: #ffffff;
+    background: #2a2a3c;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
     left: 14px;
     padding: 0 6px;
-    color: #2c3e50;
+    color: #cdd6f4;
 }
 QLineEdit {
-    border: 1px solid #dcdde1;
+    border: 1px solid #45475a;
     border-radius: 4px;
     padding: 7px 10px;
-    background: #ffffff;
-    color: #2c3e50;
+    background: #313244;
+    color: #cdd6f4;
 }
 QLineEdit:focus {
-    border-color: #3498db;
+    border-color: #89b4fa;
 }
 QPushButton {
     border-radius: 4px;
@@ -58,41 +58,55 @@ QPushButton {
     font-size: 13px;
 }
 QListWidget {
-    border: 1px solid #dcdde1;
+    border: 1px solid #45475a;
     border-radius: 4px;
-    background: #ffffff;
-    color: #2c3e50;
+    background: #313244;
+    color: #cdd6f4;
 }
 QListWidget::item {
     padding: 4px 8px;
 }
 QListWidget::item:selected {
-    background: #d6eaf8;
-    color: #2c3e50;
+    background: #45475a;
+    color: #cdd6f4;
 }
 QTextEdit {
-    border: 1px solid #dcdde1;
+    border: 1px solid #45475a;
     border-radius: 4px;
-    background: #ffffff;
-    color: #2c3e50;
+    background: #313244;
+    color: #cdd6f4;
     font-family: "Consolas", "Courier New", monospace;
     font-size: 12px;
 }
 QProgressBar {
-    border: 1px solid #dcdde1;
+    border: 1px solid #45475a;
     border-radius: 4px;
-    background: #ecf0f1;
+    background: #313244;
     height: 8px;
     text-align: center;
     font-size: 11px;
+    color: #cdd6f4;
 }
 QProgressBar::chunk {
-    background: #3498db;
+    background: #89b4fa;
     border-radius: 3px;
 }
 QCheckBox {
     spacing: 6px;
-    color: #2c3e50;
+    color: #cdd6f4;
+}
+QScrollBar:vertical {
+    background: #1e1e2e;
+    width: 10px;
+    border-radius: 5px;
+}
+QScrollBar::handle:vertical {
+    background: #45475a;
+    border-radius: 5px;
+    min-height: 20px;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
 }
 """
 
@@ -244,13 +258,13 @@ class PresetUploader(QWidget):
 
         # ── 标题 ──
         title = QLabel("📦 官方预设上传")
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #2c3e50; background: transparent;")
+        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #cdd6f4; background: transparent;")
         layout.addWidget(title)
 
         # ── 工具状态：一行状态条 ──
         status_frame = QFrame()
         status_frame.setStyleSheet(
-            "QFrame{background:#ffffff;border:1px solid #dcdde1;border-radius:6px;padding:8px 12px;}")
+            "QFrame{background:#2a2a3c;border:1px solid #45475a;border-radius:6px;padding:8px 12px;}")
         status_row = QHBoxLayout(status_frame)
         status_row.setContentsMargins(0, 0, 0, 0)
         status_row.setSpacing(6)
@@ -258,7 +272,7 @@ class PresetUploader(QWidget):
         has = bool(self._author_token)
         self._status_label = QLabel("● 已配置" if has else "● 未配置")
         self._status_label.setStyleSheet(
-            f"color:{'#27ae60' if has else '#e74c3c'};font-size:12px;font-weight:bold;background:transparent;")
+            f"color:{'#a6e3a1' if has else '#f38ba8'};font-size:12px;font-weight:bold;background:transparent;")
         status_row.addWidget(self._status_label)
 
         self._cfg_input = QLineEdit()
@@ -266,13 +280,13 @@ class PresetUploader(QWidget):
         self._cfg_input.setEchoMode(QLineEdit.EchoMode.Password)
         self._cfg_input.setMaximumWidth(280)
         self._cfg_input.setStyleSheet(
-            "QLineEdit{font-size:11px;padding:4px 8px;border:1px solid #dcdde1;border-radius:4px;background:#f7f8fa;}")
+            "QLineEdit{font-size:11px;padding:4px 8px;border:1px solid #45475a;border-radius:4px;background:#313244;color:#cdd6f4;}")
         if self._author_token:
             self._cfg_input.setText(self._author_token)
         status_row.addWidget(self._cfg_input)
 
         show_cb = QCheckBox("显示")
-        show_cb.setStyleSheet("font-size:11px;background:transparent;")
+        show_cb.setStyleSheet("font-size:11px;background:transparent;color:#cdd6f4;")
         show_cb.toggled.connect(
             lambda c: self._cfg_input.setEchoMode(
                 QLineEdit.EchoMode.Normal if c else QLineEdit.EchoMode.Password))
@@ -280,8 +294,8 @@ class PresetUploader(QWidget):
 
         self._save_btn = QPushButton("保存")
         self._save_btn.setStyleSheet(
-            "QPushButton{background:#3498db;color:white;border:0;padding:4px 14px;font-size:11px;border-radius:4px;}"
-            "QPushButton:hover{background:#2980b9;}")
+            "QPushButton{background:#89b4fa;color:#1e1e2e;border:0;padding:4px 14px;font-size:11px;font-weight:bold;border-radius:4px;}"
+            "QPushButton:hover{background:#74c7ec;}")
         self._save_btn.clicked.connect(self._save_token)
         status_row.addWidget(self._save_btn)
 
@@ -300,7 +314,7 @@ class PresetUploader(QWidget):
         user_row.addWidget(self._user_input, 1)
         gb_user_layout.addLayout(user_row)
         hint = QLabel("  只需填写你的 GitHub 用户名，无需 Token")
-        hint.setStyleSheet("color:#95a5a6;font-size:11px;background:transparent;")
+        hint.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;")
         gb_user_layout.addWidget(hint)
         layout.addWidget(gb_user)
 
@@ -312,14 +326,14 @@ class PresetUploader(QWidget):
         btn_row = QHBoxLayout()
         add_btn = QPushButton("＋ 选择文件")
         add_btn.setStyleSheet(
-            "QPushButton{background:#ffffff;color:#3498db;border:1px dashed #3498db;padding:6px 14px;font-size:13px;border-radius:4px;}"
-            "QPushButton:hover{background:#eaf2f8;}")
+            "QPushButton{background:transparent;color:#89b4fa;border:1px dashed #89b4fa;padding:6px 14px;font-size:13px;border-radius:4px;}"
+            "QPushButton:hover{background:#313244;}")
         add_btn.clicked.connect(self._pick_file)
         btn_row.addWidget(add_btn)
         clear_btn = QPushButton("清空")
         clear_btn.setStyleSheet(
-            "QPushButton{background:#ffffff;color:#7f8c8d;border:1px solid #dcdde1;padding:6px 14px;font-size:13px;border-radius:4px;}"
-            "QPushButton:hover{background:#f0f0f0;}")
+            "QPushButton{background:transparent;color:#a6adc8;border:1px solid #45475a;padding:6px 14px;font-size:13px;border-radius:4px;}"
+            "QPushButton:hover{background:#313244;}")
         clear_btn.clicked.connect(self._clear_files)
         btn_row.addWidget(clear_btn)
         btn_row.addStretch()
@@ -331,7 +345,7 @@ class PresetUploader(QWidget):
         gb_file_layout.addWidget(self._pending_list)
 
         self._pending_label = QLabel("尚未添加文件")
-        self._pending_label.setStyleSheet("color:#95a5a6;font-size:11px;background:transparent;")
+        self._pending_label.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;")
         gb_file_layout.addWidget(self._pending_label)
 
         layout.addWidget(gb_file)
@@ -341,9 +355,9 @@ class PresetUploader(QWidget):
         action_row.setSpacing(10)
         self._upload_btn = QPushButton("提交投稿")
         self._upload_btn.setStyleSheet(
-            "QPushButton{background:#2980b9;color:white;border:0;padding:10px 28px;font-size:14px;font-weight:bold;border-radius:6px;}"
-            "QPushButton:hover{background:#2471a3;}"
-            "QPushButton:disabled{background:#bdc3c7;color:#ecf0f1;}")
+            "QPushButton{background:#cba6f7;color:#1e1e2e;border:0;padding:10px 28px;font-size:14px;font-weight:bold;border-radius:6px;}"
+            "QPushButton:hover{background:#b4befe;}"
+            "QPushButton:disabled{background:#45475a;color:#6c7086;}")
         self._upload_btn.clicked.connect(self._start_upload)
         self._upload_btn.setEnabled(False)
         action_row.addWidget(self._upload_btn)
@@ -386,7 +400,7 @@ class PresetUploader(QWidget):
             self._author_token = t
             self._status_label.setText("● 已配置")
             self._status_label.setStyleSheet(
-                "color:#27ae60;font-size:12px;font-weight:bold;background:transparent;")
+                "color:#a6e3a1;font-size:12px;font-weight:bold;background:transparent;")
             self._update_state()
         except Exception as e:
             QMessageBox.warning(self, "保存失败", str(e))
@@ -442,10 +456,10 @@ class PresetUploader(QWidget):
         n = len(self._pending_files)
         if n == 0:
             self._pending_label.setText("尚未添加文件")
-            self._pending_label.setStyleSheet("color:#95a5a6;font-size:11px;background:transparent;")
+            self._pending_label.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;")
         else:
             self._pending_label.setText(f"共 {n} 个文件待上传")
-            self._pending_label.setStyleSheet("color:#2c3e50;font-weight:bold;font-size:11px;background:transparent;")
+            self._pending_label.setStyleSheet("color:#cdd6f4;font-weight:bold;font-size:11px;background:transparent;")
         has_user = bool(self._user_input.text().strip())
         ready = has_user and n > 0 and bool(self._author_token)
         self._upload_btn.setEnabled(ready)
