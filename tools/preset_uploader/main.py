@@ -155,7 +155,7 @@ class PresetUploader(QWidget):
         upload_row = QHBoxLayout()
         self._upload_btn = QPushButton("上传到 GitHub")
         self._upload_btn.setStyleSheet(
-            "QPushButton{background:#2196F3;color:white;padding:10px;font-size:15px;border-radius:5px;}"
+            "QPushButton{background:#2196F3;color:white;padding:6px 9px;font-size:14px;border-radius:5px;}"
             "QPushButton:disabled{background:#ccc;}")
         self._upload_btn.clicked.connect(self._start_upload)
         self._upload_btn.setEnabled(False)
