@@ -218,25 +218,37 @@ class UploadThread(QThread):
             ce = self._api("GET", f"{contrib_url_gh}?ref=main")
             if ce and "content" in ce:
                 old_md = base64.b64decode(ce["content"]).decode("utf-8")
+                # 解析已有作者→文件列表
+                existing = {}  # {name: {file1, file2, ...}}
+                for line in old_md.split(chr(10)):
+                    line = line.strip()
+                    if not line.startswith("|"): continue
+                    if line.startswith("|-"): continue
+                    parts = [p.strip() for p in line.split("|") if p.strip()]
+                    if len(parts) >= 3 and parts[0] not in ("贡献者",) and parts[0] != "*(虚位以待)*":
+                        existing.setdefault(parts[0], set())
+                        for f in parts[1].replace("<br>", chr(10)).split(chr(10)):
+                            f = f.strip()
+                            if f: existing[parts[0]].add(f)
+                # 合并本次投稿
+                if self.contributor not in existing:
+                    existing[self.contributor] = set()
+                for cat, fn, ct in self.file_list:
+                    existing[self.contributor].add(f"{cat}/{fn}")
+                # 重建表格
+                header_end = 0
                 lines = old_md.split(chr(10))
-                file_list_str = "<br>".join(f"{cat}/{fn}" for cat, fn, _ in self.file_list)
-                new_entry = f"| {self.contributor} | {file_list_str} | {today} |"
-                new_lines = []
-                inserted = False
                 for i, line in enumerate(lines):
-                    s = line.strip()
-                    if s == "| *(虚位以待)* | | |":
-                        new_lines.append(new_entry)
-                        inserted = True
-                    else:
-                        new_lines.append(line)
-                    # 在表格最后一行数据后插入（下一行是 ---）
-                    if not inserted and s.startswith("|") and s not in ("| *(虚位以待)* | | |", "| 贡献者 | 贡献内容 | 贡献时间 |"):
-                        if i + 1 < len(lines) and lines[i+1].strip().startswith("---"):
-                            new_lines.append(new_entry)
-                            inserted = True
-                if not inserted:
-                    new_lines.append(new_entry)
+                    if line.strip().startswith("|---"): header_end = i + 1; break
+                footer_start = len(lines)
+                for i in range(header_end, len(lines)):
+                    if not lines[i].strip().startswith("|") and not lines[i].strip().startswith("---"):
+                        footer_start = i; break
+                new_lines = lines[:header_end]
+                for name in sorted(existing.keys()):
+                    file_str = "<br>".join(sorted(existing[name]))
+                    new_lines.append(f"| {name} | {file_str} | {today} |")
+                new_lines += lines[footer_start:]
                 new_md = chr(10).join(new_lines)
                 data = {
                     "message": f"投稿 ({self.contributor}): 更新 CONTRIBUTORS.md",
