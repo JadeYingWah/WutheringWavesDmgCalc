@@ -489,17 +489,15 @@ class PresetLoaderDialog(QDialog):
     # ── 来源选择 ──
 
     def _enter_source(self, source):
-        self._current_source = source
-        source_label = "官方预设" if source == "official" else "我的预设"
-        self._browse_title.setText(source_label)
+        self._current_source = None  # both sources
+        self._browse_title.setText("使用预设")
         self.stack.setCurrentIndex(1)
         # 默认选中第一个有预设的分类
         all_presets = PresetManager.list_presets()
         for cat in ["character", "weapon", "echo_set", "character_buff"]:
-            if any(p["source"] == source and p["category"] == cat for p in all_presets):
+            if any(p["category"] == cat for p in all_presets):
                 self._select_category(cat)
                 return
-        # 没有预设，清空列表
         self._current_category = None
         self._preset_list.clear()
         self._preview.clear()
@@ -517,8 +515,7 @@ class PresetLoaderDialog(QDialog):
 
         all_presets = PresetManager.list_presets()
         cat_presets = [p for p in all_presets
-                       if p["source"] == self._current_source
-                       and p["category"] == self._current_category]
+                       if p["category"] == self._current_category]
 
         # 搜索过滤
         search_text = self._search_input.text().strip().lower() if hasattr(self, '_search_input') else ""
@@ -586,7 +583,7 @@ class PresetLoaderDialog(QDialog):
             self._preview.clear()
 
     def _on_item_double_clicked(self, item):
-        """双击：切换选中/取消"""
+        """双击：切换选中/取消（跨来源）"""
         info = item.data(Qt.ItemDataRole.UserRole)
         if not info:
             return
@@ -599,10 +596,8 @@ class PresetLoaderDialog(QDialog):
         limit = _CATEGORY_LIMITS[cat]
 
         if path in selected:
-            # 已选中 → 取消
             selected.remove(path)
         else:
-            # 未选中 → 添加（超出限制时移除最早的）
             if len(selected) >= limit:
                 selected.pop(0)
             selected.append(path)
@@ -617,7 +612,6 @@ class PresetLoaderDialog(QDialog):
             n = len(self._selected.get(cat, []))
             lim = _CATEGORY_LIMITS[cat]
             parts.append(f"{n}/{lim} {_CATEGORY_LABELS[cat]}")
-            # 更新分类卡片标签
             if cat in self._cat_buttons:
                 _, tl = self._cat_buttons[cat]
                 tl.setText(f"{_CATEGORY_LABELS[cat]} ({n}/{lim})")
