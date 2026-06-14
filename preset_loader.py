@@ -370,6 +370,13 @@ class PresetLoaderDialog(QDialog):
         self._browse_title.setObjectName("sectionTitle")
         top.addWidget(self._browse_title)
 
+        top.addSpacing(12)
+        update_btn = QPushButton("🔄 更新官方预设")
+        update_btn.setObjectName("backButton")
+        update_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        update_btn.clicked.connect(lambda: self._update_official())
+        top.addWidget(update_btn)
+
         top.addStretch()
         layout.addLayout(top)
 

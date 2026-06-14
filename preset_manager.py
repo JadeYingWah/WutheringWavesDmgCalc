@@ -534,6 +534,18 @@ class PresetManager:
             # ── 阶段2：统计 + 下载 ──
             # 计算总文件数，切换为有进度的进度条
             PresetManager.ensure_dirs()
+
+            # ── 阶段2a：先清空本地全部官方预设文件 ──
+            for cat in CATEGORY_DIRS:
+                cat_dir = os.path.join(OFFICIAL_DIR, cat)
+                if os.path.isdir(cat_dir):
+                    for fname in os.listdir(cat_dir):
+                        if fname.endswith(".json") and fname != "manifest.json":
+                            try:
+                                os.remove(os.path.join(cat_dir, fname))
+                            except OSError:
+                                pass
+
             total_files = sum(len(v) for v in manifest.values() if isinstance(v, list))
             downloaded = 0
             failed = 0
@@ -546,6 +558,7 @@ class PresetManager:
                 progress.setCancelButtonText("取消")
                 QApplication.processEvents()
 
+            # ── 阶段2b：下载全部官方预设 ──
             for cat in CATEGORY_DIRS:
                 file_list = manifest.get(cat, [])
                 if not isinstance(file_list, list):
@@ -595,25 +608,6 @@ class PresetManager:
                 QApplication.processEvents()
                 progress.close()
 
-            # 2.5 清理本地旧文件：删除不在 manifest 中的官方预设（防止改名/删除残留）
-            try:
-                for cat in CATEGORY_DIRS:
-                    cat_dir = os.path.join(OFFICIAL_DIR, cat)
-                    if not os.path.isdir(cat_dir):
-                        continue
-                    valid_names = set(manifest.get(cat, []))
-                    for fname in os.listdir(cat_dir):
-                        if not fname.endswith(".json"):
-                            continue
-                        if fname == "manifest.json":
-                            continue
-                        if fname not in valid_names:
-                            try:
-                                os.remove(os.path.join(cat_dir, fname))
-                            except OSError:
-                                pass
-            except Exception:
-                pass
 
             # 3. 写入错误日志（供侧边栏"错误日志"查看）
             if failed_details:
