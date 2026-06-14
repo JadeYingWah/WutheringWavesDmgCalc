@@ -2,6 +2,7 @@
   "version": 1,
   "type": "preset",
   "name": "漂泊者-气动",
+  "author": "",
   "category": "character",
   "character": {
     "name": "漂泊者-气动",
@@ -64,7 +65,7 @@
             "type": "特定",
             "source": "共鸣链效果",
             "sub_name": "共鸣解放万象归墟伤害倍率提升20%。",
-            "keywords": "万象归墟"
+            "keywords": "共鸣解放"
           }
         ],
         "indep_zones": [],
@@ -78,7 +79,7 @@
             "type": "特定",
             "source": "共鸣链效果",
             "sub_name": "共鸣技能缥缈无相伤害倍率提升30%。",
-            "keywords": "缥缈无相"
+            "keywords": "缥缈无相第一段伤害, 缥缈无相第二段伤害"
           }
         ],
         "indep_zones": [],
@@ -115,7 +116,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -124,9 +125,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 35.31,
-          "final_crit": 231.45705000000004,
-          "final_no_crit": 154.30470000000003,
-          "computed_base_zone": 437.0
+          "final_crit": 259.23189600000006,
+          "final_no_crit": 172.82126400000004,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:54:36.703314",
         "keywords": [
@@ -135,7 +136,7 @@
           "第一段伤害",
           "35.31%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 35.3%&#10;手动输入\">35.3%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 35.3100000000%\">35.3100000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 172.8212640000\">172.8212640000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 259.2318960000\">259.2318960000</span></div>"
       },
       {
         "id": 2,
@@ -154,7 +155,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -163,9 +164,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 43.05,
-          "final_crit": 282.19274999999993,
-          "final_no_crit": 188.12849999999997,
-          "computed_base_zone": 437.0
+          "final_crit": 316.05588,
+          "final_no_crit": 210.70392,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:54:36.708060",
         "keywords": [
@@ -174,7 +175,7 @@
           "第二段伤害",
           "43.05%*2"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 43.0%&#10;手动输入\">43.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 43.0500000000%\">43.0500000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 210.7039200000\">210.7039200000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 316.0558800000\">316.0558800000</span></div>"
       },
       {
         "id": 3,
@@ -193,7 +194,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -202,9 +203,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 55.05,
-          "final_crit": 360.85274999999996,
-          "final_no_crit": 240.56849999999997,
-          "computed_base_zone": 437.0
+          "final_crit": 404.15508000000005,
+          "final_no_crit": 269.43672000000004,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:54:36.717890",
         "keywords": [
@@ -213,7 +214,7 @@
           "第三段伤害",
           "55.05%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 55.0%&#10;手动输入\">55.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 55.0500000000%\">55.0500000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 269.4367200000\">269.4367200000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 404.1550800000\">404.1550800000</span></div>"
       },
       {
         "id": 4,
@@ -232,7 +233,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -241,9 +242,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 1.99,
-          "final_crit": 13.044450000000001,
-          "final_no_crit": 8.6963,
-          "computed_base_zone": 437.0
+          "final_crit": 14.609784000000001,
+          "final_no_crit": 9.739856000000001,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:54:36.729888",
         "keywords": [
@@ -252,7 +253,7 @@
           "闪避反击伤害",
           "1.99%*25"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 2.0%&#10;手动输入\">2.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 1.9900000000%\">1.9900000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 9.7398560000\">9.7398560000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 14.6097840000\">14.6097840000</span></div>"
       },
       {
         "id": 5,
@@ -271,7 +272,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -280,9 +281,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 76.72,
-          "final_crit": 502.89959999999996,
-          "final_no_crit": 335.2664,
-          "computed_base_zone": 437.0
+          "final_crit": 563.247552,
+          "final_no_crit": 375.498368,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:54:36.748783",
         "keywords": [
@@ -291,7 +292,7 @@
           "第四段伤害",
           "76.72%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 76.7%&#10;手动输入\">76.7%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 76.7200000000%\">76.7200000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 375.4983680000\">375.4983680000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 563.2475520000\">563.2475520000</span></div>"
       },
       {
         "id": 6,
@@ -310,7 +311,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -319,9 +320,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 17.91,
-          "final_crit": 117.40005,
-          "final_no_crit": 78.2667,
-          "computed_base_zone": 437.0
+          "final_crit": 131.48805600000003,
+          "final_no_crit": 87.65870400000001,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:54:36.773184",
         "keywords": [
@@ -330,7 +331,7 @@
           "重击伤害",
           "17.91%*3"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 17.9%&#10;手动输入\">17.9%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 17.9100000000%\">17.9100000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 87.6587040000\">87.6587040000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 131.4880560000\">131.4880560000</span></div>"
       },
       {
         "id": 7,
@@ -349,7 +350,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -358,9 +359,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 36.37,
-          "final_crit": 238.40534999999997,
-          "final_no_crit": 158.93689999999998,
-          "computed_base_zone": 437.0
+          "final_crit": 267.01399200000003,
+          "final_no_crit": 178.009328,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:54:36.803441",
         "keywords": [
@@ -369,7 +370,7 @@
           "绞息伤害",
           "36.37%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 36.4%&#10;手动输入\">36.4%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 36.3700000000%\">36.3700000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 178.0093280000\">178.0093280000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 267.0139920000\">267.0139920000</span></div>"
       },
       {
         "id": 8,
@@ -388,7 +389,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -397,9 +398,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 44.46,
-          "final_crit": 291.4353,
-          "final_no_crit": 194.2902,
-          "computed_base_zone": 437.0
+          "final_crit": 326.40753600000005,
+          "final_no_crit": 217.60502400000001,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:54:36.836468",
         "keywords": [
@@ -408,7 +409,7 @@
           "绞息伤害",
           "44.46%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 44.5%&#10;手动输入\">44.5%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 44.4600000000%\">44.4600000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 217.6050240000\">217.6050240000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 326.4075360000\">326.4075360000</span></div>"
       },
       {
         "id": 9,
@@ -427,7 +428,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -436,9 +437,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 140.76,
-          "final_crit": 922.6817999999998,
-          "final_no_crit": 615.1211999999999,
-          "computed_base_zone": 437.0
+          "final_crit": 1033.403616,
+          "final_no_crit": 688.935744,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:54:36.873342",
         "keywords": [
@@ -447,7 +448,7 @@
           "空中攻击伤害",
           "140.76%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 140.8%&#10;手动输入\">140.8%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 140.7600000000%\">140.7600000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 688.9357440000\">688.9357440000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 1033.4036160000\">1033.4036160000</span></div>"
       },
       {
         "id": 10,
@@ -466,7 +467,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -475,9 +476,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 125.43,
-          "final_crit": 822.1936499999999,
-          "final_no_crit": 548.1291,
-          "computed_base_zone": 437.0
+          "final_crit": 920.8568880000001,
+          "final_no_crit": 613.9045920000001,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:54:36.918438",
         "keywords": [
@@ -486,7 +487,7 @@
           "闪避反击伤害",
           "125.43%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 125.4%&#10;手动输入\">125.4%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 125.4300000000%\">125.4300000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 613.9045920000\">613.9045920000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 920.8568880000\">920.8568880000</span></div>"
       },
       {
         "id": 11,
@@ -505,7 +506,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -514,9 +515,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 66.44,
-          "final_crit": 435.5142,
-          "final_no_crit": 290.3428,
-          "computed_base_zone": 437.0
+          "final_crit": 487.775904,
+          "final_no_crit": 325.183936,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:55:00.492089",
         "keywords": [
@@ -525,7 +526,7 @@
           "苍息破象伤害",
           "66.44%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 66.4%&#10;手动输入\">66.4%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 66.4400000000%\">66.4400000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 325.1839360000\">325.1839360000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 487.7759040000\">487.7759040000</span></div>"
       },
       {
         "id": 12,
@@ -544,7 +545,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -553,9 +554,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 99.66,
-          "final_crit": 653.2712999999999,
-          "final_no_crit": 435.51419999999996,
-          "computed_base_zone": 437.0
+          "final_crit": 731.663856,
+          "final_no_crit": 487.775904,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:55:00.545876",
         "keywords": [
@@ -564,7 +565,7 @@
           "苍息破象伤害",
           "99.66%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 99.7%&#10;手动输入\">99.7%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 99.6600000000%\">99.6600000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 487.7759040000\">487.7759040000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 731.6638560000\">731.6638560000</span></div>"
       },
       {
         "id": 13,
@@ -583,7 +584,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -592,9 +593,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 23.37,
-          "final_crit": 153.19035000000002,
-          "final_no_crit": 102.1269,
-          "computed_base_zone": 437.0
+          "final_crit": 171.573192,
+          "final_no_crit": 114.38212800000001,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:55:00.606096",
         "keywords": [
@@ -603,7 +604,7 @@
           "碧霄断行伤害",
           "23.37%*3"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 23.4%&#10;手动输入\">23.4%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 23.3700000000%\">23.3700000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 114.3821280000\">114.3821280000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 171.5731920000\">171.5731920000</span></div>"
       },
       {
         "id": 14,
@@ -622,7 +623,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -631,9 +632,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 105.15,
-          "final_crit": 689.2582500000001,
-          "final_no_crit": 459.50550000000004,
-          "computed_base_zone": 437.0
+          "final_crit": 771.9692400000001,
+          "final_no_crit": 514.6461600000001,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:55:00.670162",
         "keywords": [
@@ -642,163 +643,7 @@
           "碧霄断行伤害",
           "105.15%"
         ],
-        "process_html": ""
-      },
-      {
-        "id": 15,
-        "label": "漂泊者-气动_共鸣回路_拆风润第一段伤害_128.8%",
-        "locked": false,
-        "basis": "攻击力",
-        "element": "气动",
-        "skill": "共鸣技能",
-        "effect": null,
-        "category": "共鸣回路",
-        "base_mult": 128.8,
-        "mult_increase": 0.0,
-        "mult_boosts": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "zones": {
-          "atk_zone": 437.0,
-          "bonus_zone": 1.0,
-          "deepen_zone": 1.0,
-          "crit_zone": 1.5,
-          "crit_rate": 5.0,
-          "def_zone": 1.0,
-          "res_zone": 1.0,
-          "indep_zone": 1.0,
-          "mult_zone": 128.8,
-          "final_crit": 844.2840000000001,
-          "final_no_crit": 562.8560000000001,
-          "computed_base_zone": 437.0
-        },
-        "timestamp": "2026-06-11T19:55:29.647067",
-        "keywords": [
-          "漂泊者-气动",
-          "共鸣回路",
-          "拆风润第一段伤害",
-          "128.8%"
-        ],
-        "process_html": ""
-      },
-      {
-        "id": 16,
-        "label": "漂泊者-气动_共鸣回路_拆风润第二段伤害_141.47%",
-        "locked": false,
-        "basis": "攻击力",
-        "element": "气动",
-        "skill": "共鸣技能",
-        "effect": null,
-        "category": "共鸣回路",
-        "base_mult": 141.47,
-        "mult_increase": 0.0,
-        "mult_boosts": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "zones": {
-          "atk_zone": 437.0,
-          "bonus_zone": 1.0,
-          "deepen_zone": 1.0,
-          "crit_zone": 1.5,
-          "crit_rate": 5.0,
-          "def_zone": 1.0,
-          "res_zone": 1.0,
-          "indep_zone": 1.0,
-          "mult_zone": 141.47,
-          "final_crit": 927.3358499999999,
-          "final_no_crit": 618.2239,
-          "computed_base_zone": 437.0
-        },
-        "timestamp": "2026-06-11T19:55:29.720573",
-        "keywords": [
-          "漂泊者-气动",
-          "共鸣回路",
-          "拆风润第二段伤害",
-          "141.47%"
-        ],
-        "process_html": ""
-      },
-      {
-        "id": 17,
-        "label": "漂泊者-气动_共鸣回路_缥缈无相第一段伤害_34.3%*5",
-        "locked": false,
-        "basis": "攻击力",
-        "element": "气动",
-        "skill": "共鸣技能",
-        "effect": null,
-        "category": "共鸣回路",
-        "base_mult": 34.3,
-        "mult_increase": 0.0,
-        "mult_boosts": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "zones": {
-          "atk_zone": 437.0,
-          "bonus_zone": 1.0,
-          "deepen_zone": 1.0,
-          "crit_zone": 1.5,
-          "crit_rate": 5.0,
-          "def_zone": 1.0,
-          "res_zone": 1.0,
-          "indep_zone": 1.0,
-          "mult_zone": 34.3,
-          "final_crit": 224.8365,
-          "final_no_crit": 149.891,
-          "computed_base_zone": 437.0
-        },
-        "timestamp": "2026-06-11T19:55:29.797853",
-        "keywords": [
-          "漂泊者-气动",
-          "共鸣回路",
-          "缥缈无相第一段伤害",
-          "34.3%*5"
-        ],
-        "process_html": ""
-      },
-      {
-        "id": 18,
-        "label": "漂泊者-气动_共鸣回路_缥缈无相第二段伤害_723.03%",
-        "locked": false,
-        "basis": "攻击力",
-        "element": "气动",
-        "skill": "共鸣技能",
-        "effect": null,
-        "category": "共鸣回路",
-        "base_mult": 723.03,
-        "mult_increase": 0.0,
-        "mult_boosts": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "zones": {
-          "atk_zone": 437.0,
-          "bonus_zone": 1.0,
-          "deepen_zone": 1.0,
-          "crit_zone": 1.5,
-          "crit_rate": 5.0,
-          "def_zone": 1.0,
-          "res_zone": 1.0,
-          "indep_zone": 1.0,
-          "mult_zone": 723.03,
-          "final_crit": 4739.461649999999,
-          "final_no_crit": 3159.6411,
-          "computed_base_zone": 437.0
-        },
-        "timestamp": "2026-06-11T19:55:29.881160",
-        "keywords": [
-          "漂泊者-气动",
-          "共鸣回路",
-          "缥缈无相第二段伤害",
-          "723.03%"
-        ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 105.2%&#10;手动输入\">105.2%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 105.1500000000%\">105.1500000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 514.6461600000\">514.6461600000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 771.9692400000\">771.9692400000</span></div>"
       },
       {
         "id": 19,
@@ -817,7 +662,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -826,9 +671,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 536.79,
-          "final_crit": 3518.6584499999994,
-          "final_no_crit": 2345.7722999999996,
-          "computed_base_zone": 437.0
+          "final_crit": 3940.8974639999997,
+          "final_no_crit": 2627.264976,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:56:03.024462",
         "keywords": [
@@ -837,7 +682,7 @@
           "技能伤害",
           "536.79%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 536.8%&#10;手动输入\">536.8%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 536.7900000000%\">536.7900000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 2627.2649760000\">2627.2649760000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 3940.8974640000\">3940.8974640000</span></div>"
       },
       {
         "id": 20,
@@ -856,7 +701,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -865,9 +710,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 79.53,
-          "final_crit": 521.31915,
-          "final_no_crit": 347.5461,
-          "computed_base_zone": 437.0
+          "final_crit": 583.8774480000001,
+          "final_no_crit": 389.25163200000003,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:57:25.684067",
         "keywords": [
@@ -876,7 +721,7 @@
           "技能伤害",
           "79.53%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 79.5%&#10;手动输入\">79.5%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 79.5300000000%\">79.5300000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 389.2516320000\">389.2516320000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 583.8774480000\">583.8774480000</span></div>"
       },
       {
         "id": 21,
@@ -895,7 +740,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -904,9 +749,9 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 119.29,
-          "final_crit": 781.94595,
-          "final_no_crit": 521.2973000000001,
-          "computed_base_zone": 437.0
+          "final_crit": 875.7794640000002,
+          "final_no_crit": 583.8529760000001,
+          "computed_base_zone": 489.44000000000005
         },
         "timestamp": "2026-06-11T19:57:25.788798",
         "keywords": [
@@ -915,7 +760,163 @@
           "技能伤害",
           "119.29%"
         ],
-        "process_html": ""
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 119.3%&#10;手动输入\">119.3%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 119.2900000000%\">119.2900000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 583.8529760000\">583.8529760000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 875.7794640000\">875.7794640000</span></div>"
+      },
+      {
+        "id": 22,
+        "label": "漂泊者-气动_共鸣回路_抃风儛润第一段伤害_128.8%",
+        "locked": false,
+        "basis": "攻击力",
+        "element": "气动",
+        "skill": null,
+        "effect": null,
+        "category": "共鸣回路",
+        "base_mult": 128.8,
+        "mult_increase": 0.0,
+        "mult_boosts": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "zones": {
+          "atk_zone": 489.44000000000005,
+          "bonus_zone": 1.0,
+          "deepen_zone": 1.0,
+          "crit_zone": 1.5,
+          "crit_rate": 5.0,
+          "def_zone": 1.0,
+          "res_zone": 1.0,
+          "indep_zone": 1.0,
+          "mult_zone": 128.8,
+          "final_crit": 945.5980800000002,
+          "final_no_crit": 630.3987200000001,
+          "computed_base_zone": 489.44000000000005
+        },
+        "timestamp": "2026-06-14T20:39:46.860807",
+        "keywords": [
+          "漂泊者-气动",
+          "共鸣回路",
+          "抃风儛润第一段伤害",
+          "128.8%"
+        ],
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 128.8%&#10;手动输入\">128.8%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 128.8000000000%\">128.8000000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 630.3987200000\">630.3987200000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 945.5980800000\">945.5980800000</span></div>"
+      },
+      {
+        "id": 23,
+        "label": "漂泊者-气动_共鸣回路_抃风儛润第二段伤害_141.47%",
+        "locked": false,
+        "basis": "攻击力",
+        "element": "气动",
+        "skill": null,
+        "effect": null,
+        "category": "共鸣回路",
+        "base_mult": 141.47,
+        "mult_increase": 0.0,
+        "mult_boosts": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "zones": {
+          "atk_zone": 489.44000000000005,
+          "bonus_zone": 1.0,
+          "deepen_zone": 1.0,
+          "crit_zone": 1.5,
+          "crit_rate": 5.0,
+          "def_zone": 1.0,
+          "res_zone": 1.0,
+          "indep_zone": 1.0,
+          "mult_zone": 141.47,
+          "final_crit": 1038.616152,
+          "final_no_crit": 692.4107680000001,
+          "computed_base_zone": 489.44000000000005
+        },
+        "timestamp": "2026-06-14T20:39:46.867628",
+        "keywords": [
+          "漂泊者-气动",
+          "共鸣回路",
+          "抃风儛润第二段伤害",
+          "141.47%"
+        ],
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 141.5%&#10;手动输入\">141.5%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 141.4700000000%\">141.4700000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 692.4107680000\">692.4107680000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 1038.6161520000\">1038.6161520000</span></div>"
+      },
+      {
+        "id": 24,
+        "label": "漂泊者-气动_共鸣回路_缥缈无相第一段伤害_34.3%*5",
+        "locked": false,
+        "basis": "攻击力",
+        "element": "气动",
+        "skill": null,
+        "effect": null,
+        "category": "共鸣回路",
+        "base_mult": 34.3,
+        "mult_increase": 0.0,
+        "mult_boosts": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "zones": {
+          "atk_zone": 489.44000000000005,
+          "bonus_zone": 1.0,
+          "deepen_zone": 1.0,
+          "crit_zone": 1.5,
+          "crit_rate": 5.0,
+          "def_zone": 1.0,
+          "res_zone": 1.0,
+          "indep_zone": 1.0,
+          "mult_zone": 34.3,
+          "final_crit": 251.81688000000003,
+          "final_no_crit": 167.87792000000002,
+          "computed_base_zone": 489.44000000000005
+        },
+        "timestamp": "2026-06-14T20:39:46.878966",
+        "keywords": [
+          "漂泊者-气动",
+          "共鸣回路",
+          "缥缈无相第一段伤害",
+          "34.3%*5"
+        ],
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 34.3%&#10;手动输入\">34.3%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 34.3000000000%\">34.3000000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 167.8779200000\">167.8779200000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 251.8168800000\">251.8168800000</span></div>"
+      },
+      {
+        "id": 25,
+        "label": "漂泊者-气动_共鸣回路_缥缈无相第二段伤害_723.03%",
+        "locked": false,
+        "basis": "攻击力",
+        "element": "气动",
+        "skill": null,
+        "effect": null,
+        "category": "共鸣回路",
+        "base_mult": 723.03,
+        "mult_increase": 0.0,
+        "mult_boosts": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "zones": {
+          "atk_zone": 489.44000000000005,
+          "bonus_zone": 1.0,
+          "deepen_zone": 1.0,
+          "crit_zone": 1.5,
+          "crit_rate": 5.0,
+          "def_zone": 1.0,
+          "res_zone": 1.0,
+          "indep_zone": 1.0,
+          "mult_zone": 723.03,
+          "final_crit": 5308.197048,
+          "final_no_crit": 3538.798032,
+          "computed_base_zone": 489.44000000000005
+        },
+        "timestamp": "2026-06-14T20:39:46.893141",
+        "keywords": [
+          "漂泊者-气动",
+          "共鸣回路",
+          "缥缈无相第二段伤害",
+          "723.03%"
+        ],
+        "process_html": "<div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">基础数值</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><a href=\"nav:char_base\u001e角色基础攻击力 = 437&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">437</a><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:char_base\u001e武器基础攻击力 = 0&#10;来源: 角色武器\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">0</a><span style=\"color:#c0c4ce;font-size:14px;\">) × (1</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><a href=\"nav:summary_base\u001e攻击力加成 = 12.0%&#10;来源: 技能效果\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">12.0%</a><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"基础数值结果 = 489.4400000000\">489.4400000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加成乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加成乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">加深乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">1</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"加深乘区结果 = 1.0000000000\">1.0000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击率</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#c0c4ce;font-size:14px;\">5%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"最终暴击率 = 5.0%\">5.0%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击乘区 (暴击时)</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(150%</span><span style=\"color:#c0c4ce;font-size:14px;\">) = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击伤害合计 = 150.0%\">150.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"暴击乘区结果 = 1.5000000000\">1.5000000000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">防御乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_defense\u001e防御乘数 = 1.0000000000&#10;来源: 防御减伤\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">抗性乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:enemy_resistance\u001e抗性乘数 = 1.0000000000&#10;来源: 抗性数值\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">独立乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <a href=\"nav:summary_indep\u001e独立乘区 = 1.0000000000&#10;来源: 独立乘区\" style=\"color:#f59e42;font-weight:700;text-decoration:underline;\">1.0000000000</a></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">倍率乘区</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#c0c4ce;font-size:14px;\">(</span><span style=\"color:#e94560;font-weight:700;\" title=\"基础倍率 = 723.0%&#10;手动输入\">723.0%</span><span style=\"color:#c0c4ce;font-size:14px;\"> + </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率增加 = 0.0%&#10;手动输入\">0.0%</span><span style=\"color:#c0c4ce;font-size:14px;\">)</span><span style=\"color:#c0c4ce;font-size:14px;\"> = </span><span style=\"color:#e94560;font-weight:700;\" title=\"倍率乘区结果 = 723.0300000000%\">723.0300000000%</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">无暴击最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"无暴击最终伤害 = 3538.7980320000\">3538.7980320000</span></div><div style=\"padding:6px 0;margin-bottom:2px;line-height:2.0;\"><span style=\"color:#e94560;font-size:16px;font-weight:700;\">[</span><span style=\"color:#e94560;font-size:14px;font-weight:600;\">暴击后最终伤害</span><span style=\"color:#e94560;font-size:16px;font-weight:700;\">]</span> <span style=\"color:#e94560;font-weight:700;\" title=\"暴击后最终伤害 = 5308.1970480000\">5308.1970480000</span></div>"
       }
     ]
   }

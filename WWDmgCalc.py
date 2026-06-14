@@ -115,7 +115,7 @@ WEAPON_RESONANCE_ATTRS = [
     "治疗效果加成", "共鸣效率加成",
     "声骸技能伤害加成", "声骸技能伤害加深",
     "光噪加深", "风蚀加深", "虚湮加深", "聚爆加深", "霜渐加深", "电磁加深",
-    "倍率增加", "倍率提升",
+    # "倍率增加" / "倍率提升" 已从 BONUS_SUFFIX 分离
 ]
 
 # 武器附加属性类型（角色与武器页使用）
@@ -6936,11 +6936,16 @@ class ResultListPage(QWidget):
         if self._resistance_page:
             res_zone = self._resistance_page.get_resistance_multiplier(item["element"])
         indep_zone = getattr(self._indep_zone_page, 'independent_zone', 1.0) if self._indep_zone_page else 1.0
+        # 关键词关联注入：倍率增加/倍率提升归入倍率乘区
+        kw_mult_inc = sum(v for n, v, _, nk in filtered if nk == "keyword_assoc" and "倍率增加" in n)
+        kw_mult_boost = sum(v for n, v, _, nk in filtered if nk == "keyword_assoc" and "倍率提升" in n)
         base_m = item["base_mult"]
-        mult_inc = item["mult_increase"]
+        mult_inc = item["mult_increase"] + kw_mult_inc
         mult_zone = (base_m + mult_inc)
         for bv in item["mult_boosts"]:
             mult_zone *= (1.0 + bv / 100.0)
+        if kw_mult_boost > 0:
+            mult_zone *= (1.0 + kw_mult_boost / 100.0)
         base_dmg = base_zone * bonus_zone * deepen_zone * def_zone * res_zone * indep_zone * mult_zone / 100.0
         item["zones"] = {
             "atk_zone": base_zone, "bonus_zone": bonus_zone, "deepen_zone": deepen_zone,
@@ -8502,11 +8507,15 @@ class ResultPage(QWidget):
             indep_zone = getattr(self._indep_zone_page, 'independent_zone', 1.0)
             indep_groups = self._indep_zone_page.group_factors
 
+        kw_mult_inc2 = sum(v for n, v, _, nk in filtered_items if nk == "keyword_assoc" and "倍率增加" in n)
+        kw_mult_boost2 = sum(v for n, v, _, nk in filtered_items if nk == "keyword_assoc" and "倍率提升" in n)
         base_m = self.base_mult.value()
-        mult_inc = self.mult_increase.value()
+        mult_inc = self.mult_increase.value() + kw_mult_inc2
         mult_zone = (base_m + mult_inc)
         for boost in self.mult_boosts:
             mult_zone *= (1.0 + boost.value() / 100.0)
+        if kw_mult_boost2 > 0:
+            mult_zone *= (1.0 + kw_mult_boost2 / 100.0)
 
         base_dmg = base_zone * bonus_zone * deepen_zone * def_zone * res_zone * indep_zone * mult_zone / 100.0
         final_crit = base_dmg * crit_zone
