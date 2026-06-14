@@ -3356,6 +3356,7 @@ class PresetBuilderDialog(QDialog):
             return
 
         self._edit_preset_path = preset_info["path"]
+        self._edit_preset_source = preset_info.get("source", "user")
         self.setWindowTitle(f"预设构建器 - 编辑: {preset_info['name']}")
 
         category = data.get("category", "")
@@ -3565,7 +3566,7 @@ class PresetBuilderDialog(QDialog):
 
             if safe_name != old_name:
                 # 重命名：保存新文件，删除旧文件
-                path, err = PresetManager.save_preset(preset, raw_name, overwrite=False)
+                path, err = PresetManager.save_preset(preset, raw_name, source=self._edit_preset_source, overwrite=False)
                 if err:
                     QMessageBox.warning(self, "保存失败", err)
                     return
@@ -3576,7 +3577,7 @@ class PresetBuilderDialog(QDialog):
                 self._edit_preset_path = path
             else:
                 # 名称未变（或仅非法字符差异）：直接覆盖
-                path, err = PresetManager.save_preset(preset, raw_name, overwrite=True)
+                path, err = PresetManager.save_preset(preset, raw_name, source=self._edit_preset_source, overwrite=True)
                 if err:
                     QMessageBox.warning(self, "保存失败", err)
                     return
