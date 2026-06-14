@@ -440,7 +440,7 @@ class PresetUploader(QWidget):
         gb_file_layout.addLayout(btn_row)
 
         self._pending_list = QListWidget()
-        self._pending_list.setMaximumHeight(130)
+        self._pending_list.setMaximumHeight(260)
         self._pending_list.setAlternatingRowColors(True)
         gb_file_layout.addWidget(self._pending_list)
 
