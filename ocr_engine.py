@@ -1481,7 +1481,7 @@ def _parse_dmg_mult_ocr_results(ocr_results):
     current_skill = None
 
     # 要跳过的非伤害行关键词（仅对不含百分比公式的行生效）
-    _SKIP_KW = ["耐力消耗", "冷却时间", "回复", "协奏能力", "耐力",
+    _SKIP_KW = ["耐力消耗", "冷却时间", "回复", "协奏能力", "耐力", "治疗",
                 "lv.", "Lv.", "LV.", "等级", "缓存", "轮", "tok", "v4-pro",
                 "总结", "优化", "修改", "完成", "识别", "测试", "记录", "更新",
                 "文件", "编辑", "查看", "转到", "选择", "资源", "管理器",
@@ -1557,7 +1557,10 @@ def _parse_dmg_mult_ocr_results(ocr_results):
         if not fm:
             # 没有百分比的行，可能是下一行的伤害名称，记下来
             if not any(kw in line for kw in ["lv.", "Lv.", "LV.", "等级", "技能介绍", "技能详情"]):
-                prev_line = line
+                # 清洗后非空才赋值，过滤纯标点/数字/SKIP_KW 行
+                cleaned = re.sub(r'^[\s\d＋+\-*Xx/()（）·.。,，。、：:]+$', '', line.strip())
+                if cleaned and not any(kw in cleaned for kw in _SKIP_KW):
+                    prev_line = cleaned
             continue
 
         formula = fm.group(0)
@@ -1583,8 +1586,10 @@ def _parse_dmg_mult_ocr_results(ocr_results):
         damage_name = re.sub(r'[\s,，。、：:]+$', '', damage_name)
         # 如果当前行没有有效名称，回溯上一行
         if not damage_name and prev_line:
-            damage_name = re.sub(r'^[\s\d＋+\-*Xx/()（）]+', '', prev_line.strip())
-            damage_name = re.sub(r'[\s,，。、：:]+$', '', damage_name)
+            clean_prev = re.sub(r'^[\s\d＋+\-*Xx/()（）]+', '', prev_line.strip())
+            clean_prev = re.sub(r'[\s,，。、：:]+$', '', clean_prev)
+            if clean_prev:
+                damage_name = clean_prev
             prev_line = ""
         # 回溯后仍无名称 → 放弃
         if not damage_name:
