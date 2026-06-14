@@ -419,6 +419,26 @@ class PresetLoaderDialog(QDialog):
 
         layout.addLayout(cat_row)
 
+        # 来源过滤：全部 / 官方 / 个人
+        src_row = QHBoxLayout()
+        src_row.setContentsMargins(0, 4, 0, 0)
+        src_row.setSpacing(8)
+        src_row.addWidget(QLabel("来源:"))
+        self._src_btns = {}
+        for sk, sl in [("all", "全部"), ("official", "官方"), ("user", "个人")]:
+            sb = QPushButton(sl)
+            sb.setObjectName("backButton")
+            sb.setCursor(Qt.CursorShape.PointingHandCursor)
+            sb.setCheckable(True)
+            sb.setFixedWidth(60)
+            sb.clicked.connect(lambda _, s=sk: self._set_source_filter(s))
+            src_row.addWidget(sb)
+            self._src_btns[sk] = sb
+        self._src_btns["all"].setChecked(True)
+        self._current_source_filter = "all"
+        src_row.addStretch()
+        layout.addLayout(src_row)
+
         # 搜索框
         search_row = QHBoxLayout()
         search_row.setContentsMargins(0, 4, 0, 0)
@@ -512,13 +532,21 @@ class PresetLoaderDialog(QDialog):
         self._refresh_preset_list()
         self._update_sel_info()
 
+    def _set_source_filter(self, sk):
+        self._current_source_filter = sk
+        for s, b in self._src_btns.items():
+            b.setChecked(s == sk)
+            b.setStyleSheet("background:#5050e0;color:white;" if s == sk else "")
+        self._refresh_preset_list()
+
     def _refresh_preset_list(self):
         self._preset_list.blockSignals(True)
         self._preset_list.clear()
 
         all_presets = PresetManager.list_presets()
         cat_presets = [p for p in all_presets
-                       if p["category"] == self._current_category]
+                       if p["category"] == self._current_category
+                       and (self._current_source_filter == "all" or p["source"] == self._current_source_filter)]
 
         # 搜索过滤
         search_text = self._search_input.text().strip().lower() if hasattr(self, '_search_input') else ""
