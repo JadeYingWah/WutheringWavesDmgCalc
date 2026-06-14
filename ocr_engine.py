@@ -1510,11 +1510,14 @@ def _parse_dmg_mult_ocr_results(ocr_results):
     for lineno in range(len(rec_texts)):
         cur = rec_texts[lineno].strip()
         prev = merged_texts[-1] if merged_texts else ""
-        # 1. 单字中文碎片（如 "害"）→ 拼到最近的非公式行
+        # 1. 单字中文碎片（如 "害"）→ 拼到最近的非公式非技能行
         if (merged_texts and len(cur) <= 2 and '\u4e00' <= cur[0] <= '\u9fff'
-                and cur not in _sys_terms):
+                and cur not in _sys_terms
+                and prev not in _sys_terms
+                and prev not in _SKILL_CATEGORIES):
             insert_idx = len(merged_texts) - 1
-            while insert_idx >= 0 and _pure_formula_re.match(merged_texts[insert_idx]):
+            while insert_idx >= 0 and (_pure_formula_re.match(merged_texts[insert_idx])
+                                       or merged_texts[insert_idx] in _SKILL_CATEGORIES):
                 insert_idx -= 1
             if insert_idx >= 0:
                 merged_texts[insert_idx] = merged_texts[insert_idx] + cur
@@ -1543,7 +1546,7 @@ def _parse_dmg_mult_ocr_results(ocr_results):
         if line in _SUB_SKILLS:
             current_sub_skill = _SUB_SKILLS[line]
             continue
-        # 技能分类行：切换当前技能分类，重置子分类
+        # 技能分类行：切换当前技能分类，重置子分类      
         if line in _SKILL_CATEGORIES:
             current_skill = line
             current_sub_skill = None
@@ -1598,10 +1601,9 @@ def _parse_dmg_mult_ocr_results(ocr_results):
         if re.search(r'[A-Za-z]{10,}', damage_name):  # 长英文单词 → 不是游戏内容
             continue
 
-        # —— 根据技能分类和子分类解析最终技能类型 ——
+                # —— 根据技能分类和子分类解析最终技能类型 ——
         resolved_skill = None
         if current_skill == "常态攻击":
-            # 优先用子分类（重击/普攻），其次看伤害名称是否含"重击"，默认普攻
             if current_sub_skill:
                 resolved_skill = current_sub_skill
             elif "重击" in damage_name:
@@ -1609,11 +1611,12 @@ def _parse_dmg_mult_ocr_results(ocr_results):
             else:
                 resolved_skill = "普攻"
         elif current_skill == "共鸣回路":
-            resolved_skill = None  # 默认为 "(无)"，用户自行选择
+            resolved_skill = None
         elif current_skill == "变奏技能":
             resolved_skill = "变奏技能"
         else:
-            resolved_skill = current_skill  # 共鸣技能 / 共鸣解放 直接使用
+            resolved_skill = current_skill
+            
 
         # 构建标签前缀: 技能分类_伤害名称
         label_prefix_parts = []
