@@ -6946,6 +6946,10 @@ class ResultListPage(QWidget):
             mult_zone *= (1.0 + bv / 100.0)
         if kw_mult_boost > 0:
             mult_zone *= (1.0 + kw_mult_boost / 100.0)
+        # 将关键词注入值写回 item，UI 输入框和保存同步显示
+        item["mult_increase"] = mult_inc
+        if kw_mult_boost > 0:
+            item["mult_boosts"] = list(item["mult_boosts"]) + [kw_mult_boost]
         base_dmg = base_zone * bonus_zone * deepen_zone * def_zone * res_zone * indep_zone * mult_zone / 100.0
         item["zones"] = {
             "atk_zone": base_zone, "bonus_zone": bonus_zone, "deepen_zone": deepen_zone,
