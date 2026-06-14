@@ -683,7 +683,7 @@ class PresetLoaderDialog(QDialog):
         chain_spin = None
         refine_spin = None
         echo_combo = None
-        stage_checks = []
+        echo_pieces = []
 
         if char_name:
             chain_spin = QSpinBox()
@@ -703,21 +703,29 @@ class PresetLoaderDialog(QDialog):
 
         lay_dlg.addLayout(form)
 
-        # ── 声骸套装阶段勾选 ──
+        # ── 声骸套装件数分配 ──
         if echo_names:
-            stage_gb = QGroupBox("声骸套装阶段（勾选要生效的效果，总计不超过5件）")
+            stage_gb = QGroupBox("声骸套装（分配件数给各套装，总计不超过 5 件）")
             stage_gb.setStyleSheet("QGroupBox{font-weight:bold;padding-top:14px;}")
             stage_lay = QVBoxLayout(stage_gb)
-            stage_lay.setSpacing(4)
+            stage_lay.setSpacing(6)
 
             for ed in echo_names:
                 sname = ed["name"]
-                for si, st in enumerate(ed["stages"]):
-                    rc = st.get("required_count", si + 1)
-                    cb = QCheckBox(f"{sname} — {rc} 件套效果（需{rc}件）")
-                    cb.setChecked(True)
-                    stage_checks.append((cb, ed, si))
-                    stage_lay.addWidget(cb)
+                row = QHBoxLayout()
+                row.addWidget(QLabel(sname))
+                spin = QSpinBox()
+                spin.setRange(0, 5)
+                max_pieces = min(5, max([st.get("required_count", 0) for st in ed["stages"]]) if ed["stages"] else 5)
+                spin.setValue(max_pieces)
+                spin.setFixedWidth(55)
+                row.addWidget(spin)
+                preview = QLabel()
+                preview.setStyleSheet("color:#6c7086;font-size:11px;")
+                preview.setWordWrap(True)
+                row.addWidget(preview, 1)
+                stage_lay.addLayout(row)
+                echo_pieces.append((spin, ed, preview))
 
             total_label = QLabel()
             total_label.setStyleSheet("color:#e74c3c;font-size:12px;font-weight:bold;padding-top:4px;")
@@ -733,23 +741,32 @@ class PresetLoaderDialog(QDialog):
             echo_row.addWidget(echo_combo, 1)
             stage_lay.addLayout(echo_row)
 
-            def _update_total():
+            def _update_pieces():
                 t = 0
-                for cb2, ed2, si2 in stage_checks:
-                    if cb2.isChecked():
-                        t += ed2["stages"][si2].get("required_count", si2 + 1)
-                total_label.setText(f"已选 {t}/5 件" + ("  ⚠ 超过上限！" if t > 5 else ""))
+                for sp, ed, prev in echo_pieces:
+                    n = sp.value()
+                    t += n
+                    stages = sorted(ed["stages"], key=lambda s: s.get("required_count", 1))
+                    if stages:
+                        parts = []
+                        for st in stages:
+                            rc = st.get("required_count", 1)
+                            parts.append(f"{rc}件{'<font color="#a6e3a1">✓</font>' if rc <= n else '<font color="#f38ba8">✗</font>'}")
+                        prev.setText("生效: " + " + ".join(parts))
+                    else:
+                        prev.setText("无阶段")
+                total_label.setText(f"已分配 {t}/5 件" + ("  ⚠ 超过上限！" if t > 5 else ""))
                 try:
-                    ok = btns.button(QDialogButtonBox.StandardButton.Ok)
-                    if ok:
-                        ok.setEnabled(t <= 5)
-                except (NameError, AttributeError):
+                    ok_btn = btns.button(QDialogButtonBox.StandardButton.Ok)
+                    if ok_btn:
+                        ok_btn.setEnabled(t <= 5)
+                except Exception:
                     pass
 
-            for cb2, ed2, si2 in stage_checks:
-                cb2.toggled.connect(_update_total)
+            for sp, ed, prev in echo_pieces:
+                sp.valueChanged.connect(_update_pieces)
 
-            _update_total()
+            _update_pieces()
             lay_dlg.addWidget(stage_gb)
 
         # 角色增益提示
@@ -787,14 +804,17 @@ class PresetLoaderDialog(QDialog):
                         merged[key]["name"] = d[key]["name"]
                 elif key == "echo_set":
                     es = d[key]
-                    checked = []
-                    for scb, sed, ssi in stage_checks:
-                        if sed["data"] is d and scb.isChecked():
-                            checked.append(es["stages"][ssi])
-                    if checked:
+                    pieces = 0
+                    for sp3, ed3, pv3 in echo_pieces:
+                        if ed3["data"] is d:
+                            pieces = sp3.value()
+                            break
+                    active = [st for st in es.get("stages", [])
+                              if st.get("required_count", 1) <= pieces]
+                    if active:
                         if key not in merged:
                             merged[key] = {"name": "", "stages": [], "first_echo_bonus": {}}
-                        merged[key]["stages"].extend(checked)
+                        merged[key]["stages"].extend(active)
                         if es.get("first_echo_bonus"):
                             merged[key]["first_echo_bonus"] = es["first_echo_bonus"]
                         if es.get("name"):
