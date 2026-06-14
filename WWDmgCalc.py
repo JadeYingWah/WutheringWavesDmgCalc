@@ -4223,8 +4223,8 @@ class SaveManager:
                 er._recalc()
                 for sp in sps:
                     sp.recalc()
-                rp.auto_compute()
-                rl.recalc()
+                rp.compute()
+                rl._update_all()
             return _cb
 
         combined_cb = _make_source_cb(
@@ -4238,8 +4238,8 @@ class SaveManager:
             def _cb():
                 for sp in sps:
                     sp.recalc()
-                rp.auto_compute()
-                rl.recalc()
+                rp.compute()
+                rl._update_all()
             return _cb
         ms.page_char_base._on_change_cb = _make_char_cb(
             ms.page_result, ms.page_result_list, _summary_pages)
@@ -10289,7 +10289,7 @@ class MainScreen(QWidget):
                 self.page_enemy_defense, self.page_enemy_resistance,
                 self.page_result, self.page_result_list, _summary_pages)
 
-        # 角色基础页变更时刷新四个总结页 + 计算结果 + 结果列表（受自动开关控制）
+        # —— 角色基础页变更 ——
         def _make_char_cb(rp, rl, sps):
             def _cb():
                 for sp in sps:
