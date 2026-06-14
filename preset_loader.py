@@ -739,9 +739,12 @@ class PresetLoaderDialog(QDialog):
                     if cb2.isChecked():
                         t += ed2["stages"][si2].get("required_count", si2 + 1)
                 total_label.setText(f"已选 {t}/5 件" + ("  ⚠ 超过上限！" if t > 5 else ""))
-                ok = btns.button(QDialogButtonBox.StandardButton.Ok)
-                if ok:
-                    ok.setEnabled(t <= 5)
+                try:
+                    ok = btns.button(QDialogButtonBox.StandardButton.Ok)
+                    if ok:
+                        ok.setEnabled(t <= 5)
+                except (NameError, AttributeError):
+                    pass
 
             for cb2, ed2, si2 in stage_checks:
                 cb2.toggled.connect(_update_total)
