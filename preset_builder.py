@@ -2814,7 +2814,10 @@ class _EchoSetEditor(QDialog):
             self._update_stage_summary(len(self._stage_data) - 1)
 
     def _open_stage_edit(self, stage_idx):
-        cd = self._stage_data[stage_idx - 1]
+        idx = stage_idx - 1
+        if idx < 0 or idx >= len(self._stage_data):
+            return
+        cd = self._stage_data[idx] 
         # 所需同套数量控件
         count_spin = QSpinBox()
         count_spin.setRange(1, 5)
@@ -2908,7 +2911,9 @@ class _EchoSetEditor(QDialog):
         self.set_name.setText(data.get("name", ""))
         stages = data.get("stages", [])
         if stages:
+            self.stage_count_spin.blockSignals(True)
             self.stage_count_spin.setValue(len(stages))
+            self.stage_count_spin.blockSignals(False)
             for i, cd in enumerate(self._stage_data):
                 if i < len(stages):
                     s = stages[i]
