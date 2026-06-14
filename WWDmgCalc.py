@@ -6113,6 +6113,7 @@ class ResultDetailDialog(QDialog):
         # —— 倍率编辑 ——
         mult_group = QGroupBox("倍率设置")
         mult_form = QFormLayout(mult_group)
+        mult_group.setMinimumHeight(600)
 
         self.base_mult = QDoubleSpinBox()
         self.base_mult.setRange(0, 99999)
@@ -6127,9 +6128,9 @@ class ResultDetailDialog(QDialog):
         self.mult_inc_table.setHorizontalHeaderLabels(
             ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
         self.mult_inc_table.verticalHeader().setVisible(False)
-        self.mult_inc_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.mult_inc_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.mult_inc_table.setSizeAdjustPolicy(QTableWidget.SizeAdjustPolicy.AdjustToContents)
-        self.mult_inc_table.setMaximumHeight(250)
+        self.mult_inc_table.setMinimumHeight(150)
         hdr_inc = self.mult_inc_table.horizontalHeader()
         hdr_inc.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         for i in range(1, 8):
@@ -6148,9 +6149,9 @@ class ResultDetailDialog(QDialog):
         self.mult_boost_table.setHorizontalHeaderLabels(
             ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
         self.mult_boost_table.verticalHeader().setVisible(False)
-        self.mult_boost_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.mult_boost_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.mult_boost_table.setSizeAdjustPolicy(QTableWidget.SizeAdjustPolicy.AdjustToContents)
-        self.mult_boost_table.setMaximumHeight(250)
+        self.mult_boost_table.setMinimumHeight(150)
         hdr_boost = self.mult_boost_table.horizontalHeader()
         hdr_boost.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         for i in range(1, 8):
@@ -8099,6 +8100,7 @@ class ResultPage(QWidget):
         # —— 倍率设置 ——
         mult_group = QGroupBox("倍率设置")
         mult_form = QFormLayout(mult_group)
+        mult_group.setMinimumHeight(600)
 
         self.base_mult = QDoubleSpinBox()
         self.base_mult.setRange(0, 99999)
@@ -8113,9 +8115,9 @@ class ResultPage(QWidget):
         self.mult_inc_table.setHorizontalHeaderLabels(
             ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
         self.mult_inc_table.verticalHeader().setVisible(False)
-        self.mult_inc_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.mult_inc_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.mult_inc_table.setSizeAdjustPolicy(QTableWidget.SizeAdjustPolicy.AdjustToContents)
-        self.mult_inc_table.setMaximumHeight(250)
+        self.mult_inc_table.setMinimumHeight(150)
         hdr_inc = self.mult_inc_table.horizontalHeader()
         hdr_inc.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         for i in range(1, 8):
@@ -8134,9 +8136,9 @@ class ResultPage(QWidget):
         self.mult_boost_table.setHorizontalHeaderLabels(
             ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
         self.mult_boost_table.verticalHeader().setVisible(False)
-        self.mult_boost_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.mult_boost_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.mult_boost_table.setSizeAdjustPolicy(QTableWidget.SizeAdjustPolicy.AdjustToContents)
-        self.mult_boost_table.setMaximumHeight(250)
+        self.mult_boost_table.setMinimumHeight(150)
         hdr_boost = self.mult_boost_table.horizontalHeader()
         hdr_boost.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         for i in range(1, 8):
