@@ -6124,22 +6124,21 @@ class ResultDetailDialog(QDialog):
         self.base_mult.valueChanged.connect(self._on_mult_changed)
         mult_form.addRow("基础倍率(%):", self.base_mult)
 
-        self.mult_increase = QDoubleSpinBox()
-        self.mult_increase.setRange(0, 99999)
-        self.mult_increase.setDecimals(4)
-        self.mult_increase.setValue(item["mult_increase"])
-        self.mult_increase.valueChanged.connect(self._on_mult_changed)
-        mult_form.addRow("倍率增加(%):", self.mult_increase)
+        # 倍率增加动态列表
+        self._mult_inc_container = QWidget()
+        self._mult_inc_layout = QVBoxLayout(self._mult_inc_container)
+        self._mult_inc_layout.setContentsMargins(0, 0, 0, 0)
+        self._mult_inc_layout.setSpacing(2)
+        self._mult_inc_entries = []
+        mult_form.addRow("倍率增加(%):", self._mult_inc_container)
 
-        self.mult_boosts = []
-        for i in range(3):
-            spin = QDoubleSpinBox()
-            spin.setRange(0, 99999)
-            spin.setDecimals(4)
-            spin.setValue(item["mult_boosts"][i] if i < len(item["mult_boosts"]) else 0.0)
-            spin.valueChanged.connect(self._on_mult_changed)
-            self.mult_boosts.append(spin)
-            mult_form.addRow(f"倍率提升{i + 1}(%):", spin)
+        # 倍率提升动态列表
+        self._mult_boost_container = QWidget()
+        self._mult_boost_layout = QVBoxLayout(self._mult_boost_container)
+        self._mult_boost_layout.setContentsMargins(0, 0, 0, 0)
+        self._mult_boost_layout.setSpacing(2)
+        self._mult_boost_entries = []
+        mult_form.addRow("倍率提升(%):", self._mult_boost_container)
         scroll_layout.addWidget(mult_group)
 
         # —— 计算过程（已包含所有乘区数值 + 来源超链接） ——
@@ -6361,24 +6360,13 @@ class ResultDetailDialog(QDialog):
 
     def _on_mult_changed(self):
         self._item["base_mult"] = self.base_mult.value()
-        self._item["mult_increase"] = self.mult_increase.value()
-        self._item["mult_boosts"] = [sp.value() for sp in self.mult_boosts]
-        # 记录用户手动值，后续关键词注入以此为准
-        self._item["_orig_mult_increase"] = self._item["mult_increase"]
-        self._item["_orig_mult_boosts"] = list(self._item["mult_boosts"])
+        inc_vals, boost_vals = self._gather_mult_data()
+        self._item["mult_increase"] = sum(inc_vals)
+        self._item["mult_boosts"] = boost_vals
         if not self._item["locked"]:
             items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
             self._page._recalc_one(self._item, items_data)
             self._patch_process_html()
-            # 将关键词注入后的值回写到 UI 输入框
-            self.mult_increase.blockSignals(True)
-            self.mult_increase.setValue(self._item["mult_increase"])
-            self.mult_increase.blockSignals(False)
-            for i, spin in enumerate(self.mult_boosts):
-                new_val = self._item["mult_boosts"][i] if i < len(self._item["mult_boosts"]) else 0.0
-                spin.blockSignals(True)
-                spin.setValue(new_val)
-                spin.blockSignals(False)
         else:
             z = self._item["zones"]
             base_m = self._item["base_mult"]
@@ -6394,6 +6382,51 @@ class ResultDetailDialog(QDialog):
         self._update_result_labels()
         self._page._refresh_cards()
 
+
+    # ── 倍率动态列表 ──
+
+    def _sync_mult_entries(self):
+        "同步关键词关联的倍率条目到动态列表"
+        for spin, row in self._mult_inc_entries:
+            row.setParent(None)
+        self._mult_inc_entries.clear()
+        for spin, row in self._mult_boost_entries:
+            row.setParent(None)
+        self._mult_boost_entries.clear()
+        if not self._keyword_assoc_page:
+            return
+        for kw_item in self._keyword_assoc_page.get_items():
+            name = kw_item.get("name", "")
+            value = kw_item.get("value", 0.0)
+            if "倍率增加" in name:
+                self._add_mult_entry("倍率增加", value)
+            elif "倍率提升" in name:
+                self._add_mult_entry("倍率提升", value)
+
+    def _add_mult_entry(self, typ, value=0.0):
+        row = QWidget()
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(0, 0, 0, 0)
+        row_layout.setSpacing(4)
+        label = QLabel("增" if typ == "倍率增加" else "提")
+        label.setFixedWidth(20)
+        row_layout.addWidget(label)
+        spin = QDoubleSpinBox()
+        spin.setRange(0, 99999)
+        spin.setDecimals(4)
+        spin.setValue(value)
+        row_layout.addWidget(spin, 1)
+        if typ == "倍率增加":
+            self._mult_inc_entries.append((spin, row))
+            self._mult_inc_layout.addWidget(row)
+        else:
+            self._mult_boost_entries.append((spin, row))
+            self._mult_boost_layout.addWidget(row)
+
+    def _gather_mult_data(self):
+        inc_vals = [spin.value() for spin, _ in self._mult_inc_entries]
+        boost_vals = [spin.value() for spin, _ in self._mult_boost_entries]
+        return inc_vals, boost_vals
     def _patch_process_html(self):
         """重新生成与 ResultPage 相同格式的计算过程 HTML"""
         items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
@@ -6948,23 +6981,12 @@ class ResultListPage(QWidget):
         if self._resistance_page:
             res_zone = self._resistance_page.get_resistance_multiplier(item["element"])
         indep_zone = getattr(self._indep_zone_page, 'independent_zone', 1.0) if self._indep_zone_page else 1.0
-        # 关键词关联注入：倍率增加/倍率提升归入倍率乘区
-        kw_mult_inc = sum(v for n, v, _, nk in filtered if nk == "keyword_assoc" and "倍率增加" in n)
-        kw_mult_boost = sum(v for n, v, _, nk in filtered if nk == "keyword_assoc" and "倍率提升" in n)
-        # 每次重算时还原为原始值再加关键词，防止反复叠加
-        orig_inc = item.get("_orig_mult_increase", item["mult_increase"])
-        orig_boosts = list(item.get("_orig_mult_boosts", item["mult_boosts"]))
-        item["_orig_mult_increase"] = orig_inc
-        item["_orig_mult_boosts"] = orig_boosts
-        item["mult_increase"] = orig_inc + kw_mult_inc
-        if kw_mult_boost > 0:
-            item["mult_boosts"] = orig_boosts + [kw_mult_boost]
-        else:
-            item["mult_boosts"] = list(orig_boosts)
+        # 倍率乘区：直接使用 item 中已由关键词关联填充的值
         base_m = item["base_mult"]
-        mult_inc = item["mult_increase"]
+        mult_inc = item.get("mult_increase", 0)
+        mult_boosts = item.get("mult_boosts", [])
         mult_zone = (base_m + mult_inc)
-        for bv in item["mult_boosts"]:
+        for bv in mult_boosts:
             mult_zone *= (1.0 + bv / 100.0)
         base_dmg = base_zone * bonus_zone * deepen_zone * def_zone * res_zone * indep_zone * mult_zone / 100.0
         item["zones"] = {
@@ -7061,8 +7083,6 @@ class ResultListPage(QWidget):
             "base_mult": settings["base_mult"],
             "mult_increase": settings["mult_increase"],
             "mult_boosts": list(settings["mult_boosts"]),
-            "_orig_mult_increase": settings["mult_increase"],
-            "_orig_mult_boosts": list(settings["mult_boosts"]),
             "zones": dict(settings["zones"]),
             "timestamp": datetime.now().isoformat(),
             "keywords": settings.get("keywords") or _auto_keywords(label),
@@ -7999,20 +8019,21 @@ class ResultPage(QWidget):
         self.base_mult.setValue(100.0)
         mult_form.addRow("基础倍率(%):", self.base_mult)
 
-        self.mult_increase = QDoubleSpinBox()
-        self.mult_increase.setRange(0, 99999)
-        self.mult_increase.setDecimals(4)
-        self.mult_increase.setValue(0.0)
-        mult_form.addRow("倍率增加(%):", self.mult_increase)
+        # 倍率增加动态列表
+        self._mult_inc_container = QWidget()
+        self._mult_inc_layout = QVBoxLayout(self._mult_inc_container)
+        self._mult_inc_layout.setContentsMargins(0, 0, 0, 0)
+        self._mult_inc_layout.setSpacing(2)
+        self._mult_inc_entries = []
+        mult_form.addRow("倍率增加(%):", self._mult_inc_container)
 
-        self.mult_boosts = []
-        for i in range(3):
-            spin = QDoubleSpinBox()
-            spin.setRange(0, 99999)
-            spin.setDecimals(4)
-            spin.setValue(0.0)
-            self.mult_boosts.append(spin)
-            mult_form.addRow(f"倍率提升{i + 1}(%):", spin)
+        # 倍率提升动态列表
+        self._mult_boost_container = QWidget()
+        self._mult_boost_layout = QVBoxLayout(self._mult_boost_container)
+        self._mult_boost_layout.setContentsMargins(0, 0, 0, 0)
+        self._mult_boost_layout.setSpacing(2)
+        self._mult_boost_entries = []
+        mult_form.addRow("倍率提升(%):", self._mult_boost_container)
 
         layout.addWidget(mult_group)
 
@@ -8045,7 +8066,7 @@ class ResultPage(QWidget):
         layout.addWidget(filter_group)
 
         # 筛选条件与倍率变更时自动计算（受 _auto_compute 开关控制）
-        for w in [self.base_mult, self.mult_increase, *self.mult_boosts,
+        for w in [self.base_mult,
                   self.filter_basis, self.filter_element, self.filter_skill,
                   self.filter_effect]:
             if hasattr(w, 'valueChanged'):
@@ -8529,15 +8550,12 @@ class ResultPage(QWidget):
             indep_zone = getattr(self._indep_zone_page, 'independent_zone', 1.0)
             indep_groups = self._indep_zone_page.group_factors
 
-        kw_mult_inc2 = sum(v for n, v, _, nk in filtered_items if nk == "keyword_assoc" and "倍率增加" in n)
-        kw_mult_boost2 = sum(v for n, v, _, nk in filtered_items if nk == "keyword_assoc" and "倍率提升" in n)
         base_m = self.base_mult.value()
-        mult_inc = self.mult_increase.value() + kw_mult_inc2
+        inc_vals, boost_vals = self._gather_mult_data()
+        mult_inc = sum(inc_vals)
         mult_zone = (base_m + mult_inc)
-        for boost in self.mult_boosts:
-            mult_zone *= (1.0 + boost.value() / 100.0)
-        if kw_mult_boost2 > 0:
-            mult_zone *= (1.0 + kw_mult_boost2 / 100.0)
+        for bv in boost_vals:
+            mult_zone *= (1.0 + bv / 100.0)
 
         base_dmg = base_zone * bonus_zone * deepen_zone * def_zone * res_zone * indep_zone * mult_zone / 100.0
         final_crit = base_dmg * crit_zone
@@ -8583,7 +8601,7 @@ class ResultPage(QWidget):
             sub_map, kw_mult_boost2
         )
 
-        mult_boosts = [boost.value() for boost in self.mult_boosts]
+        mult_boosts = boost_vals
         self._last_computed = {
             "basis": basis,
             "element": selected_element,
@@ -8607,6 +8625,51 @@ class ResultPage(QWidget):
             "process_html": self._process_label.text(),
         }
 
+
+    # ── 倍率动态列表 ──
+
+    def _sync_mult_entries(self):
+        "同步关键词关联的倍率条目到动态列表"
+        for spin, row in self._mult_inc_entries:
+            row.setParent(None)
+        self._mult_inc_entries.clear()
+        for spin, row in self._mult_boost_entries:
+            row.setParent(None)
+        self._mult_boost_entries.clear()
+        if not self._keyword_assoc_page:
+            return
+        for kw_item in self._keyword_assoc_page.get_items():
+            name = kw_item.get("name", "")
+            value = kw_item.get("value", 0.0)
+            if "倍率增加" in name:
+                self._add_mult_entry("倍率增加", value)
+            elif "倍率提升" in name:
+                self._add_mult_entry("倍率提升", value)
+
+    def _add_mult_entry(self, typ, value=0.0):
+        row = QWidget()
+        row_layout = QHBoxLayout(row)
+        row_layout.setContentsMargins(0, 0, 0, 0)
+        row_layout.setSpacing(4)
+        label = QLabel("增" if typ == "倍率增加" else "提")
+        label.setFixedWidth(20)
+        row_layout.addWidget(label)
+        spin = QDoubleSpinBox()
+        spin.setRange(0, 99999)
+        spin.setDecimals(4)
+        spin.setValue(value)
+        row_layout.addWidget(spin, 1)
+        if typ == "倍率增加":
+            self._mult_inc_entries.append((spin, row))
+            self._mult_inc_layout.addWidget(row)
+        else:
+            self._mult_boost_entries.append((spin, row))
+            self._mult_boost_layout.addWidget(row)
+
+    def _gather_mult_data(self):
+        inc_vals = [spin.value() for spin, _ in self._mult_inc_entries]
+        boost_vals = [spin.value() for spin, _ in self._mult_boost_entries]
+        return inc_vals, boost_vals
     def _clear_process(self):
         """清除旧的计算过程文本。"""
         self._process_label.clear()
@@ -8677,9 +8740,7 @@ class ResultPage(QWidget):
         self._clear_process()
         self._process_empty_label.setVisible(False)
         self._process_copy_btn.setVisible(True)
-        mult_boosts_vals = [b.value() for b in self.mult_boosts]
-        if kw_mult_boost2 > 0:
-            mult_boosts_vals = list(mult_boosts_vals) + [kw_mult_boost2]
+        mult_boosts_vals = boost_vals
         html = _render_process_html(
             basis, zone_label, base_value, weapon_base,
             pct_items, flat_items, total_pct, total_flat, base_zone,
@@ -10348,6 +10409,7 @@ class MainScreen(QWidget):
         # 关键词关联页变更 → 触发完整计算链（因关键词匹配影响结果列表）
         self.page_keyword_assoc._on_change_cb = lambda: (
             [sp.recalc() for sp in _summary_pages],
+            self.page_result._sync_mult_entries(),
             self.page_result.auto_compute(),
             self.page_result_list.recalc(),
         )
