@@ -1501,7 +1501,21 @@ def _parse_dmg_mult_ocr_results(ocr_results):
     current_sub_skill = None  # 追踪子分类（普攻/重击）
     prev_line = ""  # 上一行文本（用于名称换行回溯）
 
-    for line in rec_texts:
+    # ── 预处理：合并跨行倍率（上行以 + 结尾时合并下一行） ──
+    _pure_formula_re = re.compile(r'^[\d,]+\.?\d*\s*%')
+    _trailing_plus_re = re.compile(r'[\d,]+\.?\d*\s*%\+$')
+    merged_texts = []
+    for lineno in range(len(rec_texts)):
+        cur = rec_texts[lineno].strip()
+        prev = merged_texts[-1] if merged_texts else ""
+        if (merged_texts and
+            _pure_formula_re.match(cur) and
+            _trailing_plus_re.search(prev)):
+            merged_texts[-1] = re.sub(r'\+$', '', prev) + cur
+        else:
+            merged_texts.append(cur)
+
+    for line in merged_texts:
         line = line.strip()
         if not line:
             continue
