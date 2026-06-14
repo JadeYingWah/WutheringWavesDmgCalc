@@ -607,11 +607,13 @@ class PresetUploader(QWidget):
                 self._hint_label.setText("GitHub 上找不到该用户或网络不通，请尝试开启代理或重新检查用户名称是否正确。")
                 self._user_status.setStyleSheet("color:#f38ba8;font-size:11px;background:transparent;padding-left:2px;")
             else:
-                self._user_status.setText("")
+                self._user_verified = False
+                self._user_status.setText("✗ 无法验证")
+                self._user_status.setStyleSheet("color:#f38ba8;font-size:11px;background:transparent;padding-left:2px;")
         except Exception:
-            self._user_verified = True  # 网络不通不阻止
-            self._user_status.setText("⚠ 无法验证（网络不通，仍可投稿）")
-            self._user_status.setStyleSheet("color:#f9e2af;font-size:11px;background:transparent;padding-left:2px;")
+            self._user_verified = False
+            self._user_status.setText("✗ 无法验证")
+            self._user_status.setStyleSheet("color:#f38ba8;font-size:11px;background:transparent;padding-left:2px;")
             self._hint_label.setText("GitHub 上找不到该用户或网络不通，请尝试开启代理或重新检查用户名称是否正确。")
 
     def _update_state(self):
