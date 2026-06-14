@@ -8598,7 +8598,7 @@ class ResultPage(QWidget):
             rate_items, dmg_items, total_crit_rate, total_crit_dmg, crit_zone,
             def_zone, res_zone, indep_zone, indep_groups,
             base_m, mult_inc, mult_zone, final_crit, final_no_crit,
-            sub_map, kw_mult_boost2
+            sub_map, boost_vals
         )
 
         mult_boosts = boost_vals
@@ -8736,10 +8736,12 @@ class ResultPage(QWidget):
                        rate_items, dmg_items, total_crit_rate, total_crit_dmg, crit_zone,
                        def_zone, res_zone, indep_zone, indep_groups,
                        base_m, mult_inc, mult_zone, final_crit, final_no_crit,
-                       sub_map=None, kw_mult_boost2=0):
+                       sub_map=None, boost_vals=None):
         self._clear_process()
         self._process_empty_label.setVisible(False)
         self._process_copy_btn.setVisible(True)
+        if boost_vals is None:
+            _, boost_vals = self._gather_mult_data()
         mult_boosts_vals = boost_vals
         html = _render_process_html(
             basis, zone_label, base_value, weapon_base,
