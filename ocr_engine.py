@@ -1528,6 +1528,9 @@ def _parse_dmg_mult_ocr_results(ocr_results):
         else:
             merged_texts.append(cur)
 
+    # ── OCR 纠错：鸣潮无"暴击"倍率，统一纠正为"重击" ──
+    merged_texts = [t.replace("暴击", "重击") for t in merged_texts]
+
     for line in merged_texts:
         line = line.strip()
         if not line:
