@@ -660,7 +660,9 @@ class PresetLoaderDialog(QDialog):
                     ename = es.get("name", "未命名套装")
                     has_fb = bool(es.get("first_echo_bonus", {}).get("effects") or
                                   es.get("first_echo_bonus", {}).get("indep_zones"))
-                    echo_names.append((ename, has_fb))
+                    echo_names.append({"name": ename, "has_fb": has_fb,
+                                       "stages": es.get("stages", []),
+                                       "data": data})
                 elif cat == "character_buff" and "character_buff" in data:
                     buff_names.append(data["character_buff"].get("name", "未命名增益"))
 
@@ -670,10 +672,10 @@ class PresetLoaderDialog(QDialog):
         # ── 配置对话框 ──
         dlg = QDialog(self)
         dlg.setWindowTitle("配置预设应用")
-        dlg.setMinimumWidth(420)
-        layout = QVBoxLayout(dlg)
-        layout.setSpacing(16)
-        layout.setContentsMargins(20, 20, 20, 20)
+        dlg.setMinimumWidth(460)
+        lay_dlg = QVBoxLayout(dlg)
+        lay_dlg.setSpacing(14)
+        lay_dlg.setContentsMargins(20, 20, 20, 20)
 
         form = QFormLayout()
         form.setSpacing(10)
@@ -681,6 +683,7 @@ class PresetLoaderDialog(QDialog):
         chain_spin = None
         refine_spin = None
         echo_combo = None
+        stage_checks = []
 
         if char_name:
             chain_spin = QSpinBox()
@@ -698,37 +701,67 @@ class PresetLoaderDialog(QDialog):
             refine_spin.setToolTip("选择使用哪一阶的武器精炼数据")
             form.addRow(f"武器等阶 ({weapon_name}):", refine_spin)
 
-        if len(echo_names) > 1:
-            echo_combo = QComboBox()
-            for ename, has_fb in echo_names:
-                suffix = " (有效果)" if has_fb else " (无效果)"
-                echo_combo.addItem(ename + suffix)
-            echo_combo.setToolTip("只有被选中的声骸套装的首位声骸增益会生效")
-            form.addRow("首位声骸增益:", echo_combo)
+        lay_dlg.addLayout(form)
 
-        layout.addLayout(form)
+        # ── 声骸套装阶段勾选 ──
+        if echo_names:
+            stage_gb = QGroupBox("声骸套装阶段（勾选要生效的效果，总计不超过5件）")
+            stage_gb.setStyleSheet("QGroupBox{font-weight:bold;padding-top:14px;}")
+            stage_lay = QVBoxLayout(stage_gb)
+            stage_lay.setSpacing(4)
+
+            for ed in echo_names:
+                sname = ed["name"]
+                for si, st in enumerate(ed["stages"]):
+                    rc = st.get("required_count", si + 1)
+                    cb = QCheckBox(f"{sname} — {rc} 件套效果（需{rc}件）")
+                    cb.setChecked(True)
+                    stage_checks.append((cb, ed, si))
+                    stage_lay.addWidget(cb)
+
+            total_label = QLabel()
+            total_label.setStyleSheet("color:#e74c3c;font-size:12px;font-weight:bold;padding-top:4px;")
+            stage_lay.addWidget(total_label)
+
+            echo_combo = QComboBox()
+            for ed in echo_names:
+                suffix = " (有效果)" if ed["has_fb"] else " (无效果)"
+                echo_combo.addItem(ed["name"] + suffix)
+            echo_combo.setToolTip("只有被选中的声骸套装的首位声骸增益会生效")
+            echo_row = QHBoxLayout()
+            echo_row.addWidget(QLabel("首位声骸增益:"))
+            echo_row.addWidget(echo_combo, 1)
+            stage_lay.addLayout(echo_row)
+
+            def _update_total():
+                t = 0
+                for cb2, ed2, si2 in stage_checks:
+                    if cb2.isChecked():
+                        t += ed2["stages"][si2].get("required_count", si2 + 1)
+                total_label.setText(f"已选 {t}/5 件" + ("  ⚠ 超过上限！" if t > 5 else ""))
+                ok = btns.button(QDialogButtonBox.StandardButton.Ok)
+                if ok:
+                    ok.setEnabled(t <= 5)
+
+            for cb2, ed2, si2 in stage_checks:
+                cb2.toggled.connect(_update_total)
+
+            _update_total()
+            lay_dlg.addWidget(stage_gb)
 
         # 角色增益提示
         if buff_names:
             buff_label = QLabel(f"角色增益: {', '.join(buff_names)} (共 {len(buff_names)} 个)")
             buff_label.setStyleSheet("color: #888; font-size: 12px;")
             buff_label.setWordWrap(True)
-            layout.addWidget(buff_label)
-
-        # 说明文字
-        hint = QLabel("共鸣链：N 链 = 开启 1~N 链效果\n"
-                      "武器等阶：仅使用所选等阶的数据\n"
-                      "首位声骸增益：仅选中套装的增益生效（首位只能有一个声骸）")
-        hint.setStyleSheet("color: #888; font-size: 12px;")
-        hint.setWordWrap(True)
-        layout.addWidget(hint)
+            lay_dlg.addWidget(buff_label)
 
         # 按钮
         btns = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         btns.accepted.connect(dlg.accept)
         btns.rejected.connect(dlg.reject)
-        layout.addWidget(btns)
+        lay_dlg.addWidget(btns)
 
         if dlg.exec() != QDialog.DialogCode.Accepted:
             return
@@ -750,13 +783,19 @@ class PresetLoaderDialog(QDialog):
                     if d[key].get("name"):
                         merged[key]["name"] = d[key]["name"]
                 elif key == "echo_set":
-                    if key not in merged:
-                        merged[key] = {"name": "", "stages": [], "first_echo_bonus": {}}
-                    merged[key]["stages"].extend(d[key].get("stages", []))
-                    if d[key].get("first_echo_bonus"):
-                        merged[key]["first_echo_bonus"] = d[key]["first_echo_bonus"]
-                    if d[key].get("name"):
-                        merged[key]["name"] = d[key]["name"]
+                    es = d[key]
+                    checked = []
+                    for scb, sed, ssi in stage_checks:
+                        if sed["data"] is d and scb.isChecked():
+                            checked.append(es["stages"][ssi])
+                    if checked:
+                        if key not in merged:
+                            merged[key] = {"name": "", "stages": [], "first_echo_bonus": {}}
+                        merged[key]["stages"].extend(checked)
+                        if es.get("first_echo_bonus"):
+                            merged[key]["first_echo_bonus"] = es["first_echo_bonus"]
+                        if es.get("name"):
+                            merged[key]["name"] = es["name"]
 
         # ── 根据用户选择过滤数据 ──
 
