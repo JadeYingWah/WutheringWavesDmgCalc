@@ -595,6 +595,26 @@ class PresetManager:
                 QApplication.processEvents()
                 progress.close()
 
+            # 2.5 清理本地旧文件：删除不在 manifest 中的官方预设（防止改名/删除残留）
+            try:
+                for cat in CATEGORY_DIRS:
+                    cat_dir = os.path.join(OFFICIAL_DIR, cat)
+                    if not os.path.isdir(cat_dir):
+                        continue
+                    valid_names = set(manifest.get(cat, []))
+                    for fname in os.listdir(cat_dir):
+                        if not fname.endswith(".json"):
+                            continue
+                        if fname == "manifest.json":
+                            continue
+                        if fname not in valid_names:
+                            try:
+                                os.remove(os.path.join(cat_dir, fname))
+                            except OSError:
+                                pass
+            except Exception:
+                pass
+
             # 3. 写入错误日志（供侧边栏"错误日志"查看）
             if failed_details:
                 try:
