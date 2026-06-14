@@ -337,7 +337,8 @@ class PresetUploader(QWidget):
         super().__init__()
         self.setWindowTitle("官方预设上传工具")
         self.setFixedSize(620, 560)
-        self._pending_files = []
+        self._pending_files = []  # [(cat, fname, content), ...]
+        self._user_verified = False
         self._author_token = self._load_token()
 
         self._build_ui()
@@ -582,21 +583,25 @@ class PresetUploader(QWidget):
     def _verify_user(self):
         username = self._user_input.text().strip()
         if not username:
+            self._user_verified = False
             self._user_status.setText("")
             return
         try:
             check_req = urllib.request.Request(f"https://github.com/{username}")
             check_req.add_header("User-Agent", "WWDmgCalc/1.0")
             urllib.request.urlopen(check_req, timeout=10)
+            self._user_verified = True
             self._user_status.setText("✓ 用户存在")
             self._user_status.setStyleSheet("color:#a6e3a1;font-size:11px;background:transparent;padding-left:2px;")
         except urllib.error.HTTPError as e:
             if e.code == 404:
+                self._user_verified = False
                 self._user_status.setText("✗ GitHub 上找不到该用户")
                 self._user_status.setStyleSheet("color:#f38ba8;font-size:11px;background:transparent;padding-left:2px;")
             else:
                 self._user_status.setText("")
         except Exception:
+            self._user_verified = False
             self._user_status.setText("")
 
     def _update_state(self):
@@ -607,7 +612,7 @@ class PresetUploader(QWidget):
         else:
             self._pending_label.setText(f"共 {n} 个文件待上传")
             self._pending_label.setStyleSheet("color:#cdd6f4;font-weight:bold;font-size:11px;background:transparent;")
-        has_user = bool(self._user_input.text().strip())
+        has_user = bool(self._user_input.text().strip()) and self._user_verified
         ready = has_user and n > 0 and bool(self._author_token)
         self._upload_btn.setEnabled(ready)
 
@@ -621,22 +626,13 @@ class PresetUploader(QWidget):
         if not contributor:
             QMessageBox.warning(self, "提示", "请输入你的 GitHub 用户名")
             return
+        if not self._user_verified:
+            QMessageBox.warning(self, "用户未验证", f"GitHub 用户名「{contributor}」未通过验证。\n请检查输入框下方的提示。\n\n确认输入正确后重试。")
+            return
         if not self._pending_files:
             QMessageBox.information(self, "提示", "没有待上传的文件")
             return
 
-        # 验证 GitHub 用户名存在（访问主页，无 API 限流）
-        try:
-            check_req = urllib.request.Request(f"https://github.com/{contributor}")
-            check_req.add_header("User-Agent", "WWDmgCalc/1.0")
-            urllib.request.urlopen(check_req, timeout=10)
-        except urllib.error.HTTPError as e:
-            if e.code == 404:
-                QMessageBox.warning(self, "用户不存在",
-                    f"GitHub 用户名「{contributor}」不存在。\n请检查拼写后重试。")
-                return
-        except Exception:
-            pass  # 网络错误不阻止，让用户承担风险
 
         reply = QMessageBox.question(
             self, "确认投稿",
