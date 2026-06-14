@@ -6405,9 +6405,7 @@ class ResultDetailDialog(QDialog):
         """更新计算过程显示 — 优先使用 item 中已有的详细 process_html"""
         if not hasattr(self, '_detail_process_label'):
             return
-        html = self._item.get("process_html", "")
-        if not html:
-            html = self._rebuild_process_html()
+        html = self._rebuild_process_html()
         self._detail_process_label.setText(html)
 
     def _rebuild_process_html(self):
