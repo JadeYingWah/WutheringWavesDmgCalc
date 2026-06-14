@@ -320,8 +320,28 @@ class WelcomeScreen(QWidget):
                             raw_items = content.replace("<br>", chr(10)).split(chr(10))
                             for item in raw_items:
                                 item = item.strip()
-                                if item and item not in author_map[name]:
-                                    author_map[name].append(item)
+                                if not item:
+                                    continue
+                                # 标准化格式：echo_set/xxx.json → [套装] xxx
+                                normalized = item
+                                for cat_key, cat_label in {"character":"角色","weapon":"武器","echo_set":"套装","character_buff":"增益"}.items():
+                                    prefix = cat_key + "/"
+                                    if item.startswith(prefix):
+                                        normalized = item[len(prefix):]
+                                        if normalized.endswith(".json"):
+                                            normalized = normalized[:-5]
+                                        normalized = "[" + cat_label + "] " + normalized
+                                        break
+                                # 格式不同也能去重
+                                already = False
+                                for existing in author_map.get(name, []):
+                                    if normalized == existing or normalized.replace(" ", "") == existing.replace(" ", ""):
+                                        already = True
+                                        break
+                                if not already:
+                                    if name not in author_map:
+                                        author_map[name] = []
+                                    author_map[name].append(normalized)
         except Exception:
             import traceback
             traceback.print_exc()
