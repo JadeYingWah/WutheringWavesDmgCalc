@@ -595,7 +595,7 @@ class PresetUploader(QWidget):
         try:
             check_req = urllib.request.Request(f"https://github.com/{username}")
             check_req.add_header("User-Agent", "WWDmgCalc/1.0")
-            urllib.request.urlopen(check_req, timeout=10)
+            urllib.request.urlopen(check_req, timeout=20)
             self._user_verified = True
             self._user_status.setText("✓ 用户存在")
             self._hint_label.setText("只需填写你的 GitHub 用户名，无需 Token — 投稿后将在您的名下记录贡献。")
