@@ -2,6 +2,7 @@
   "version": 1,
   "type": "preset",
   "name": "漂泊者-气动-官方预设",
+  "author": "",
   "category": "character",
   "character": {
     "name": "漂泊者-气动",
@@ -99,7 +100,7 @@
     },
     "result_list": [
       {
-        "id": 1,
+        "id": 22,
         "label": "漂泊者-气动_常态攻击_第一段伤害_35.31%",
         "locked": false,
         "basis": "攻击力",
@@ -115,7 +116,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -124,11 +125,11 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 35.31,
-          "final_crit": 231.45705000000004,
-          "final_no_crit": 154.30470000000003,
-          "computed_base_zone": 437.0
+          "final_crit": 259.23189600000006,
+          "final_no_crit": 172.82126400000004,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:54:36.703314",
+        "timestamp": "2026-06-14T17:35:50.617436",
         "keywords": [
           "漂泊者-气动",
           "常态攻击",
@@ -138,7 +139,7 @@
         "process_html": ""
       },
       {
-        "id": 2,
+        "id": 23,
         "label": "漂泊者-气动_常态攻击_第二段伤害_43.05%*2",
         "locked": false,
         "basis": "攻击力",
@@ -154,7 +155,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -163,11 +164,11 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 43.05,
-          "final_crit": 282.19274999999993,
-          "final_no_crit": 188.12849999999997,
-          "computed_base_zone": 437.0
+          "final_crit": 316.05588,
+          "final_no_crit": 210.70392,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:54:36.708060",
+        "timestamp": "2026-06-14T17:35:50.622322",
         "keywords": [
           "漂泊者-气动",
           "常态攻击",
@@ -177,7 +178,7 @@
         "process_html": ""
       },
       {
-        "id": 3,
+        "id": 24,
         "label": "漂泊者-气动_常态攻击_第三段伤害_55.05%",
         "locked": false,
         "basis": "攻击力",
@@ -193,7 +194,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -202,11 +203,11 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 55.05,
-          "final_crit": 360.85274999999996,
-          "final_no_crit": 240.56849999999997,
-          "computed_base_zone": 437.0
+          "final_crit": 404.15508000000005,
+          "final_no_crit": 269.43672000000004,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:54:36.717890",
+        "timestamp": "2026-06-14T17:35:50.634230",
         "keywords": [
           "漂泊者-气动",
           "常态攻击",
@@ -216,8 +217,8 @@
         "process_html": ""
       },
       {
-        "id": 4,
-        "label": "漂泊者-气动_常态攻击_闪避反击伤害_1.99%*25",
+        "id": 25,
+        "label": "漂泊者-气动_常态攻击_第三段伤害_1.99%*25",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
@@ -232,7 +233,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -241,21 +242,21 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 1.99,
-          "final_crit": 13.044450000000001,
-          "final_no_crit": 8.6963,
-          "computed_base_zone": 437.0
+          "final_crit": 14.609784000000001,
+          "final_no_crit": 9.739856000000001,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:54:36.729888",
+        "timestamp": "2026-06-14T17:35:50.650738",
         "keywords": [
           "漂泊者-气动",
           "常态攻击",
-          "闪避反击伤害",
+          "第三段伤害",
           "1.99%*25"
         ],
         "process_html": ""
       },
       {
-        "id": 5,
+        "id": 26,
         "label": "漂泊者-气动_常态攻击_第四段伤害_76.72%",
         "locked": false,
         "basis": "攻击力",
@@ -271,7 +272,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -280,11 +281,11 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 76.72,
-          "final_crit": 502.89959999999996,
-          "final_no_crit": 335.2664,
-          "computed_base_zone": 437.0
+          "final_crit": 563.247552,
+          "final_no_crit": 375.498368,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:54:36.748783",
+        "timestamp": "2026-06-14T17:35:50.671368",
         "keywords": [
           "漂泊者-气动",
           "常态攻击",
@@ -294,7 +295,7 @@
         "process_html": ""
       },
       {
-        "id": 6,
+        "id": 27,
         "label": "漂泊者-气动_常态攻击_重击伤害_17.91%*3",
         "locked": false,
         "basis": "攻击力",
@@ -310,7 +311,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -319,11 +320,11 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 17.91,
-          "final_crit": 117.40005,
-          "final_no_crit": 78.2667,
-          "computed_base_zone": 437.0
+          "final_crit": 131.48805600000003,
+          "final_no_crit": 87.65870400000001,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:54:36.773184",
+        "timestamp": "2026-06-14T17:35:50.701554",
         "keywords": [
           "漂泊者-气动",
           "常态攻击",
@@ -333,7 +334,7 @@
         "process_html": ""
       },
       {
-        "id": 7,
+        "id": 28,
         "label": "漂泊者-气动_常态攻击_绞息伤害_36.37%",
         "locked": false,
         "basis": "攻击力",
@@ -349,7 +350,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -358,11 +359,11 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 36.37,
-          "final_crit": 238.40534999999997,
-          "final_no_crit": 158.93689999999998,
-          "computed_base_zone": 437.0
+          "final_crit": 267.01399200000003,
+          "final_no_crit": 178.009328,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:54:36.803441",
+        "timestamp": "2026-06-14T17:35:50.736866",
         "keywords": [
           "漂泊者-气动",
           "常态攻击",
@@ -372,7 +373,7 @@
         "process_html": ""
       },
       {
-        "id": 8,
+        "id": 29,
         "label": "漂泊者-气动_常态攻击_绞息伤害_44.46%",
         "locked": false,
         "basis": "攻击力",
@@ -388,7 +389,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -397,11 +398,11 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 44.46,
-          "final_crit": 291.4353,
-          "final_no_crit": 194.2902,
-          "computed_base_zone": 437.0
+          "final_crit": 326.40753600000005,
+          "final_no_crit": 217.60502400000001,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:54:36.836468",
+        "timestamp": "2026-06-14T17:35:50.780534",
         "keywords": [
           "漂泊者-气动",
           "常态攻击",
@@ -411,8 +412,8 @@
         "process_html": ""
       },
       {
-        "id": 9,
-        "label": "漂泊者-气动_常态攻击_空中攻击伤害_140.76%",
+        "id": 30,
+        "label": "漂泊者-气动_常态攻击_空中攻击_140.76%",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
@@ -427,7 +428,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -436,22 +437,22 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 140.76,
-          "final_crit": 922.6817999999998,
-          "final_no_crit": 615.1211999999999,
-          "computed_base_zone": 437.0
+          "final_crit": 1033.403616,
+          "final_no_crit": 688.935744,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:54:36.873342",
+        "timestamp": "2026-06-14T17:35:50.826320",
         "keywords": [
           "漂泊者-气动",
           "常态攻击",
-          "空中攻击伤害",
+          "空中攻击",
           "140.76%"
         ],
         "process_html": ""
       },
       {
-        "id": 10,
-        "label": "漂泊者-气动_常态攻击_闪避反击伤害_125.43%",
+        "id": 31,
+        "label": "漂泊者-气动_常态攻击_闪避反击_125.43%",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
@@ -466,7 +467,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -475,22 +476,61 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 125.43,
-          "final_crit": 822.1936499999999,
-          "final_no_crit": 548.1291,
-          "computed_base_zone": 437.0
+          "final_crit": 920.8568880000001,
+          "final_no_crit": 613.9045920000001,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:54:36.918438",
+        "timestamp": "2026-06-14T17:35:50.876458",
         "keywords": [
           "漂泊者-气动",
           "常态攻击",
-          "闪避反击伤害",
+          "闪避反击",
           "125.43%"
         ],
         "process_html": ""
       },
       {
-        "id": 11,
-        "label": "漂泊者-气动_共鸣技能_苍息破象伤害_66.44%",
+        "id": 32,
+        "label": "漂泊者-气动_常态攻击_闪避反击_1.99%*25",
+        "locked": false,
+        "basis": "攻击力",
+        "element": "气动",
+        "skill": "普攻",
+        "effect": null,
+        "category": "常态攻击",
+        "base_mult": 1.99,
+        "mult_increase": 0.0,
+        "mult_boosts": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "zones": {
+          "atk_zone": 489.44000000000005,
+          "bonus_zone": 1.0,
+          "deepen_zone": 1.0,
+          "crit_zone": 1.5,
+          "crit_rate": 5.0,
+          "def_zone": 1.0,
+          "res_zone": 1.0,
+          "indep_zone": 1.0,
+          "mult_zone": 1.99,
+          "final_crit": 14.609784000000001,
+          "final_no_crit": 9.739856000000001,
+          "computed_base_zone": 489.44000000000005
+        },
+        "timestamp": "2026-06-14T17:35:50.931070",
+        "keywords": [
+          "漂泊者-气动",
+          "常态攻击",
+          "闪避反击",
+          "1.99%*25"
+        ],
+        "process_html": ""
+      },
+      {
+        "id": 33,
+        "label": "漂泊者-气动_共鸣技能_苍息破象_66.44%",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
@@ -505,7 +545,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -514,22 +554,22 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 66.44,
-          "final_crit": 435.5142,
-          "final_no_crit": 290.3428,
-          "computed_base_zone": 437.0
+          "final_crit": 487.775904,
+          "final_no_crit": 325.183936,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:55:00.492089",
+        "timestamp": "2026-06-14T17:36:04.612901",
         "keywords": [
           "漂泊者-气动",
           "共鸣技能",
-          "苍息破象伤害",
+          "苍息破象",
           "66.44%"
         ],
         "process_html": ""
       },
       {
-        "id": 12,
-        "label": "漂泊者-气动_共鸣技能_苍息破象伤害_99.66%",
+        "id": 34,
+        "label": "漂泊者-气动_共鸣技能_苍息破象_99.66%",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
@@ -544,7 +584,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -553,22 +593,22 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 99.66,
-          "final_crit": 653.2712999999999,
-          "final_no_crit": 435.51419999999996,
-          "computed_base_zone": 437.0
+          "final_crit": 731.663856,
+          "final_no_crit": 487.775904,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:55:00.545876",
+        "timestamp": "2026-06-14T17:36:04.685312",
         "keywords": [
           "漂泊者-气动",
           "共鸣技能",
-          "苍息破象伤害",
+          "苍息破象",
           "99.66%"
         ],
         "process_html": ""
       },
       {
-        "id": 13,
-        "label": "漂泊者-气动_共鸣技能_碧霄断行伤害_23.37%*3",
+        "id": 35,
+        "label": "漂泊者-气动_共鸣技能_碧霄断行_23.37%*3",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
@@ -583,7 +623,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -592,22 +632,22 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 23.37,
-          "final_crit": 153.19035000000002,
-          "final_no_crit": 102.1269,
-          "computed_base_zone": 437.0
+          "final_crit": 171.573192,
+          "final_no_crit": 114.38212800000001,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:55:00.606096",
+        "timestamp": "2026-06-14T17:36:04.760489",
         "keywords": [
           "漂泊者-气动",
           "共鸣技能",
-          "碧霄断行伤害",
+          "碧霄断行",
           "23.37%*3"
         ],
         "process_html": ""
       },
       {
-        "id": 14,
-        "label": "漂泊者-气动_共鸣技能_碧霄断行伤害_105.15%",
+        "id": 36,
+        "label": "漂泊者-气动_共鸣技能_碧霄断行_105.15%",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
@@ -622,7 +662,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -631,26 +671,26 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 105.15,
-          "final_crit": 689.2582500000001,
-          "final_no_crit": 459.50550000000004,
-          "computed_base_zone": 437.0
+          "final_crit": 771.9692400000001,
+          "final_no_crit": 514.6461600000001,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:55:00.670162",
+        "timestamp": "2026-06-14T17:36:04.838812",
         "keywords": [
           "漂泊者-气动",
           "共鸣技能",
-          "碧霄断行伤害",
+          "碧霄断行",
           "105.15%"
         ],
         "process_html": ""
       },
       {
-        "id": 15,
-        "label": "漂泊者-气动_共鸣回路_拆风润第一段伤害_128.8%",
+        "id": 37,
+        "label": "漂泊者-气动_共鸣回路_抃风儛润第一段伤害_128.8%",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
-        "skill": "共鸣技能",
+        "skill": null,
         "effect": null,
         "category": "共鸣回路",
         "base_mult": 128.8,
@@ -661,7 +701,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -670,26 +710,26 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 128.8,
-          "final_crit": 844.2840000000001,
-          "final_no_crit": 562.8560000000001,
-          "computed_base_zone": 437.0
+          "final_crit": 945.5980800000002,
+          "final_no_crit": 630.3987200000001,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:55:29.647067",
+        "timestamp": "2026-06-14T17:36:18.845648",
         "keywords": [
           "漂泊者-气动",
           "共鸣回路",
-          "拆风润第一段伤害",
+          "抃风儛润第一段伤害",
           "128.8%"
         ],
         "process_html": ""
       },
       {
-        "id": 16,
-        "label": "漂泊者-气动_共鸣回路_拆风润第二段伤害_141.47%",
+        "id": 38,
+        "label": "漂泊者-气动_共鸣回路_抃风儛润第二段伤害_141.47%",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
-        "skill": "共鸣技能",
+        "skill": null,
         "effect": null,
         "category": "共鸣回路",
         "base_mult": 141.47,
@@ -700,7 +740,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -709,26 +749,26 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 141.47,
-          "final_crit": 927.3358499999999,
-          "final_no_crit": 618.2239,
-          "computed_base_zone": 437.0
+          "final_crit": 1038.616152,
+          "final_no_crit": 692.4107680000001,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:55:29.720573",
+        "timestamp": "2026-06-14T17:36:18.940902",
         "keywords": [
           "漂泊者-气动",
           "共鸣回路",
-          "拆风润第二段伤害",
+          "抃风儛润第二段伤害",
           "141.47%"
         ],
         "process_html": ""
       },
       {
-        "id": 17,
+        "id": 39,
         "label": "漂泊者-气动_共鸣回路_缥缈无相第一段伤害_34.3%*5",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
-        "skill": "共鸣技能",
+        "skill": null,
         "effect": null,
         "category": "共鸣回路",
         "base_mult": 34.3,
@@ -739,7 +779,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -748,11 +788,11 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 34.3,
-          "final_crit": 224.8365,
-          "final_no_crit": 149.891,
-          "computed_base_zone": 437.0
+          "final_crit": 251.81688000000003,
+          "final_no_crit": 167.87792000000002,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:55:29.797853",
+        "timestamp": "2026-06-14T17:36:19.033153",
         "keywords": [
           "漂泊者-气动",
           "共鸣回路",
@@ -762,12 +802,12 @@
         "process_html": ""
       },
       {
-        "id": 18,
+        "id": 40,
         "label": "漂泊者-气动_共鸣回路_缥缈无相第二段伤害_723.03%",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
-        "skill": "共鸣技能",
+        "skill": null,
         "effect": null,
         "category": "共鸣回路",
         "base_mult": 723.03,
@@ -778,7 +818,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -787,11 +827,11 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 723.03,
-          "final_crit": 4739.461649999999,
-          "final_no_crit": 3159.6411,
-          "computed_base_zone": 437.0
+          "final_crit": 5308.197048,
+          "final_no_crit": 3538.798032,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:55:29.881160",
+        "timestamp": "2026-06-14T17:36:19.139766",
         "keywords": [
           "漂泊者-气动",
           "共鸣回路",
@@ -801,8 +841,8 @@
         "process_html": ""
       },
       {
-        "id": 19,
-        "label": "漂泊者-气动_共鸣解放_技能伤害_536.79%",
+        "id": 41,
+        "label": "漂泊者-气动_共鸣解放_万象归墟_536.79%",
         "locked": false,
         "basis": "攻击力",
         "element": "气动",
@@ -817,7 +857,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -826,21 +866,21 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 536.79,
-          "final_crit": 3518.6584499999994,
-          "final_no_crit": 2345.7722999999996,
-          "computed_base_zone": 437.0
+          "final_crit": 3940.8974639999997,
+          "final_no_crit": 2627.264976,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:56:03.024462",
+        "timestamp": "2026-06-14T17:36:28.816891",
         "keywords": [
           "漂泊者-气动",
           "共鸣解放",
-          "技能伤害",
+          "万象归墟",
           "536.79%"
         ],
         "process_html": ""
       },
       {
-        "id": 20,
+        "id": 42,
         "label": "漂泊者-气动_变奏技能_技能伤害_79.53%",
         "locked": false,
         "basis": "攻击力",
@@ -856,7 +896,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -865,11 +905,11 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 79.53,
-          "final_crit": 521.31915,
-          "final_no_crit": 347.5461,
-          "computed_base_zone": 437.0
+          "final_crit": 583.8774480000001,
+          "final_no_crit": 389.25163200000003,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:57:25.684067",
+        "timestamp": "2026-06-14T17:37:17.973746",
         "keywords": [
           "漂泊者-气动",
           "变奏技能",
@@ -879,7 +919,7 @@
         "process_html": ""
       },
       {
-        "id": 21,
+        "id": 43,
         "label": "漂泊者-气动_变奏技能_技能伤害_119.29%",
         "locked": false,
         "basis": "攻击力",
@@ -895,7 +935,7 @@
           0.0
         ],
         "zones": {
-          "atk_zone": 437.0,
+          "atk_zone": 489.44000000000005,
           "bonus_zone": 1.0,
           "deepen_zone": 1.0,
           "crit_zone": 1.5,
@@ -904,11 +944,11 @@
           "res_zone": 1.0,
           "indep_zone": 1.0,
           "mult_zone": 119.29,
-          "final_crit": 781.94595,
-          "final_no_crit": 521.2973000000001,
-          "computed_base_zone": 437.0
+          "final_crit": 875.7794640000002,
+          "final_no_crit": 583.8529760000001,
+          "computed_base_zone": 489.44000000000005
         },
-        "timestamp": "2026-06-11T19:57:25.788798",
+        "timestamp": "2026-06-14T17:37:18.108554",
         "keywords": [
           "漂泊者-气动",
           "变奏技能",

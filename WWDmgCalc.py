@@ -7106,12 +7106,14 @@ class ResultListPage(QWidget):
             visible_items.append(item)
 
         for i, item in enumerate(visible_items):
-            card = self._build_card(i, item)
+            orig_idx = self._items.index(item)  # 用原列表中的真实索引
+            card = self._build_card(orig_idx, item)
             row, col = divmod(i, cols)
             self._cards_layout.addWidget(card, row, col, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
 
-        # 底部弹簧：多余垂直空间全推到下方，避免卡片被拉伸
-        last_row = (len(self._items) - 1) // cols if self._items else 0
+        # 底部弹簧
+        vis_count = len(visible_items)
+        last_row = max(0, (vis_count - 1) // cols) if vis_count else 0
         self._cards_layout.setRowStretch(last_row + 1, 1)
 
         # 同步刷新已打开的详情弹窗

@@ -578,7 +578,8 @@ class PresetLoaderDialog(QDialog):
 
         for p in cat_presets:
             is_sel = p["path"] in selected_paths
-            text = f"✓ {p['name']}" if is_sel else f"   {p['name']}"
+            src = "官" if p['source'] == 'official' else '我'
+            text = f"✓ [{src}] {p['name']}" if is_sel else f"   [{src}] {p['name']}"
             item = QListWidgetItem(text)
             item.setData(Qt.ItemDataRole.UserRole, p)
             if is_sel:
