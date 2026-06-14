@@ -6393,9 +6393,17 @@ class ResultDetailDialog(QDialog):
         for spin, row in self._mult_boost_entries:
             row.setParent(None)
         self._mult_boost_entries.clear()
-        if not self._keyword_assoc_page:
+        kw_page = getattr(self._page, '_keyword_assoc_page', None)
+        if not kw_page:
             return
-        for kw_item in self._keyword_assoc_page.get_items():
+        page_kws = getattr(self._page, '_keywords', [])
+        card_kw_set = set(page_kws)
+        for kw_item in kw_page.get_items():
+            kw_entry_kws = kw_item.get("keywords", "")
+            if kw_entry_kws and card_kw_set:
+                entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
+                if not (entry_kw_set & card_kw_set):
+                    continue
             name = kw_item.get("name", "")
             value = kw_item.get("value", 0.0)
             if "倍率增加" in name:
@@ -7178,6 +7186,7 @@ class ResultListPage(QWidget):
         if hasattr(self, '_open_detail') and self._open_detail:
             try:
                 dlg = self._open_detail
+                dlg._sync_mult_entries()
                 dlg._update_result_labels()
                 if dlg._idx >= 0 and dlg._idx < len(self._items):
                     dlg.lock_btn.setText("解锁" if self._items[dlg._idx].get("locked") else "锁定")
@@ -8416,6 +8425,7 @@ class ResultPage(QWidget):
             if kw not in self._keywords:
                 self._keywords.append(kw)
                 self._rebuild_kw_tags()
+                self._sync_mult_entries()
                 self.auto_compute()
 
     def _remove_keyword(self, kw):
@@ -8423,6 +8433,7 @@ class ResultPage(QWidget):
         if kw in self._keywords:
             self._keywords.remove(kw)
             self._rebuild_kw_tags()
+            self._sync_mult_entries()
             self.auto_compute()
 
     def _update_error_log_btn_if_possible(self):
@@ -8639,6 +8650,12 @@ class ResultPage(QWidget):
         if not self._keyword_assoc_page:
             return
         for kw_item in self._keyword_assoc_page.get_items():
+            kw_entry_kws = kw_item.get("keywords", "")
+            if kw_entry_kws:
+                entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
+                card_kw_set = set(self._keywords)
+                if not (entry_kw_set & card_kw_set):
+                    continue
             name = kw_item.get("name", "")
             value = kw_item.get("value", 0.0)
             if "倍率增加" in name:
