@@ -1511,7 +1511,7 @@ def _parse_dmg_mult_ocr_results(ocr_results):
         if (merged_texts and
             _pure_formula_re.match(cur) and
             _trailing_plus_re.search(prev)):
-            merged_texts[-1] = re.sub(r'\+$', '', prev) + cur
+            merged_texts[-1] = prev + cur
         else:
             merged_texts.append(cur)
 
