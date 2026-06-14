@@ -1,4 +1,4 @@
-
+﻿
 # -*- coding: utf-8 -*-
 #
 # 鸣潮伤害计算器 (Wuthering Waves Damage Calculator)
@@ -3819,8 +3819,8 @@ class SaveManager:
         rp = ms.page_result
         pages["result"] = {
             "base_mult": rp.base_mult.value(),
-            "mult_increase": rp.mult_increase.value(),
-            "mult_boosts": [s.value() for s in rp.mult_boosts],
+            "mult_increase": rp._gather_mult_data()[0] if hasattr(rp, '_gather_mult_data') else [],
+            "mult_boosts": rp._gather_mult_data()[1] if hasattr(rp, '_gather_mult_data') else [],
             "filter_basis_idx": rp.filter_basis.currentIndex(),
             "filter_element_idx": rp.filter_element.currentIndex(),
             "filter_skill_idx": rp.filter_skill.currentIndex(),
@@ -3980,10 +3980,7 @@ class SaveManager:
         if rp_data:
             rp = ms.page_result
             rp.base_mult.setValue(rp_data.get("base_mult", 100.0))
-            rp.mult_increase.setValue(rp_data.get("mult_increase", 0.0))
-            for i, v in enumerate(rp_data.get("mult_boosts", [0, 0, 0])):
-                if i < len(rp.mult_boosts):
-                    rp.mult_boosts[i].setValue(v)
+            # 倍率值由关键词关联驱动，加载后 _sync_mult_entries() 自动从关键词关联填充表格
             rp.filter_basis.setCurrentIndex(rp_data.get("filter_basis_idx", 0))
             rp.filter_element.setCurrentIndex(rp_data.get("filter_element_idx", 0))
             rp.filter_skill.setCurrentIndex(rp_data.get("filter_skill_idx", 0))
@@ -5141,11 +5138,11 @@ class DataFlowViewerDialog(QDialog):
 
         # 倍率乘区：从 ResultPage 的 UI 控件读取
         base_m = rp.base_mult.value() if hasattr(rp, 'base_mult') else 1.0
-        mult_inc = rp.mult_increase.value() if hasattr(rp, 'mult_increase') else 0.0
+        inc_vals, boost_vals = rp._gather_mult_data() if hasattr(rp, '_gather_mult_data') else ([], [])
+        mult_inc = sum(inc_vals)
         indep_mult = base_m + mult_inc
-        if hasattr(rp, 'mult_boosts'):
-            for boost in rp.mult_boosts:
-                indep_mult *= (1.0 + boost.value() / 100.0)
+        for bv in boost_vals:
+            indep_mult *= (1.0 + bv / 100.0)
 
         # 独立最终伤害
         indep_base_dmg = (indep_base_zone * indep_bonus_zone * indep_deepen_zone
@@ -6124,15 +6121,48 @@ class ResultDetailDialog(QDialog):
         self.base_mult.valueChanged.connect(self._on_mult_changed)
         mult_form.addRow("基础倍率(%):", self.base_mult)
 
-        # 倍率增加（只读，由关键词关联自动填充）
-        self.mult_inc_label = QLabel("（无）")
-        self.mult_inc_label.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;padding:4px 0;")
-        mult_form.addRow("倍率增加(%):", self.mult_inc_label)
-
-        # 倍率提升（只读，由关键词关联自动填充）
-        self.mult_boost_label = QLabel("（无）")
-        self.mult_boost_label.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;padding:4px 0;")
-        mult_form.addRow("倍率提升(%):", self.mult_boost_label)
+        self.mult_inc_table = QTableWidget()
+        self.mult_inc_table.setObjectName("attrTable")
+        self.mult_inc_table.setColumnCount(8)
+        self.mult_inc_table.setHorizontalHeaderLabels(
+            ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
+        self.mult_inc_table.verticalHeader().setVisible(False)
+        self.mult_inc_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.mult_inc_table.setSizeAdjustPolicy(QTableWidget.SizeAdjustPolicy.AdjustToContents)
+        self.mult_inc_table.setMaximumHeight(250)
+        hdr_inc = self.mult_inc_table.horizontalHeader()
+        hdr_inc.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        for i in range(1, 8):
+            hdr_inc.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
+        hdr_inc.resizeSection(1, 130)
+        hdr_inc.resizeSection(2, 110)
+        hdr_inc.resizeSection(3, 150)
+        hdr_inc.resizeSection(4, 70)
+        hdr_inc.resizeSection(5, 90)
+        hdr_inc.resizeSection(6, 120)
+        hdr_inc.resizeSection(7, 80)
+        mult_form.addRow("倍率增加(%):", self.mult_inc_table)
+        self.mult_boost_table = QTableWidget()
+        self.mult_boost_table.setObjectName("attrTable")
+        self.mult_boost_table.setColumnCount(8)
+        self.mult_boost_table.setHorizontalHeaderLabels(
+            ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
+        self.mult_boost_table.verticalHeader().setVisible(False)
+        self.mult_boost_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.mult_boost_table.setSizeAdjustPolicy(QTableWidget.SizeAdjustPolicy.AdjustToContents)
+        self.mult_boost_table.setMaximumHeight(250)
+        hdr_boost = self.mult_boost_table.horizontalHeader()
+        hdr_boost.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        for i in range(1, 8):
+            hdr_boost.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
+        hdr_boost.resizeSection(1, 130)
+        hdr_boost.resizeSection(2, 110)
+        hdr_boost.resizeSection(3, 150)
+        hdr_boost.resizeSection(4, 70)
+        hdr_boost.resizeSection(5, 90)
+        hdr_boost.resizeSection(6, 120)
+        hdr_boost.resizeSection(7, 80)
+        mult_form.addRow("倍率提升(%):", self.mult_boost_table)
         scroll_layout.addWidget(mult_group)
 
         # —— 计算过程（已包含所有乘区数值 + 来源超链接） ——
@@ -6380,41 +6410,104 @@ class ResultDetailDialog(QDialog):
     # ── 倍率动态列表 ──
 
     def _sync_mult_entries(self):
-        "从关键词关联同步倍率值到只读标签"
-        inc_parts = []
-        boost_parts = []
+        """从关键词关联同步倍率值到表格（实时互通，只读展示）"""
         kw_page = getattr(self._page, '_keyword_assoc_page', None)
         card_kw_set = set(getattr(self._page, '_keywords', []))
+        inc_rows = []
+        boost_rows = []
         if kw_page:
             for kw_item in kw_page.get_items():
                 kw_entry_kws = kw_item.get("keywords", "")
-                if kw_entry_kws and card_kw_set:
-                    entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
-                    if not (entry_kw_set & card_kw_set):
-                        continue
+                if not kw_entry_kws or not card_kw_set:
+                    continue
+                entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
+                if not (entry_kw_set & card_kw_set):
+                    continue
                 name = kw_item.get("name", "")
                 value = kw_item.get("value", 0.0)
+                source = kw_item.get("source", "")
+                sub_name = kw_item.get("sub_name", "")
+                seq = kw_item.get("seq", "")
                 if "倍率增加" in name:
-                    inc_parts.append(f"{value:.1f}%")
+                    inc_rows.append((name, sub_name, seq, value, source, kw_entry_kws))
                 elif "倍率提升" in name:
-                    boost_parts.append(f"{value:.1f}%")
-        self.mult_inc_label.setText(" + ".join(inc_parts) if inc_parts else "（无）")
-        self.mult_boost_label.setText("  ".join(boost_parts) if boost_parts else "（无）")
+                    boost_rows.append((name, sub_name, seq, value, source, kw_entry_kws))
+        self._populate_mult_table(self.mult_inc_table, inc_rows)
+        self._populate_mult_table(self.mult_boost_table, boost_rows)
+
+    def _populate_mult_table(self, table, rows):
+        """填充倍率表格（照搬关键词关联表格结构，只读）"""
+        table.setRowCount(0)
+        for name, sub_name, seq, value, source, kw_entry_kws in rows:
+            r = table.rowCount()
+            table.insertRow(r)
+            table.setRowHeight(r, 40)
+            # 名称
+            name_w = QLineEdit(name)
+            name_w.setObjectName("nameEdit")
+            name_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            name_w.setReadOnly(True)
+            table.setCellWidget(r, 0, name_w)
+            # 副名称
+            sub_w = QLineEdit(sub_name)
+            sub_w.setObjectName("nameEdit")
+            sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            sub_w.setPlaceholderText("（备注）")
+            sub_w.setReadOnly(True)
+            table.setCellWidget(r, 1, sub_w)
+            # 序列号
+            seq_w = QLabel(seq if seq else "—")
+            seq_w.setObjectName("seqLabel")
+            seq_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            table.setCellWidget(r, 2, seq_w)
+            # 数值
+            val_w = QDoubleSpinBox()
+            val_w.setObjectName("itemValueSpin")
+            val_w.setRange(0, 9999)
+            val_w.setDecimals(4)
+            val_w.setValue(value)
+            val_w.setFixedWidth(100)
+            val_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            val_w.setReadOnly(True)
+            val_w.setButtonSymbols(QDoubleSpinBox.ButtonSymbols.NoButtons)
+            table.setCellWidget(r, 3, val_w)
+            # 取值
+            unit_w = QLabel("百分比")
+            unit_w.setObjectName("unitLabel")
+            unit_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            table.setCellWidget(r, 4, unit_w)
+            # 来源
+            src_w = QLabel(source)
+            src_w.setObjectName("seqLabel")
+            src_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            table.setCellWidget(r, 5, src_w)
+            # 关键词关联
+            kw_w = QLabel(kw_entry_kws)
+            kw_w.setObjectName("seqLabel")
+            kw_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            kw_w.setWordWrap(True)
+            table.setCellWidget(r, 6, kw_w)
+            # 操作（空占位）
+            ops_w = QLabel("—")
+            ops_w.setObjectName("seqLabel")
+            ops_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            table.setCellWidget(r, 7, ops_w)
 
 
     def _gather_mult_data(self):
-        "从关键词关联收集有效倍率值"
+        "从关键词关联收集有效倍率值（必须有匹配关键词）"
         inc_vals = []
         boost_vals = []
         kw_page = self._keyword_assoc_page if hasattr(self, '_keyword_assoc_page') else getattr(getattr(self, '_page', None), '_keyword_assoc_page', None)
         card_kw_set = set(self._keywords) if hasattr(self, '_keywords') else set(getattr(getattr(self, '_page', None), '_keywords', []))
-        if kw_page:
+        if kw_page and card_kw_set:
             for kw_item in kw_page.get_items():
                 kw_entry_kws = kw_item.get("keywords", "")
-                if kw_entry_kws and card_kw_set:
-                    entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
-                    if not (entry_kw_set & card_kw_set):
-                        continue
+                if not kw_entry_kws:
+                    continue
+                entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
+                if not (entry_kw_set & card_kw_set):
+                    continue
                 name = kw_item.get("name", "")
                 value = kw_item.get("value", 0.0)
                 if "倍率增加" in name:
@@ -7616,9 +7709,7 @@ class ResultListPage(QWidget):
                 # 同步输入控件值到新条目
                 dlg.name_edit.setText(item["label"])
                 dlg.base_mult.setValue(item["base_mult"])
-                dlg.mult_increase.setValue(item["mult_increase"])
-                for i, spin in enumerate(dlg.mult_boosts):
-                    spin.setValue(item["mult_boosts"][i] if i < len(item["mult_boosts"]) else 0.0)
+                # 倍率值由关键词关联驱动，show 时 _sync_mult_entries() 自动填充表格
                 dlg.filter_basis.setCurrentText(item["basis"])
                 dlg.filter_element.setCurrentText(item["element"] if item["element"] else "(无)")
                 dlg.filter_skill.setCurrentText(item["skill"] if item["skill"] else "(无)")
@@ -8016,14 +8107,48 @@ class ResultPage(QWidget):
         mult_form.addRow("基础倍率(%):", self.base_mult)
 
         # 倍率增加（只读，由关键词关联自动填充）
-        self.mult_inc_label = QLabel("（无）")
-        self.mult_inc_label.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;padding:4px 0;")
-        mult_form.addRow("倍率增加(%):", self.mult_inc_label)
-
-        # 倍率提升（只读，由关键词关联自动填充）
-        self.mult_boost_label = QLabel("（无）")
-        self.mult_boost_label.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;padding:4px 0;")
-        mult_form.addRow("倍率提升(%):", self.mult_boost_label)
+        self.mult_inc_table = QTableWidget()
+        self.mult_inc_table.setObjectName("attrTable")
+        self.mult_inc_table.setColumnCount(8)
+        self.mult_inc_table.setHorizontalHeaderLabels(
+            ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
+        self.mult_inc_table.verticalHeader().setVisible(False)
+        self.mult_inc_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.mult_inc_table.setSizeAdjustPolicy(QTableWidget.SizeAdjustPolicy.AdjustToContents)
+        self.mult_inc_table.setMaximumHeight(250)
+        hdr_inc = self.mult_inc_table.horizontalHeader()
+        hdr_inc.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        for i in range(1, 8):
+            hdr_inc.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
+        hdr_inc.resizeSection(1, 130)
+        hdr_inc.resizeSection(2, 110)
+        hdr_inc.resizeSection(3, 150)
+        hdr_inc.resizeSection(4, 70)
+        hdr_inc.resizeSection(5, 90)
+        hdr_inc.resizeSection(6, 120)
+        hdr_inc.resizeSection(7, 80)
+        mult_form.addRow("倍率增加(%):", self.mult_inc_table)
+        self.mult_boost_table = QTableWidget()
+        self.mult_boost_table.setObjectName("attrTable")
+        self.mult_boost_table.setColumnCount(8)
+        self.mult_boost_table.setHorizontalHeaderLabels(
+            ["名称", "副名称", "序列号", "数值", "取值", "来源", "关键词关联", "操作"])
+        self.mult_boost_table.verticalHeader().setVisible(False)
+        self.mult_boost_table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.mult_boost_table.setSizeAdjustPolicy(QTableWidget.SizeAdjustPolicy.AdjustToContents)
+        self.mult_boost_table.setMaximumHeight(250)
+        hdr_boost = self.mult_boost_table.horizontalHeader()
+        hdr_boost.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        for i in range(1, 8):
+            hdr_boost.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
+        hdr_boost.resizeSection(1, 130)
+        hdr_boost.resizeSection(2, 110)
+        hdr_boost.resizeSection(3, 150)
+        hdr_boost.resizeSection(4, 70)
+        hdr_boost.resizeSection(5, 90)
+        hdr_boost.resizeSection(6, 120)
+        hdr_boost.resizeSection(7, 80)
+        mult_form.addRow("倍率提升(%):", self.mult_boost_table)
 
         layout.addWidget(mult_group)
 
@@ -8621,41 +8746,104 @@ class ResultPage(QWidget):
     # ── 倍率动态列表 ──
 
     def _sync_mult_entries(self):
-        "从关键词关联同步倍率值到只读标签"
-        inc_parts = []
-        boost_parts = []
+        """从关键词关联同步倍率值到表格（实时互通，只读展示）"""
         kw_page = self._keyword_assoc_page if hasattr(self, '_keyword_assoc_page') else getattr(getattr(self, '_page', None), '_keyword_assoc_page', None)
         card_kw_set = set(self._keywords) if hasattr(self, '_keywords') else set(getattr(getattr(self, '_page', None), '_keywords', []))
+        inc_rows = []
+        boost_rows = []
         if kw_page:
             for kw_item in kw_page.get_items():
                 kw_entry_kws = kw_item.get("keywords", "")
-                if kw_entry_kws and card_kw_set:
-                    entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
-                    if not (entry_kw_set & card_kw_set):
-                        continue
+                if not kw_entry_kws or not card_kw_set:
+                    continue
+                entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
+                if not (entry_kw_set & card_kw_set):
+                    continue
                 name = kw_item.get("name", "")
                 value = kw_item.get("value", 0.0)
+                source = kw_item.get("source", "")
+                sub_name = kw_item.get("sub_name", "")
+                seq = kw_item.get("seq", "")
                 if "倍率增加" in name:
-                    inc_parts.append(f"{value:.1f}%")
+                    inc_rows.append((name, sub_name, seq, value, source, kw_entry_kws))
                 elif "倍率提升" in name:
-                    boost_parts.append(f"{value:.1f}%")
-        self.mult_inc_label.setText(" + ".join(inc_parts) if inc_parts else "（无）")
-        self.mult_boost_label.setText("  ".join(boost_parts) if boost_parts else "（无）")
+                    boost_rows.append((name, sub_name, seq, value, source, kw_entry_kws))
+        self._populate_mult_table(self.mult_inc_table, inc_rows)
+        self._populate_mult_table(self.mult_boost_table, boost_rows)
+
+    def _populate_mult_table(self, table, rows):
+        """填充倍率表格（照搬关键词关联表格结构，只读）"""
+        table.setRowCount(0)
+        for name, sub_name, seq, value, source, kw_entry_kws in rows:
+            r = table.rowCount()
+            table.insertRow(r)
+            table.setRowHeight(r, 40)
+            # 名称
+            name_w = QLineEdit(name)
+            name_w.setObjectName("nameEdit")
+            name_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            name_w.setReadOnly(True)
+            table.setCellWidget(r, 0, name_w)
+            # 副名称
+            sub_w = QLineEdit(sub_name)
+            sub_w.setObjectName("nameEdit")
+            sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            sub_w.setPlaceholderText("（备注）")
+            sub_w.setReadOnly(True)
+            table.setCellWidget(r, 1, sub_w)
+            # 序列号
+            seq_w = QLabel(seq if seq else "—")
+            seq_w.setObjectName("seqLabel")
+            seq_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            table.setCellWidget(r, 2, seq_w)
+            # 数值
+            val_w = QDoubleSpinBox()
+            val_w.setObjectName("itemValueSpin")
+            val_w.setRange(0, 9999)
+            val_w.setDecimals(4)
+            val_w.setValue(value)
+            val_w.setFixedWidth(100)
+            val_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            val_w.setReadOnly(True)
+            val_w.setButtonSymbols(QDoubleSpinBox.ButtonSymbols.NoButtons)
+            table.setCellWidget(r, 3, val_w)
+            # 取值
+            unit_w = QLabel("百分比")
+            unit_w.setObjectName("unitLabel")
+            unit_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            table.setCellWidget(r, 4, unit_w)
+            # 来源
+            src_w = QLabel(source)
+            src_w.setObjectName("seqLabel")
+            src_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            table.setCellWidget(r, 5, src_w)
+            # 关键词关联
+            kw_w = QLabel(kw_entry_kws)
+            kw_w.setObjectName("seqLabel")
+            kw_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            kw_w.setWordWrap(True)
+            table.setCellWidget(r, 6, kw_w)
+            # 操作（空占位）
+            ops_w = QLabel("—")
+            ops_w.setObjectName("seqLabel")
+            ops_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            table.setCellWidget(r, 7, ops_w)
 
 
     def _gather_mult_data(self):
-        "从关键词关联收集有效倍率值"
+        "从关键词关联收集有效倍率值（必须有匹配关键词）"
         inc_vals = []
         boost_vals = []
         kw_page = self._keyword_assoc_page if hasattr(self, '_keyword_assoc_page') else getattr(getattr(self, '_page', None), '_keyword_assoc_page', None)
         card_kw_set = set(self._keywords) if hasattr(self, '_keywords') else set(getattr(getattr(self, '_page', None), '_keywords', []))
-        if kw_page:
+        if kw_page and card_kw_set:
             for kw_item in kw_page.get_items():
                 kw_entry_kws = kw_item.get("keywords", "")
-                if kw_entry_kws and card_kw_set:
-                    entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
-                    if not (entry_kw_set & card_kw_set):
-                        continue
+                if not kw_entry_kws:
+                    continue
+                entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
+                if not (entry_kw_set & card_kw_set):
+                    continue
                 name = kw_item.get("name", "")
                 value = kw_item.get("value", 0.0)
                 if "倍率增加" in name:
