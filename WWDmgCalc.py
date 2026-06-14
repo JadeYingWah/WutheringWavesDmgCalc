@@ -350,8 +350,8 @@ class WelcomeScreen(QWidget):
             return
         dlg = QDialog(self)
         dlg.setWindowTitle("🎖️ 贡献者名单")
-        dlg.resize(380, 420)
-        dlg.setMinimumSize(300, 240)
+        dlg.resize(456, 462)
+        dlg.setMinimumSize(360, 264)
         dlg.setStyleSheet("QDialog{background:#1e1e2e;}")
         lay = QVBoxLayout(dlg)
         lay.setSpacing(12)
@@ -373,6 +373,7 @@ class WelcomeScreen(QWidget):
             inner_lay.addWidget(name_label)
             for item in author_map[name]:
                 item_label = QLabel(f"     {item}")
+                item_label.setWordWrap(True)
                 item_label.setStyleSheet("font-size:12px;color:#a6adc8;background:transparent;padding:1px 16px;")
                 inner_lay.addWidget(item_label)
         inner_lay.addStretch()
