@@ -8656,6 +8656,8 @@ class ResultPage(QWidget):
         self._process_empty_label.setVisible(False)
         self._process_copy_btn.setVisible(True)
         mult_boosts_vals = [b.value() for b in self.mult_boosts]
+        if kw_mult_boost2 > 0:
+            mult_boosts_vals = list(mult_boosts_vals) + [kw_mult_boost2]
         html = _render_process_html(
             basis, zone_label, base_value, weapon_base,
             pct_items, flat_items, total_pct, total_flat, base_zone,
