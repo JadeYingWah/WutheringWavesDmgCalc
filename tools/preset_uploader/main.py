@@ -394,6 +394,7 @@ class PresetUploader(QWidget):
 
         status_row.addStretch()
         layout.addWidget(status_frame)
+        layout.addWidget(self._token_hint)
 
         # ── 你的信息 ──
         gb_user = QGroupBox("你的信息")
@@ -410,9 +411,10 @@ class PresetUploader(QWidget):
         self._user_input.textChanged.connect(self._on_user_changed)
         user_row.addWidget(self._user_input, 1)
         gb_user_layout.addLayout(user_row)
-        hint = QLabel("  只需填写你的 GitHub 用户名，无需 Token")
-        hint.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;")
-        gb_user_layout.addWidget(hint)
+        self._hint_label = QLabel("  只需填写你的 GitHub 用户名，无需 Token")
+        hint = self._hint_label
+        self._hint_label.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;")
+        gb_user_layout.addWidget(self._hint_label)
         self._user_status = QLabel()
         self._user_status.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;padding-left:2px;")
         gb_user_layout.addWidget(self._user_status)
@@ -585,6 +587,7 @@ class PresetUploader(QWidget):
         if not username:
             self._user_verified = False
             self._user_status.setText("")
+            self._hint_label.setText("只需填写你的 GitHub 用户名，无需 Token")
             return
         try:
             check_req = urllib.request.Request(f"https://github.com/{username}")
@@ -592,11 +595,13 @@ class PresetUploader(QWidget):
             urllib.request.urlopen(check_req, timeout=10)
             self._user_verified = True
             self._user_status.setText("✓ 用户存在")
+            self._hint_label.setText("只需填写你的 GitHub 用户名，无需 Token — 投稿后将在您的名下记录贡献。")
             self._user_status.setStyleSheet("color:#a6e3a1;font-size:11px;background:transparent;padding-left:2px;")
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 self._user_verified = False
                 self._user_status.setText("✗ GitHub 上找不到该用户")
+                self._hint_label.setText("✗ 该地址在 GitHub 上不存在，请确认您的用户名大小写是否合适。")
                 self._user_status.setStyleSheet("color:#f38ba8;font-size:11px;background:transparent;padding-left:2px;")
             else:
                 self._user_status.setText("")
