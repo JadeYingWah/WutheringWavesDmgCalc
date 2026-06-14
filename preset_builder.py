@@ -3518,6 +3518,18 @@ class PresetBuilderDialog(QDialog):
         # 从窗口读取预设名称（优先使用用户填写的）
         user_name = window.preset_name_edit.text().strip() if hasattr(window, 'preset_name_edit') else ""
 
+        # 校验文件名非法字符
+        illegal_chars = r'\/:*?"<>|'
+        if user_name and any(c in user_name for c in illegal_chars):
+            QMessageBox.warning(
+                self, "名称无效",
+                f"预设文件名称不能包含以下字符：\n{' '.join(illegal_chars)}\n\n"
+                f"请修改后重试。")
+            if hasattr(window, 'preset_name_edit'):
+                window.preset_name_edit.setFocus()
+                window.preset_name_edit.selectAll()
+            return
+
         author = window.author_edit.text().strip() if hasattr(window, 'author_edit') else ""
         preset = {
             "version": 1,
