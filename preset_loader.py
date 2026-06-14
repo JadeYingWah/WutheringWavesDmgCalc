@@ -241,22 +241,25 @@ class PresetLoaderDialog(QDialog):
 
         self.stack = QStackedWidget()
 
-        # 页面 0：来源选择
-        self._page_source = self._build_source_page()
-        self.stack.addWidget(self._page_source)
-
         # 页面 1：分类 + 预设列表 + 预览
         self._page_browse = self._build_browse_page()
         self.stack.addWidget(self._page_browse)
 
         main_layout.addWidget(self.stack)
 
+        # 直接进入混合浏览模式
+        self._current_source = None
+        self._browse_title.setText("使用预设")
+        # 默认选中第一个有预设的分类
+        all_presets = PresetManager.list_presets()
+        for cat in ["character", "weapon", "echo_set", "character_buff"]:
+            if any(p["category"] == cat for p in all_presets):
+                self._select_category(cat)
+                break
+
     def reject(self):
-        """ESC：浏览页返回来源选择页，来源选择页关闭窗口"""
-        if self.stack.currentIndex() == 1:
-            self.stack.setCurrentIndex(0)
-        else:
-            super().reject()
+        """ESC：直接关闭窗口"""
+        super().reject()
 
     def _center(self):
         if self.parent():
@@ -360,7 +363,7 @@ class PresetLoaderDialog(QDialog):
         back_btn.setObjectName("backButton")
         back_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         back_btn.setFixedWidth(80)
-        back_btn.clicked.connect(lambda: self.stack.setCurrentIndex(0))
+        back_btn.clicked.connect(self.reject)
         top.addWidget(back_btn)
 
         self._browse_title = QLabel("")
