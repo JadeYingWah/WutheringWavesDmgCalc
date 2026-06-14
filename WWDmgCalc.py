@@ -1,4 +1,4 @@
-﻿
+
 # -*- coding: utf-8 -*-
 #
 # 鸣潮伤害计算器 (Wuthering Waves Damage Calculator)
@@ -8558,7 +8558,7 @@ class ResultPage(QWidget):
             rate_items, dmg_items, total_crit_rate, total_crit_dmg, crit_zone,
             def_zone, res_zone, indep_zone, indep_groups,
             base_m, mult_inc, mult_zone, final_crit, final_no_crit,
-            sub_map
+            sub_map, kw_mult_boost2
         )
 
         mult_boosts = [boost.value() for boost in self.mult_boosts]
@@ -8651,7 +8651,7 @@ class ResultPage(QWidget):
                        rate_items, dmg_items, total_crit_rate, total_crit_dmg, crit_zone,
                        def_zone, res_zone, indep_zone, indep_groups,
                        base_m, mult_inc, mult_zone, final_crit, final_no_crit,
-                       sub_map=None):
+                       sub_map=None, kw_mult_boost2=0):
         self._clear_process()
         self._process_empty_label.setVisible(False)
         self._process_copy_btn.setVisible(True)
