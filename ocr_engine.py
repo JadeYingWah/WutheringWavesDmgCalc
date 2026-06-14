@@ -1504,13 +1504,26 @@ def _parse_dmg_mult_ocr_results(ocr_results):
     # ── 预处理：合并跨行倍率（上行以 + 结尾时合并下一行） ──
     _pure_formula_re = re.compile(r'^[\d,]+\.?\d*\s*%')
     _trailing_plus_re = re.compile(r'[\d,]+\.?\d*\s*%\+$')
+    _sys_terms = {'共鸣技能', '常态攻击', '共鸣解放', '共鸣回路', '变奏技能', '普攻', '重击',
+                  '技能介绍', '技能详情', '战术性调整', 'Lv.6', '1秒'}
     merged_texts = []
     for lineno in range(len(rec_texts)):
         cur = rec_texts[lineno].strip()
         prev = merged_texts[-1] if merged_texts else ""
-        if (merged_texts and
-            _pure_formula_re.match(cur) and
-            _trailing_plus_re.search(prev)):
+        # 1. 单字中文碎片（如 "害"）→ 拼到最近的非公式行
+        if (merged_texts and len(cur) <= 2 and '\u4e00' <= cur[0] <= '\u9fff'
+                and cur not in _sys_terms):
+            insert_idx = len(merged_texts) - 1
+            while insert_idx >= 0 and _pure_formula_re.match(merged_texts[insert_idx]):
+                insert_idx -= 1
+            if insert_idx >= 0:
+                merged_texts[insert_idx] = merged_texts[insert_idx] + cur
+            else:
+                merged_texts.append(cur)
+        # 2. 倍率跨行合并：上行以 + 结尾 + 下行纯倍率
+        elif (merged_texts and
+              _pure_formula_re.match(cur) and
+              _trailing_plus_re.search(prev)):
             merged_texts[-1] = prev + cur
         else:
             merged_texts.append(cur)
