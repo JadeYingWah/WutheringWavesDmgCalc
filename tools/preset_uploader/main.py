@@ -336,7 +336,7 @@ class PresetUploader(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("官方预设上传工具")
-        self.setFixedSize(620, 560)
+        self.setFixedSize(620, 760)
         self._pending_files = []  # [(cat, fname, content), ...]
         self._user_verified = False
         self._author_token = self._load_token()
@@ -445,7 +445,7 @@ class PresetUploader(QWidget):
         gb_file_layout.addLayout(btn_row)
 
         self._pending_list = QListWidget()
-        self._pending_list.setMaximumHeight(260)
+        self._pending_list.setMaximumHeight(280)
         self._pending_list.setAlternatingRowColors(True)
         gb_file_layout.addWidget(self._pending_list)
 
@@ -477,7 +477,7 @@ class PresetUploader(QWidget):
         gb_log_layout = QVBoxLayout(gb_log)
         self._log = QTextEdit()
         self._log.setReadOnly(True)
-        self._log.setMaximumHeight(130)
+        self._log.setMaximumHeight(200)
         gb_log_layout.addWidget(self._log)
         layout.addWidget(gb_log)
 
@@ -598,7 +598,7 @@ class PresetUploader(QWidget):
             urllib.request.urlopen(check_req, timeout=20)
             self._user_verified = True
             self._user_status.setText("✓ 用户存在")
-            self._hint_label.setText("只需填写你的 GitHub 用户名，无需 Token — 投稿后将在您的名下记录贡献。")
+            self._hint_label.setText("只需填写你的 GitHub 用户名，无需 Token — 投稿后经过审核成功后将在您的名下记录贡献。")
             self._user_status.setStyleSheet("color:#a6e3a1;font-size:11px;background:transparent;padding-left:2px;")
         except urllib.error.HTTPError as e:
             if e.code == 404:
