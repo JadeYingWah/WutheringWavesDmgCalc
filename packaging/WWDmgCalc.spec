@@ -11,6 +11,7 @@ a = Analysis(
     ('../damage_calc.py', '.'),
     ('../ico/icon.ico', '.'),
     ('../models', 'models'),  # OCR ONNX 模型
+    (r'E:/Python/.venv/Lib/site-packages/rapidocr_onnxruntime', 'rapidocr_onnxruntime'),
 ],
     hiddenimports=['onnxruntime', 'cv2', 'pyclipper', 'shapely', 'yaml', 'six',
                    'error_handler.error_system'],
