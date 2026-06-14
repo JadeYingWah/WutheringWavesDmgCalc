@@ -6363,6 +6363,9 @@ class ResultDetailDialog(QDialog):
         self._item["base_mult"] = self.base_mult.value()
         self._item["mult_increase"] = self.mult_increase.value()
         self._item["mult_boosts"] = [sp.value() for sp in self.mult_boosts]
+        # 记录用户手动值，后续关键词注入以此为准
+        self._item["_orig_mult_increase"] = self._item["mult_increase"]
+        self._item["_orig_mult_boosts"] = list(self._item["mult_boosts"])
         if not self._item["locked"]:
             items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
             self._page._recalc_one(self._item, items_data)
@@ -6939,17 +6942,21 @@ class ResultListPage(QWidget):
         # 关键词关联注入：倍率增加/倍率提升归入倍率乘区
         kw_mult_inc = sum(v for n, v, _, nk in filtered if nk == "keyword_assoc" and "倍率增加" in n)
         kw_mult_boost = sum(v for n, v, _, nk in filtered if nk == "keyword_assoc" and "倍率提升" in n)
+        # 每次重算时还原为原始值再加关键词，防止反复叠加
+        orig_inc = item.get("_orig_mult_increase", item["mult_increase"])
+        orig_boosts = list(item.get("_orig_mult_boosts", item["mult_boosts"]))
+        item["_orig_mult_increase"] = orig_inc
+        item["_orig_mult_boosts"] = orig_boosts
+        item["mult_increase"] = orig_inc + kw_mult_inc
+        if kw_mult_boost > 0:
+            item["mult_boosts"] = orig_boosts + [kw_mult_boost]
+        else:
+            item["mult_boosts"] = list(orig_boosts)
         base_m = item["base_mult"]
-        mult_inc = item["mult_increase"] + kw_mult_inc
+        mult_inc = item["mult_increase"]
         mult_zone = (base_m + mult_inc)
         for bv in item["mult_boosts"]:
             mult_zone *= (1.0 + bv / 100.0)
-        if kw_mult_boost > 0:
-            mult_zone *= (1.0 + kw_mult_boost / 100.0)
-        # 将关键词注入值写回 item，UI 输入框和保存同步显示
-        item["mult_increase"] = mult_inc
-        if kw_mult_boost > 0:
-            item["mult_boosts"] = list(item["mult_boosts"]) + [kw_mult_boost]
         base_dmg = base_zone * bonus_zone * deepen_zone * def_zone * res_zone * indep_zone * mult_zone / 100.0
         item["zones"] = {
             "atk_zone": base_zone, "bonus_zone": bonus_zone, "deepen_zone": deepen_zone,
@@ -7045,6 +7052,8 @@ class ResultListPage(QWidget):
             "base_mult": settings["base_mult"],
             "mult_increase": settings["mult_increase"],
             "mult_boosts": list(settings["mult_boosts"]),
+            "_orig_mult_increase": settings["mult_increase"],
+            "_orig_mult_boosts": list(settings["mult_boosts"]),
             "zones": dict(settings["zones"]),
             "timestamp": datetime.now().isoformat(),
             "keywords": settings.get("keywords") or _auto_keywords(label),
