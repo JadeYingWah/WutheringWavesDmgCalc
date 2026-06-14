@@ -6465,13 +6465,12 @@ class ResultDetailDialog(QDialog):
             name_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             name_w.setReadOnly(True)
             table.setCellWidget(r, 0, name_w)
-            # 副名称
+            # 副名称（带 … 展开编辑按钮）
             sub_w = QLineEdit(sub_name)
             sub_w.setObjectName("nameEdit")
             sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_w.setPlaceholderText("（备注）")
-            sub_w.setReadOnly(True)
-            table.setCellWidget(r, 1, sub_w)
+            table.setCellWidget(r, 1, _make_sub_name_cell(sub_w, lambda n=name: n))
             # 序列号
             seq_w = QLabel(seq if seq else "—")
             seq_w.setObjectName("seqLabel")
@@ -8818,13 +8817,12 @@ class ResultPage(QWidget):
             name_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             name_w.setReadOnly(True)
             table.setCellWidget(r, 0, name_w)
-            # 副名称
+            # 副名称（带 … 展开编辑按钮）
             sub_w = QLineEdit(sub_name)
             sub_w.setObjectName("nameEdit")
             sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_w.setPlaceholderText("（备注）")
-            sub_w.setReadOnly(True)
-            table.setCellWidget(r, 1, sub_w)
+            table.setCellWidget(r, 1, _make_sub_name_cell(sub_w, lambda n=name: n))
             # 序列号
             seq_w = QLabel(seq if seq else "—")
             seq_w.setObjectName("seqLabel")
