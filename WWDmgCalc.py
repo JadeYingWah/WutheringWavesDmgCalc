@@ -7012,6 +7012,8 @@ class ResultListPage(QWidget):
             base_m, mult_inc, mult_boosts, z.get("mult_zone", 100),
             z.get("final_crit", 0), z.get("final_no_crit", 0),
             is_light=False,
+            base_override_active=getattr(self, "_base_override_enabled", False),
+            computed_base_zone=z.get("computed_base_zone", None),
         )
 
     # —— 添加条目 ——
