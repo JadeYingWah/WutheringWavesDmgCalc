@@ -6113,8 +6113,6 @@ class ResultDetailDialog(QDialog):
         # —— 倍率编辑 ——
         mult_group = QGroupBox("倍率设置")
         mult_form = QFormLayout(mult_group)
-        mult_group.setMinimumHeight(600)
-
         self.base_mult = QDoubleSpinBox()
         self.base_mult.setRange(0, 99999)
         self.base_mult.setDecimals(4)
@@ -8112,8 +8110,6 @@ class ResultPage(QWidget):
         # —— 倍率设置 ——
         mult_group = QGroupBox("倍率设置")
         mult_form = QFormLayout(mult_group)
-        mult_group.setMinimumHeight(600)
-
         self.base_mult = QDoubleSpinBox()
         self.base_mult.setRange(0, 99999)
         self.base_mult.setDecimals(4)
