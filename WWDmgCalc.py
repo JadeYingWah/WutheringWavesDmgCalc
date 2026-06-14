@@ -6405,7 +6405,9 @@ class ResultDetailDialog(QDialog):
         """更新计算过程显示 — 优先使用 item 中已有的详细 process_html"""
         if not hasattr(self, '_detail_process_label'):
             return
-        html = self._rebuild_process_html()
+        html = self._item.get("process_html", "")
+        if not html:
+            html = self._rebuild_process_html()
         self._detail_process_label.setText(html)
 
     def _rebuild_process_html(self):
@@ -6433,7 +6435,14 @@ class ResultDetailDialog(QDialog):
             if bv > 0:
                 mult_formula += f" × (1 + {bv:.2f}%)"
 
-        html = (
+        override_hint = ""
+        page_list = getattr(self, "_page", None)
+        if page_list and getattr(page_list, "_base_override_enabled", False):
+            override_hint = (
+                '<p style="color:#64b5f6;font-weight:600;font-size:12px;margin:0 0 6px 0;">'
+                '\u25b8 已启用手动填写基础数值</p>'
+            )
+        html = override_hint + (
             '<table style="border-collapse:collapse;width:100%;font-size:13px;">'
             + _row("基础数值", f"{z['atk_zone']:.10f}", "")
             + _row("× 加成乘区", f"{z['bonus_zone']:.10f}", "")
@@ -6940,6 +6949,7 @@ class ResultListPage(QWidget):
             "mult_zone": mult_zone, "final_crit": base_dmg * crit_zone, "final_no_crit": base_dmg,
             "computed_base_zone": computed_base_zone,
         }
+        item["process_html"] = self._build_card_process_html(filtered, item)
 
     def _build_card_process_html(self, filtered, item):
         """从 filtered 词条列表生成与 ResultPage 相同格式的计算过程 HTML"""
@@ -8650,7 +8660,7 @@ class ResultPage(QWidget):
             base_m, mult_inc, mult_boosts_vals, mult_zone, final_crit, final_no_crit,
             is_light=self._is_light_theme(), sub_map=sub_map,
             navigate_fn=self._navigate, summary_pages=self._summary_pages,
-            base_override_active=getattr(self, '_base_override_enabled', False),
+            base_override_active=False,  # shown via separate QLabel at line 8050(self, '_base_override_enabled', False),
             computed_base_zone=getattr(self, '_computed_base_zone', None),
         )
         self._process_label.setText(html)
