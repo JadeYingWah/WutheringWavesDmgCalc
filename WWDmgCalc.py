@@ -8056,11 +8056,6 @@ class ResultPage(QWidget):
         self._process_layout = QVBoxLayout(process_group)
         self._process_layout.setSpacing(6)
 
-        # 基础数值覆盖提示
-        self._base_override_hint = QLabel("▸ 已启用手动填写基础数值")
-        self._base_override_hint.setStyleSheet("color: #64b5f6; font-weight: 600; font-size: 12px;")
-        self._base_override_hint.setVisible(False)
-        self._process_layout.addWidget(self._base_override_hint)
 
         # 复制按钮（计算后有内容时显示）
         copy_header = QHBoxLayout()
@@ -8517,8 +8512,7 @@ class ResultPage(QWidget):
         final_crit = base_dmg * crit_zone
         final_no_crit = base_dmg
 
-        self._base_override_hint.setVisible(override_active)
-
+        
         # 收集各乘区单个词条列表（含来源信息），供计算过程逐条展示
         pct_items = [(n, v, s, nk) for n, v, s, nk in filtered_items
                      if any(kw in n for kw in (ATK_PCT_NAMES if basis == "攻击力" else
@@ -8663,7 +8657,7 @@ class ResultPage(QWidget):
             base_m, mult_inc, mult_boosts_vals, mult_zone, final_crit, final_no_crit,
             is_light=self._is_light_theme(), sub_map=sub_map,
             navigate_fn=self._navigate, summary_pages=self._summary_pages,
-            base_override_active=False,  # shown via separate QLabel at line 8050(self, '_base_override_enabled', False),
+            base_override_active=getattr(self, "_base_override_enabled", False),
             computed_base_zone=getattr(self, '_computed_base_zone', None),
         )
         self._process_label.setText(html)
