@@ -535,21 +535,11 @@ class PresetManager:
             # 计算总文件数，切换为有进度的进度条
             PresetManager.ensure_dirs()
 
-            # ── 阶段2a：先清空本地全部官方预设文件 ──
-            for cat in CATEGORY_DIRS:
-                cat_dir = os.path.join(OFFICIAL_DIR, cat)
-                if os.path.isdir(cat_dir):
-                    for fname in os.listdir(cat_dir):
-                        if fname.endswith(".json") and fname != "manifest.json":
-                            try:
-                                os.remove(os.path.join(cat_dir, fname))
-                            except OSError:
-                                pass
-
             total_files = sum(len(v) for v in manifest.values() if isinstance(v, list))
             downloaded = 0
             failed = 0
             failed_details = []
+            downloaded_data = {}
 
             if progress and total_files > 0:
                 progress.setLabelText(f"准备下载 {total_files} 个预设文件...")
@@ -558,7 +548,7 @@ class PresetManager:
                 progress.setCancelButtonText("取消")
                 QApplication.processEvents()
 
-            # ── 阶段2b：下载全部官方预设 ──
+            # ── 阶段2a：先下载全部文件到内存 ──
             for cat in CATEGORY_DIRS:
                 file_list = manifest.get(cat, [])
                 if not isinstance(file_list, list):
@@ -585,11 +575,8 @@ class PresetManager:
                             if progress:
                                 progress.setValue(downloaded + failed)
                             continue
-                        os.makedirs(target_dir, exist_ok=True)
-                        dest = os.path.join(target_dir, fname)
-                        with open(dest, "w", encoding="utf-8") as f:
-                            f.write(content)
                         downloaded += 1
+                        downloaded_data.setdefault(cat, []).append((fname, content))
                     except urllib.error.HTTPError as e:
                         failed += 1
                         failed_details.append((cat, fname, f"HTTP {e.code}"))
