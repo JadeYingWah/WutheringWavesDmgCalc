@@ -394,6 +394,9 @@ class PresetUploader(QWidget):
 
         status_row.addStretch()
         layout.addWidget(status_frame)
+        self._token_hint = QLabel("作者专用。普通投稿无需 Token，请在下方「你的信息」栏填写您的 GitHub 名称。")
+        self._token_hint.setStyleSheet("color:#6c7086;font-size:10px;background:transparent;")
+        self._token_hint.setWordWrap(True)
         layout.addWidget(self._token_hint)
 
         # ── 你的信息 ──
