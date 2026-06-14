@@ -1,4 +1,4 @@
-
+﻿
 # -*- coding: utf-8 -*-
 #
 # 鸣潮伤害计算器 (Wuthering Waves Damage Calculator)
@@ -6370,6 +6370,15 @@ class ResultDetailDialog(QDialog):
             items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
             self._page._recalc_one(self._item, items_data)
             self._patch_process_html()
+            # 将关键词注入后的值回写到 UI 输入框
+            self.mult_increase.blockSignals(True)
+            self.mult_increase.setValue(self._item["mult_increase"])
+            self.mult_increase.blockSignals(False)
+            for i, spin in enumerate(self.mult_boosts):
+                new_val = self._item["mult_boosts"][i] if i < len(self._item["mult_boosts"]) else 0.0
+                spin.blockSignals(True)
+                spin.setValue(new_val)
+                spin.blockSignals(False)
         else:
             z = self._item["zones"]
             base_m = self._item["base_mult"]
