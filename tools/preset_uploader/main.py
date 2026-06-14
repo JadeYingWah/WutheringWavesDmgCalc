@@ -406,12 +406,15 @@ class PresetUploader(QWidget):
         self._user_input.setMinimumHeight(30)
         self._user_input.setPlaceholderText("输入你的 GitHub 用户名（如 JadeBrookYuyanxi）")
         self._user_input.setStyleSheet("QLineEdit{padding:6px 10px;background:#313244;color:#cdd6f4;border:1px solid #45475a;border-radius:4px;}")
-        self._user_input.textChanged.connect(self._update_state)
+        self._user_input.textChanged.connect(self._on_user_changed)
         user_row.addWidget(self._user_input, 1)
         gb_user_layout.addLayout(user_row)
         hint = QLabel("  只需填写你的 GitHub 用户名，无需 Token")
         hint.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;")
         gb_user_layout.addWidget(hint)
+        self._user_status = QLabel()
+        self._user_status.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;padding-left:2px;")
+        gb_user_layout.addWidget(self._user_status)
         layout.addWidget(gb_user)
 
         # ── 文件列表 ──
@@ -567,6 +570,35 @@ class PresetUploader(QWidget):
         self._pending_list.clear()
         self._update_state()
 
+    def _on_user_changed(self):
+        self._update_state()
+        if hasattr(self, "_user_timer"):
+            self._user_timer.stop()
+        self._user_timer = QTimer()
+        self._user_timer.setSingleShot(True)
+        self._user_timer.timeout.connect(self._verify_user)
+        self._user_timer.start(600)
+
+    def _verify_user(self):
+        username = self._user_input.text().strip()
+        if not username:
+            self._user_status.setText("")
+            return
+        try:
+            check_req = urllib.request.Request(f"https://github.com/{username}")
+            check_req.add_header("User-Agent", "WWDmgCalc/1.0")
+            urllib.request.urlopen(check_req, timeout=10)
+            self._user_status.setText("✓ 用户存在")
+            self._user_status.setStyleSheet("color:#a6e3a1;font-size:11px;background:transparent;padding-left:2px;")
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                self._user_status.setText("✗ GitHub 上找不到该用户")
+                self._user_status.setStyleSheet("color:#f38ba8;font-size:11px;background:transparent;padding-left:2px;")
+            else:
+                self._user_status.setText("")
+        except Exception:
+            self._user_status.setText("")
+
     def _update_state(self):
         n = len(self._pending_files)
         if n == 0:
@@ -592,6 +624,19 @@ class PresetUploader(QWidget):
         if not self._pending_files:
             QMessageBox.information(self, "提示", "没有待上传的文件")
             return
+
+        # 验证 GitHub 用户名存在（访问主页，无 API 限流）
+        try:
+            check_req = urllib.request.Request(f"https://github.com/{contributor}")
+            check_req.add_header("User-Agent", "WWDmgCalc/1.0")
+            urllib.request.urlopen(check_req, timeout=10)
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                QMessageBox.warning(self, "用户不存在",
+                    f"GitHub 用户名「{contributor}」不存在。\n请检查拼写后重试。")
+                return
+        except Exception:
+            pass  # 网络错误不阻止，让用户承担风险
 
         reply = QMessageBox.question(
             self, "确认投稿",
