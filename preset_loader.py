@@ -552,7 +552,7 @@ class PresetLoaderDialog(QDialog):
         self._refresh_preset_list()
 
     def _update_item_text(self):
-        """更新列表项文本和样式，标记已选中的预设"""
+        """更新列表项文本和样式，标记已选中的预设（带来源标签）"""
         from PyQt6.QtGui import QColor
         cat = self._current_category
         if not cat:
@@ -563,7 +563,8 @@ class PresetLoaderDialog(QDialog):
             info = item.data(Qt.ItemDataRole.UserRole)
             if not info:
                 continue
-            name = info["name"]
+            src = "[官]" if info["source"] == "official" else "[我]"
+            name = src + " " + info["name"]
             if info["path"] in selected_paths:
                 item.setText(f"✓ {name}")
                 item.setBackground(QColor(80, 112, 232, 70))
