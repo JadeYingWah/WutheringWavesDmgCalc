@@ -6124,21 +6124,15 @@ class ResultDetailDialog(QDialog):
         self.base_mult.valueChanged.connect(self._on_mult_changed)
         mult_form.addRow("基础倍率(%):", self.base_mult)
 
-        # 倍率增加动态列表
-        self._mult_inc_container = QWidget()
-        self._mult_inc_layout = QVBoxLayout(self._mult_inc_container)
-        self._mult_inc_layout.setContentsMargins(0, 0, 0, 0)
-        self._mult_inc_layout.setSpacing(2)
-        self._mult_inc_entries = []
-        mult_form.addRow("倍率增加(%):", self._mult_inc_container)
+        # 倍率增加（只读，由关键词关联自动填充）
+        self.mult_inc_label = QLabel("（无）")
+        self.mult_inc_label.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;padding:4px 0;")
+        mult_form.addRow("倍率增加(%):", self.mult_inc_label)
 
-        # 倍率提升动态列表
-        self._mult_boost_container = QWidget()
-        self._mult_boost_layout = QVBoxLayout(self._mult_boost_container)
-        self._mult_boost_layout.setContentsMargins(0, 0, 0, 0)
-        self._mult_boost_layout.setSpacing(2)
-        self._mult_boost_entries = []
-        mult_form.addRow("倍率提升(%):", self._mult_boost_container)
+        # 倍率提升（只读，由关键词关联自动填充）
+        self.mult_boost_label = QLabel("（无）")
+        self.mult_boost_label.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;padding:4px 0;")
+        mult_form.addRow("倍率提升(%):", self.mult_boost_label)
         scroll_layout.addWidget(mult_group)
 
         # —— 计算过程（已包含所有乘区数值 + 来源超链接） ——
@@ -6386,54 +6380,47 @@ class ResultDetailDialog(QDialog):
     # ── 倍率动态列表 ──
 
     def _sync_mult_entries(self):
-        "同步关键词关联的倍率条目到动态列表"
-        for spin, row in self._mult_inc_entries:
-            row.setParent(None)
-        self._mult_inc_entries.clear()
-        for spin, row in self._mult_boost_entries:
-            row.setParent(None)
-        self._mult_boost_entries.clear()
+        "从关键词关联同步倍率值到只读标签"
+        inc_parts = []
+        boost_parts = []
         kw_page = getattr(self._page, '_keyword_assoc_page', None)
-        if not kw_page:
-            return
-        page_kws = getattr(self._page, '_keywords', [])
-        card_kw_set = set(page_kws)
-        for kw_item in kw_page.get_items():
-            kw_entry_kws = kw_item.get("keywords", "")
-            if kw_entry_kws and card_kw_set:
-                entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
-                if not (entry_kw_set & card_kw_set):
-                    continue
-            name = kw_item.get("name", "")
-            value = kw_item.get("value", 0.0)
-            if "倍率增加" in name:
-                self._add_mult_entry("倍率增加", value)
-            elif "倍率提升" in name:
-                self._add_mult_entry("倍率提升", value)
+        card_kw_set = set(getattr(self._page, '_keywords', []))
+        if kw_page:
+            for kw_item in kw_page.get_items():
+                kw_entry_kws = kw_item.get("keywords", "")
+                if kw_entry_kws and card_kw_set:
+                    entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
+                    if not (entry_kw_set & card_kw_set):
+                        continue
+                name = kw_item.get("name", "")
+                value = kw_item.get("value", 0.0)
+                if "倍率增加" in name:
+                    inc_parts.append(f"{value:.1f}%")
+                elif "倍率提升" in name:
+                    boost_parts.append(f"{value:.1f}%")
+        self.mult_inc_label.setText(" + ".join(inc_parts) if inc_parts else "（无）")
+        self.mult_boost_label.setText("  ".join(boost_parts) if boost_parts else "（无）")
 
-    def _add_mult_entry(self, typ, value=0.0):
-        row = QWidget()
-        row_layout = QHBoxLayout(row)
-        row_layout.setContentsMargins(0, 0, 0, 0)
-        row_layout.setSpacing(4)
-        label = QLabel("增" if typ == "倍率增加" else "提")
-        label.setFixedWidth(20)
-        row_layout.addWidget(label)
-        spin = QDoubleSpinBox()
-        spin.setRange(0, 99999)
-        spin.setDecimals(4)
-        spin.setValue(value)
-        row_layout.addWidget(spin, 1)
-        if typ == "倍率增加":
-            self._mult_inc_entries.append((spin, row))
-            self._mult_inc_layout.addWidget(row)
-        else:
-            self._mult_boost_entries.append((spin, row))
-            self._mult_boost_layout.addWidget(row)
 
     def _gather_mult_data(self):
-        inc_vals = [spin.value() for spin, _ in self._mult_inc_entries]
-        boost_vals = [spin.value() for spin, _ in self._mult_boost_entries]
+        "从关键词关联收集有效倍率值"
+        inc_vals = []
+        boost_vals = []
+        kw_page = self._keyword_assoc_page if hasattr(self, '_keyword_assoc_page') else getattr(getattr(self, '_page', None), '_keyword_assoc_page', None)
+        card_kw_set = set(self._keywords) if hasattr(self, '_keywords') else set(getattr(getattr(self, '_page', None), '_keywords', []))
+        if kw_page:
+            for kw_item in kw_page.get_items():
+                kw_entry_kws = kw_item.get("keywords", "")
+                if kw_entry_kws and card_kw_set:
+                    entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
+                    if not (entry_kw_set & card_kw_set):
+                        continue
+                name = kw_item.get("name", "")
+                value = kw_item.get("value", 0.0)
+                if "倍率增加" in name:
+                    inc_vals.append(value)
+                elif "倍率提升" in name:
+                    boost_vals.append(value)
         return inc_vals, boost_vals
     def _patch_process_html(self):
         """重新生成与 ResultPage 相同格式的计算过程 HTML"""
@@ -8028,21 +8015,15 @@ class ResultPage(QWidget):
         self.base_mult.setValue(100.0)
         mult_form.addRow("基础倍率(%):", self.base_mult)
 
-        # 倍率增加动态列表
-        self._mult_inc_container = QWidget()
-        self._mult_inc_layout = QVBoxLayout(self._mult_inc_container)
-        self._mult_inc_layout.setContentsMargins(0, 0, 0, 0)
-        self._mult_inc_layout.setSpacing(2)
-        self._mult_inc_entries = []
-        mult_form.addRow("倍率增加(%):", self._mult_inc_container)
+        # 倍率增加（只读，由关键词关联自动填充）
+        self.mult_inc_label = QLabel("（无）")
+        self.mult_inc_label.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;padding:4px 0;")
+        mult_form.addRow("倍率增加(%):", self.mult_inc_label)
 
-        # 倍率提升动态列表
-        self._mult_boost_container = QWidget()
-        self._mult_boost_layout = QVBoxLayout(self._mult_boost_container)
-        self._mult_boost_layout.setContentsMargins(0, 0, 0, 0)
-        self._mult_boost_layout.setSpacing(2)
-        self._mult_boost_entries = []
-        mult_form.addRow("倍率提升(%):", self._mult_boost_container)
+        # 倍率提升（只读，由关键词关联自动填充）
+        self.mult_boost_label = QLabel("（无）")
+        self.mult_boost_label.setStyleSheet("color:#6c7086;font-size:11px;background:transparent;padding:4px 0;")
+        mult_form.addRow("倍率提升(%):", self.mult_boost_label)
 
         layout.addWidget(mult_group)
 
@@ -8640,52 +8621,47 @@ class ResultPage(QWidget):
     # ── 倍率动态列表 ──
 
     def _sync_mult_entries(self):
-        "同步关键词关联的倍率条目到动态列表"
-        for spin, row in self._mult_inc_entries:
-            row.setParent(None)
-        self._mult_inc_entries.clear()
-        for spin, row in self._mult_boost_entries:
-            row.setParent(None)
-        self._mult_boost_entries.clear()
-        if not self._keyword_assoc_page:
-            return
-        for kw_item in self._keyword_assoc_page.get_items():
-            kw_entry_kws = kw_item.get("keywords", "")
-            if kw_entry_kws:
-                entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
-                card_kw_set = set(self._keywords)
-                if not (entry_kw_set & card_kw_set):
-                    continue
-            name = kw_item.get("name", "")
-            value = kw_item.get("value", 0.0)
-            if "倍率增加" in name:
-                self._add_mult_entry("倍率增加", value)
-            elif "倍率提升" in name:
-                self._add_mult_entry("倍率提升", value)
+        "从关键词关联同步倍率值到只读标签"
+        inc_parts = []
+        boost_parts = []
+        kw_page = self._keyword_assoc_page if hasattr(self, '_keyword_assoc_page') else getattr(getattr(self, '_page', None), '_keyword_assoc_page', None)
+        card_kw_set = set(self._keywords) if hasattr(self, '_keywords') else set(getattr(getattr(self, '_page', None), '_keywords', []))
+        if kw_page:
+            for kw_item in kw_page.get_items():
+                kw_entry_kws = kw_item.get("keywords", "")
+                if kw_entry_kws and card_kw_set:
+                    entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
+                    if not (entry_kw_set & card_kw_set):
+                        continue
+                name = kw_item.get("name", "")
+                value = kw_item.get("value", 0.0)
+                if "倍率增加" in name:
+                    inc_parts.append(f"{value:.1f}%")
+                elif "倍率提升" in name:
+                    boost_parts.append(f"{value:.1f}%")
+        self.mult_inc_label.setText(" + ".join(inc_parts) if inc_parts else "（无）")
+        self.mult_boost_label.setText("  ".join(boost_parts) if boost_parts else "（无）")
 
-    def _add_mult_entry(self, typ, value=0.0):
-        row = QWidget()
-        row_layout = QHBoxLayout(row)
-        row_layout.setContentsMargins(0, 0, 0, 0)
-        row_layout.setSpacing(4)
-        label = QLabel("增" if typ == "倍率增加" else "提")
-        label.setFixedWidth(20)
-        row_layout.addWidget(label)
-        spin = QDoubleSpinBox()
-        spin.setRange(0, 99999)
-        spin.setDecimals(4)
-        spin.setValue(value)
-        row_layout.addWidget(spin, 1)
-        if typ == "倍率增加":
-            self._mult_inc_entries.append((spin, row))
-            self._mult_inc_layout.addWidget(row)
-        else:
-            self._mult_boost_entries.append((spin, row))
-            self._mult_boost_layout.addWidget(row)
 
     def _gather_mult_data(self):
-        inc_vals = [spin.value() for spin, _ in self._mult_inc_entries]
-        boost_vals = [spin.value() for spin, _ in self._mult_boost_entries]
+        "从关键词关联收集有效倍率值"
+        inc_vals = []
+        boost_vals = []
+        kw_page = self._keyword_assoc_page if hasattr(self, '_keyword_assoc_page') else getattr(getattr(self, '_page', None), '_keyword_assoc_page', None)
+        card_kw_set = set(self._keywords) if hasattr(self, '_keywords') else set(getattr(getattr(self, '_page', None), '_keywords', []))
+        if kw_page:
+            for kw_item in kw_page.get_items():
+                kw_entry_kws = kw_item.get("keywords", "")
+                if kw_entry_kws and card_kw_set:
+                    entry_kw_set = set(k.strip() for k in kw_entry_kws.split(",") if k.strip())
+                    if not (entry_kw_set & card_kw_set):
+                        continue
+                name = kw_item.get("name", "")
+                value = kw_item.get("value", 0.0)
+                if "倍率增加" in name:
+                    inc_vals.append(value)
+                elif "倍率提升" in name:
+                    boost_vals.append(value)
         return inc_vals, boost_vals
     def _clear_process(self):
         """清除旧的计算过程文本。"""
