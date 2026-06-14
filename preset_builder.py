@@ -3546,7 +3546,7 @@ class PresetBuilderDialog(QDialog):
         }
 
         def _fill_internal_name(final_name):
-            """如果内部名称为空，用预设名称填充（去掉 -预设 后缀）"""
+            """如果内部名称为空，用预设名称填充"""
             if not data.get("name", ""):
                 base = final_name
                 if base.endswith("-预设"):
