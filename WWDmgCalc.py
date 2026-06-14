@@ -6439,12 +6439,13 @@ class ResultDetailDialog(QDialog):
         page_list = getattr(self, "_page", None)
         if page_list and getattr(page_list, "_base_override_enabled", False):
             override_hint = (
-                '<p style="color:#64b5f6;font-weight:600;font-size:12px;margin:0 0 6px 0;">'
-                '\u25b8 已启用手动填写基础数值</p>'
+                '<tr><td colspan="3" style="color:#64b5f6;font-weight:600;font-size:12px;padding:2px 8px;border:0;">'
+                '\u25b8 已启用手动填写基础数值</td></tr>'
             )
-        html = override_hint + (
+        html = (
             '<table style="border-collapse:collapse;width:100%;font-size:13px;">'
             + _row("基础数值", f"{z['atk_zone']:.10f}", "")
+            + override_hint
             + _row("× 加成乘区", f"{z['bonus_zone']:.10f}", "")
             + _row("× 加深乘区", f"{z['deepen_zone']:.10f}", "")
             + _row("× 暴击乘区", f"{z['crit_zone']:.10f}", "")
