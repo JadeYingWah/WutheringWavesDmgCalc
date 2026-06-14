@@ -610,7 +610,9 @@ class PresetUploader(QWidget):
                 self._user_status.setText("")
         except Exception:
             self._user_verified = False
-            self._user_status.setText("")
+            self._user_status.setText("⚠ 无法验证，请稍后重试")
+            self._user_status.setStyleSheet("color:#f9e2af;font-size:11px;background:transparent;padding-left:2px;")
+            self._hint_label.setText("网络连接失败，无法验证。您仍可继续投稿。")
 
     def _update_state(self):
         n = len(self._pending_files)
