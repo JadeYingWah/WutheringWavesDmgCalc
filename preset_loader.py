@@ -529,6 +529,12 @@ class PresetLoaderDialog(QDialog):
 
     def _select_category(self, cat_key):
         self._current_category = cat_key
+        # 选中按钮高亮
+        for ck, (btn, tl) in self._cat_buttons.items():
+            if ck == cat_key:
+                btn.setStyleSheet("QPushButton{border:2px solid #89b4fa;background:#2a2a3c;border-radius:8px;}")
+            else:
+                btn.setStyleSheet("QPushButton{border:1px solid #45475a;background:#1e1e2e;border-radius:8px;}")
         self._refresh_preset_list()
         self._update_sel_info()
 
