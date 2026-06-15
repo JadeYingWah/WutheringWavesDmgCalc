@@ -6614,7 +6614,7 @@ class ResultDetailDialog(QDialog):
         items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
         filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_ in items_data
                     if _matches_filter(n, self._item.get("element"), self._item.get("skill"), self._item.get("effect"))
-                    and (n, s, nk, "") not in HIDDEN_ITEMS]
+                    and (n, s, nk, sq) not in HIDDEN_ITEMS]
         # 关键词注入
         if hasattr(self._page, '_keyword_assoc_page') and self._page._keyword_assoc_page:
             item_kws = set(k.strip() for k in self._item.get("keywords", []))
@@ -7091,18 +7091,20 @@ class ResultListPage(QWidget):
                     sub_map[(it[0], it[2], it[3], it[4])] = it[5]
             filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_ in items_data
                         if _matches_filter(n, item.get("element"), item.get("skill"), item.get("effect"))
-                        and (n, s, nk, "") not in HIDDEN_ITEMS]
+                        and (n, s, nk, sq) not in HIDDEN_ITEMS]
             if self._keyword_assoc_page:
                 item_kws = set(k.strip() for k in item.get("keywords", []))
                 if item_kws:
                     for kw_item in self._keyword_assoc_page.get_items():
                         kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
                         if item_kws & kw_entry_kws:
+                            name = kw_item["name"]
+                            value = kw_item["value"]
+                            source = kw_item.get("source", "关键词关联")
                             seq = kw_item.get("seq", "")
-                            filtered.append((
-                                kw_item["name"], kw_item["value"],
-                                kw_item.get("source", "关键词关联"), "keyword_assoc", seq,
-                            ))
+                            if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                                continue
+                            filtered.append((name, value, source, "keyword_assoc", seq))
             item["process_html"] = self._build_card_process_html(filtered, item, sub_map)
         self._refresh_cards()
         # 如果详情弹窗打开着，同步更新它
@@ -8718,12 +8720,14 @@ class ResultPage(QWidget):
                 for kw_item in self._keyword_assoc_page.get_items():
                     kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
                     if item_keywords & kw_entry_kws:
+                        name = kw_item["name"]
+                        value = kw_item["value"]
+                        source = kw_item.get("source", "关键词关联")
                         seq = kw_item.get("seq", "")
+                        if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                            continue
                         filtered_items.append((
-                            kw_item["name"],
-                            kw_item["value"],
-                            kw_item.get("source", "关键词关联"),
-                            "keyword_assoc", seq,
+                            name, value, source, "keyword_assoc", seq,
                         ))
 
         basis = self.filter_basis.currentText()  # 攻击力 / 生命值 / 防御力
