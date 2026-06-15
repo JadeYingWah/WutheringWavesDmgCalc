@@ -961,7 +961,7 @@ class CombinedEntryPage(BaseTableAttrPage):
             'chain_num': chain_num,
         }
         type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-        key = (name, self.page_key, f"{type_label}{seq_num}")
+        key = (name, source, self.page_key, f"{type_label}{seq_num}")
         is_locked = key in LOCKED_SUMMARY_ITEMS
         is_hidden = key in HIDDEN_ITEMS
 
@@ -1031,7 +1031,7 @@ class CombinedEntryPage(BaseTableAttrPage):
             if rd.get("hide_btn") is btn:
                 actual_seq = ri + 1
                 break
-        key = (name, self.page_key, f"{type_label}{actual_seq}")
+        key = (name, source, self.page_key, f"{type_label}{actual_seq}")
         if key in HIDDEN_ITEMS:
             HIDDEN_ITEMS.discard(key)
             btn.setText("隐藏")
@@ -1045,7 +1045,7 @@ class CombinedEntryPage(BaseTableAttrPage):
         # 同步同页面其他同名词条的隐藏按钮
         for ri, rd in enumerate(self._rows):
             type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-            rd_key = (rd['name_edit'].text(), self.page_key, f"{type_label}{ri + 1}")
+            rd_key = (rd['name_edit'].text(), rd.get('source', ''), self.page_key, f"{type_label}{ri + 1}")
             is_hid = rd_key in HIDDEN_ITEMS
             rd['hide_btn'].setText("隐藏中" if is_hid else "隐藏")
             rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
