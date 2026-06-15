@@ -4586,7 +4586,8 @@ class ResonanceBuffPage(QWidget):
             page = (self._main_screen.page_combined_perm if eff_type == "常驻"
                    else self._main_screen.page_combined_trigger)
             page._counter += 1
-            page._add_row_with_source(eff["name"], eff["value"], page._counter, "共鸣链效果", chain_num=chain_num)
+            if eff["name"] not in ("倍率增加", "倍率提升"):
+                page._add_row_with_source(eff["name"], eff["value"], page._counter, "共鸣链效果", chain_num=chain_num)
             if eff.get("sub_name") and page._rows:
                 last = page._rows[-1]
                 if 'sub_name_edit' in last:
