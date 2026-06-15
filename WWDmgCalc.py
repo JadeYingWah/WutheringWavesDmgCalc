@@ -6389,7 +6389,7 @@ class ResultDetailDialog(QDialog):
         self._item["effect"] = None if self.filter_effect.currentText() == "(无)" else self.filter_effect.currentText()
         items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
         self._page._recalc_one(self._item, items_data)
-        self._patch_process_html()
+        self._update_result_labels()
         self._update_result_labels()
         self._page._refresh_cards()
 
@@ -6401,7 +6401,7 @@ class ResultDetailDialog(QDialog):
         if not self._item["locked"]:
             items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
             self._page._recalc_one(self._item, items_data)
-            self._patch_process_html()
+            self._update_result_labels()
         else:
             z = self._item["zones"]
             base_m = self._item["base_mult"]
@@ -6413,7 +6413,7 @@ class ResultDetailDialog(QDialog):
             z["mult_zone"] = mult_zone
             z["final_crit"] = base_dmg * z["crit_zone"]
             z["final_no_crit"] = base_dmg
-        self._patch_process_html()
+        self._update_result_labels()
         self._update_result_labels()
         self._page._refresh_cards()
 
@@ -6700,7 +6700,7 @@ class ResultDetailDialog(QDialog):
             return
         items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
         self._page._recalc_one(self._item, items_data)
-        self._patch_process_html()
+        self._update_result_labels()
         self._update_result_labels()
         self._page._refresh_cards()
 
@@ -7241,6 +7241,11 @@ class ResultListPage(QWidget):
                      if any(kw in n for kw in CRIT_DMG_KEYWORDS)]
         total_crit_dmg = 150.0 + sum(v for _, v, _, _, _ in dmg_items)
 
+        # 构建 sub_map（副名称 tooltip）
+        sub_map = {}
+        for it in filtered:
+            if len(it) >= 6 and it[5]:
+                sub_map[(it[0], it[2], it[3], it[4])] = it[5]
         return _render_process_html(
             basis, zone_label, base_value, weapon_base,
             pct_items, flat_items, total_pct, total_flat, z.get("atk_zone", 0),
@@ -7250,7 +7255,7 @@ class ResultListPage(QWidget):
             z.get("def_zone", 1), z.get("res_zone", 1), z.get("indep_zone", 1), [],
             base_m, mult_inc, mult_boosts, z.get("mult_zone", 100),
             z.get("final_crit", 0), z.get("final_no_crit", 0),
-            is_light=False,
+            is_light=False, sub_map=sub_map,
             base_override_active=getattr(self, "_base_override_enabled", False),
             computed_base_zone=z.get("computed_base_zone", None),
         )
