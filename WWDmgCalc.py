@@ -6678,9 +6678,10 @@ class ResultDetailDialog(QDialog):
                 for kw_item in self._page._keyword_assoc_page.get_items():
                     kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
                     if item_kws & kw_entry_kws:
+                        seq = kw_item.get("seq", "")
                         filtered.append((
                             kw_item["name"], kw_item["value"],
-                            kw_item.get("source", "关键词关联"), "keyword_assoc",
+                            kw_item.get("source", "关键词关联"), "keyword_assoc", seq,
                         ))
         self._item["process_html"] = self._page._build_card_process_html(filtered, self._item)
 
@@ -7188,7 +7189,7 @@ class ResultListPage(QWidget):
                     if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
                         continue
                     # 注入到 filtered 参与常规乘区分类
-                    filtered.append((name, value, source, "keyword_assoc"))
+                    filtered.append((name, value, source, "keyword_assoc", seq))
                     # 倍率增加/提升单独累加（不参与 BONUS_SUFFIX 等分类）
                     if "倍率增加" in name:
                         kw_mult_inc += value
@@ -8762,11 +8763,12 @@ class ResultPage(QWidget):
                 for kw_item in self._keyword_assoc_page.get_items():
                     kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
                     if item_keywords & kw_entry_kws:
+                        seq = kw_item.get("seq", "")
                         filtered_items.append((
                             kw_item["name"],
                             kw_item["value"],
                             kw_item.get("source", "关键词关联"),
-                            "keyword_assoc",
+                            "keyword_assoc", seq,
                         ))
 
         basis = self.filter_basis.currentText()  # 攻击力 / 生命值 / 防御力
