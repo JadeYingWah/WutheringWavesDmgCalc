@@ -3,7 +3,6 @@
 [![Release](https://img.shields.io/github/v/release/JadeYingWah/WutheringWavesDmgCalc)](https://github.com/JadeYingWah/WutheringWavesDmgCalc/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.13-blue)](https://www.python.org/)
-[![CI Build](https://github.com/JadeYingWah/WutheringWavesDmgCalc/actions/workflows/build.yml/badge.svg)](https://github.com/JadeYingWah/WutheringWavesDmgCalc/actions/workflows/build.yml)
 
 一个基于 PyQt6 的《鸣潮》桌面伤害计算器。一个人用 42 天从零独立开发，完全免费开源。
 
