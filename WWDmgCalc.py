@@ -4585,14 +4585,13 @@ class ResonanceBuffPage(QWidget):
             eff_type = eff.get("type", "常驻")
             page = (self._main_screen.page_combined_perm if eff_type == "常驻"
                    else self._main_screen.page_combined_trigger)
-            is_mult_kw = "倍率增加" in eff["name"] or "倍率提升" in eff["name"]
-            if not is_mult_kw:
-                page._counter += 1
+            page._counter += 1
+            if "倍率增加" not in eff["name"] and "倍率提升" not in eff["name"]:
                 page._add_row_with_source(eff["name"], eff["value"], page._counter, "共鸣链效果", chain_num=chain_num)
-                if eff.get("sub_name") and page._rows:
-                    last = page._rows[-1]
-                    if 'sub_name_edit' in last:
-                        last['sub_name_edit'].setText(eff["sub_name"])
+            if eff.get("sub_name") and page._rows:
+                last = page._rows[-1]
+                if 'sub_name_edit' in last:
+                    last['sub_name_edit'].setText(eff["sub_name"])
 
         # 关键词关联：按共鸣链内效果顺序生成序号（共鸣链X关联1, 2, 3...）
         kw_page = self._main_screen.page_keyword_assoc
