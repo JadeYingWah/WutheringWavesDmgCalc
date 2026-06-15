@@ -6047,7 +6047,7 @@ class ResultDetailDialog(QDialog):
         self._idx = idx
         self._page = parent_page
         self.setWindowTitle(f"结果详情 — {item['label']}")
-        self.setMinimumSize(620, 650)
+        self.setMinimumSize(1100,800)
         self.setWindowOpacity(0.96)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
         _center_window(self)
@@ -6631,7 +6631,13 @@ class ResultDetailDialog(QDialog):
             hide_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             hide_btn.clicked.connect(lambda checked, k=kw_key, b=hide_btn:
                 self._toggle_kw_hide(k, b))
-            table.setCellWidget(r, 7, hide_btn)
+            ops = QWidget()
+            ops_layout = QHBoxLayout(ops)
+            ops_layout.setContentsMargins(0, 0, 0, 0)
+            ops_layout.addStretch()
+            ops_layout.addWidget(hide_btn)
+            ops_layout.addStretch()
+            table.setCellWidget(r, 7, ops)
 
 
     def _gather_mult_data(self):
@@ -9127,7 +9133,13 @@ class ResultPage(QWidget):
             hide_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             hide_btn.clicked.connect(lambda checked, k=kw_key, b=hide_btn:
                 self._toggle_kw_hide(k, b))
-            table.setCellWidget(r, 7, hide_btn)
+            ops = QWidget()
+            ops_layout = QHBoxLayout(ops)
+            ops_layout.setContentsMargins(0, 0, 0, 0)
+            ops_layout.addStretch()
+            ops_layout.addWidget(hide_btn)
+            ops_layout.addStretch()
+            table.setCellWidget(r, 7, ops)
 
 
     def _gather_mult_data(self):
