@@ -80,6 +80,10 @@ def main():
             else:
                 shutil.move(s, d)
         shutil.rmtree(src_ww, ignore_errors=True)
+        # 清理误打包的测试文件
+        test_crash = os.path.join(dst_ww, '_internal', 'error_handler', 'test_crash.py')
+        if os.path.exists(test_crash):
+            os.remove(test_crash)
         print('[OK] WWDmgCalc moved')
 
     # 3. 移动 ErrorViewer 到子目录

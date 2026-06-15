@@ -1,4 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
+import sys, os
+
+# 自动定位 rapidocr_onnxruntime（兼容不同 env/CI）
+_rapidocr = None
+for _p in sys.path:
+    _try = os.path.join(_p, 'rapidocr_onnxruntime')
+    if os.path.isdir(_try):
+        _rapidocr = _try
+        break
+if not _rapidocr:
+    raise FileNotFoundError('rapidocr_onnxruntime not found — pip install rapidocr-onnxruntime')
 
 # ── 主程序 ──
 a = Analysis(
@@ -11,7 +22,7 @@ a = Analysis(
     ('../damage_calc.py', '.'),
     ('../ico/icon.ico', '.'),
     ('../models', 'models'),  # OCR ONNX 模型
-    (r'E:/Python/.venv/Lib/site-packages/rapidocr_onnxruntime', 'rapidocr_onnxruntime'),
+    (_rapidocr, 'rapidocr_onnxruntime'),
 ],
     hiddenimports=['onnxruntime', 'cv2', 'pyclipper', 'shapely', 'yaml', 'six',
                    'error_handler.error_system'],
