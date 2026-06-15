@@ -7159,19 +7159,33 @@ class ResultListPage(QWidget):
         filtered = [(n, v, s, nk) for n, v, s, nk, sq, *_sub in all_items
                     if _matches_filter(n, item["element"], item["skill"], item["effect"])
                     and (n, s, nk, sq) not in HIDDEN_ITEMS]
-        # 从关键词关联页面注入匹配的效果
+        # 从关键词关联页面注入匹配的效果（倍率增加/提升单独提取给倍率乘区）
+        kw_mult_inc = 0.0
+        kw_mult_boosts = []
         if self._keyword_assoc_page:
             item_keywords = set(k.strip() for k in item.get("keywords", []))
             if item_keywords:
                 for kw_item in self._keyword_assoc_page.get_items():
-                    kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
-                    if item_keywords & kw_entry_kws:  # 有关键词交集 → 计入
-                        filtered.append((
-                            kw_item["name"],
-                            kw_item["value"],
-                            kw_item.get("source", "关键词关联"),
-                            "keyword_assoc",
-                        ))
+                    kw_entry_kws_comma = kw_item.get("keywords", "")
+                    if not kw_entry_kws_comma:
+                        continue
+                    kw_entry_kws = set(k.strip() for k in kw_entry_kws_comma.split(",") if k.strip())
+                    if not (item_keywords & kw_entry_kws):
+                        continue
+                    name = kw_item["name"]
+                    value = kw_item["value"]
+                    source = kw_item.get("source", "关键词关联")
+                    seq = kw_item.get("seq", "")
+                    # 检查 HIDDEN_ITEMS
+                    if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                        continue
+                    # 注入到 filtered 参与常规乘区分类
+                    filtered.append((name, value, source, "keyword_assoc"))
+                    # 倍率增加/提升单独累加（不参与 BONUS_SUFFIX 等分类）
+                    if "倍率增加" in name:
+                        kw_mult_inc += value
+                    elif "倍率提升" in name:
+                        kw_mult_boosts.append(value)
         basis = item["basis"]
         base_value = 0.0; weapon_base = 0.0; total_pct = 0.0; total_flat = 0.0
         if basis == "攻击力":
@@ -7211,10 +7225,10 @@ class ResultListPage(QWidget):
         if self._resistance_page:
             res_zone = self._resistance_page.get_resistance_multiplier(item["element"])
         indep_zone = getattr(self._indep_zone_page, 'independent_zone', 1.0) if self._indep_zone_page else 1.0
-        # 倍率乘区：直接使用 item 中已由关键词关联填充的值
+        # 倍率乘区：基础倍率 + 关键词关联注入的倍率增加/倍率提升
         base_m = item["base_mult"]
-        mult_inc = item.get("mult_increase", 0)
-        mult_boosts = item.get("mult_boosts", [])
+        mult_inc = item.get("mult_increase", 0) + kw_mult_inc
+        mult_boosts = list(item.get("mult_boosts", [])) + kw_mult_boosts
         mult_zone = (base_m + mult_inc)
         for bv in mult_boosts:
             mult_zone *= (1.0 + bv / 100.0)
