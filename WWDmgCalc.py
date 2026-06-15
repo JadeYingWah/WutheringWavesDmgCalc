@@ -6668,7 +6668,7 @@ class ResultDetailDialog(QDialog):
     def _patch_process_html(self):
         """重新生成与 ResultPage 相同格式的计算过程 HTML"""
         items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
-        filtered = [(n, v, s, nk) for n, v, s, nk, *_ in items_data
+        filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_ in items_data
                     if _matches_filter(n, self._item.get("element"), self._item.get("skill"), self._item.get("effect"))
                     and (n, s, nk, "") not in HIDDEN_ITEMS]
         # 关键词注入
@@ -7140,7 +7140,7 @@ class ResultListPage(QWidget):
                 continue
             self._recalc_one(item, items_data)
             # 自动更新时同步重新生成计算过程 HTML
-            filtered = [(n, v, s, nk) for n, v, s, nk, *_ in items_data
+            filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_ in items_data
                         if _matches_filter(n, item.get("element"), item.get("skill"), item.get("effect"))
                         and (n, s, nk, "") not in HIDDEN_ITEMS]
             if self._keyword_assoc_page:
@@ -7164,7 +7164,7 @@ class ResultListPage(QWidget):
                     break
 
     def _recalc_one(self, item, all_items):
-        filtered = [(n, v, s, nk) for n, v, s, nk, sq, *_sub in all_items
+        filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_sub in all_items
                     if _matches_filter(n, item["element"], item["skill"], item["effect"])
                     and (n, s, nk, sq) not in HIDDEN_ITEMS]
         # 从关键词关联页面注入匹配的效果（倍率增加/提升单独提取给倍率乘区）
@@ -7272,34 +7272,34 @@ class ResultListPage(QWidget):
             zone_label = "防御力"
             pct_names = {"防御力"}
 
-        base_value = sum(v for n, v, s, nk in filtered if n == "角色基础攻击力")
-        weapon_base = sum(v for n, v, s, nk in filtered if n == "武器基础攻击力")
+        base_value = sum(v for n, v, s, nk, sq in filtered if n == "角色基础攻击力")
+        weapon_base = sum(v for n, v, s, nk, sq in filtered if n == "武器基础攻击力")
         if basis == "生命值":
-            base_value = sum(v for n, v, s, nk in filtered if n == "角色基础生命值")
+            base_value = sum(v for n, v, s, nk, sq in filtered if n == "角色基础生命值")
         elif basis == "防御力":
-            base_value = sum(v for n, v, s, nk in filtered if n == "角色基础防御力")
+            base_value = sum(v for n, v, s, nk, sq in filtered if n == "角色基础防御力")
 
-        pct_items = [(n, v, s, nk) for n, v, s, nk in filtered
+        pct_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered
                      if any(kw in n for kw in pct_names)
                      and "固定" not in n and "基础" not in n and "伤害" not in n]
-        flat_items = [(n, v, s, nk) for n, v, s, nk in filtered
+        flat_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered
                       if ("固定攻击" in n if basis == "攻击力" else
                           "固定生命" in n if basis == "生命值" else "固定防御" in n)]
-        total_pct = sum(v for _, v, _, _ in pct_items)
-        total_flat = sum(v for _, v, _, _ in flat_items)
-        bonus_items = [(n, v, s, nk) for n, v, s, nk in filtered
+        total_pct = sum(v for _, v, _, _, _ in pct_items)
+        total_flat = sum(v for _, v, _, _, _ in flat_items)
+        bonus_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered
                        if any(sfx in n for sfx in BONUS_SUFFIX)
                        and not any(kw in n for kw in CRIT_DMG_KEYWORDS)]
-        total_bonus = sum(v for _, v, _, _ in bonus_items)
-        deepen_items = [(n, v, s, nk) for n, v, s, nk in filtered if DEEPEN_SUFFIX in n]
-        total_deepen = sum(v for _, v, _, _ in deepen_items)
-        rate_items = [(n, v, s, nk) for n, v, s, nk in filtered
+        total_bonus = sum(v for _, v, _, _, _ in bonus_items)
+        deepen_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered if DEEPEN_SUFFIX in n]
+        total_deepen = sum(v for _, v, _, _, _ in deepen_items)
+        rate_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered
                       if any(kw in n for kw in CRIT_RATE_KEYWORDS)
                       and not any(kw in n for kw in CRIT_DMG_KEYWORDS)]
         total_crit_rate = z.get("crit_rate", 5.0)
-        dmg_items = [(n, v, s, nk) for n, v, s, nk in filtered
+        dmg_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered
                      if any(kw in n for kw in CRIT_DMG_KEYWORDS)]
-        total_crit_dmg = 150.0 + sum(v for _, v, _, _ in dmg_items)
+        total_crit_dmg = 150.0 + sum(v for _, v, _, _, _ in dmg_items)
 
         return _render_process_html(
             basis, zone_label, base_value, weapon_base,
@@ -8059,11 +8059,11 @@ def _render_process_html(
         href = f"hl:{summary_key}:{_esc(name)}:{_esc(src_label)}:{_esc(nav_key)}\x1e{t}"
         return f'<a href="{href}" style="color:{link_c};font-weight:700;text-decoration:underline;">{text}</a>'
 
-    def _item_link(name, value, src_label, nav_key, summary_key=None):
+    def _item_link(name, value, src_label, nav_key, summary_key=None, seq_label=None):
         is_const = name in CONSTANT_ATTRS or "固定" in name or "基础" in name
         fmt = f"{value:.1f}" if is_const else f"{value:.1f}%"
         tip = f"{name} = {fmt}\n来源: {src_label}"
-        sub_key = (name, src_label, nav_key, round(value, 4))
+        sub_key = (name, src_label, nav_key, seq_label)
         if sub_map and sub_key in sub_map:
             tip += f"\n副名称: {sub_map[sub_key]}"
         if summary_key and navigate_fn and summary_pages and summary_pages.get(summary_key):
@@ -8073,10 +8073,10 @@ def _render_process_html(
 
     def _render_items(items, joiner=" + ", summary_key=None):
         parts = []
-        for i, (name, value, src_label, nav_key) in enumerate(items):
+        for i, (name, value, src_label, nav_key, seq_label) in enumerate(items):
             if i > 0:
                 parts.append(_txt(joiner))
-            parts.append(_item_link(name, value, src_label, nav_key, summary_key))
+            parts.append(_item_link(name, value, src_label, nav_key, summary_key, seq_label))
         return parts
 
     def _zone(title, parts):
@@ -8750,7 +8750,7 @@ class ResultPage(QWidget):
         if selected_effect == "(无)":
             selected_effect = None
 
-        filtered_items = [(n, v, s, nk) for n, v, s, nk, sq, *_sub in items
+        filtered_items = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_sub in items
                           if _matches_filter(n, selected_element, selected_skill, selected_effect)
                           and (n, s, nk, sq) not in HIDDEN_ITEMS]
 
@@ -8863,23 +8863,23 @@ class ResultPage(QWidget):
 
         
         # 收集各乘区单个词条列表（含来源信息），供计算过程逐条展示
-        pct_items = [(n, v, s, nk) for n, v, s, nk in filtered_items
+        pct_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered_items
                      if any(kw in n for kw in (ATK_PCT_NAMES if basis == "攻击力" else
                          ({"生命值"} if basis == "生命值" else {"防御力"})))
                      and "固定" not in n and "基础" not in n]
-        flat_items = [(n, v, s, nk) for n, v, s, nk in filtered_items
+        flat_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered_items
                       if ("固定攻击" in n if basis == "攻击力" else
                           "固定生命" in n if basis == "生命值" else
                           "固定防御" in n)]
-        bonus_items = [(n, v, s, nk) for n, v, s, nk in filtered_items
+        bonus_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered_items
                        if any(sfx in n for sfx in BONUS_SUFFIX)
                        and not any(kw in n for kw in CRIT_DMG_KEYWORDS)]
-        deepen_items = [(n, v, s, nk) for n, v, s, nk in filtered_items
+        deepen_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered_items
                         if DEEPEN_SUFFIX in n]
-        rate_items = [(n, v, s, nk) for n, v, s, nk in filtered_items
+        rate_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered_items
                       if any(kw in n for kw in CRIT_RATE_KEYWORDS)
                       and not any(kw in n for kw in CRIT_DMG_KEYWORDS)]
-        dmg_items = [(n, v, s, nk) for n, v, s, nk in filtered_items
+        dmg_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered_items
                      if any(kw in n for kw in CRIT_DMG_KEYWORDS)]
 
         # 构建副名称查找表（供计算过程 hover 提示使用）
@@ -8887,7 +8887,7 @@ class ResultPage(QWidget):
         for entry in items:
             if len(entry) >= 6 and entry[5]:
                 # 用 (名称, 来源标签, nav_key, 数值) 做键，避免同名同源不同值条目覆盖
-                sub_map[(entry[0], entry[2], entry[3], round(entry[1], 4))] = entry[5]
+                sub_map[(entry[0], entry[2], entry[3], entry[4])] = entry[5]
 
         # 构建计算过程（可点击值跳转来源）
         self._build_process(
