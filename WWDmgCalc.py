@@ -7197,18 +7197,18 @@ class ResultListPage(QWidget):
         basis = item["basis"]
         base_value = 0.0; weapon_base = 0.0; total_pct = 0.0; total_flat = 0.0
         if basis == "攻击力":
-            for name, value, _, _ in filtered:
+            for name, value, _, _, _ in filtered:
                 if name == "角色基础攻击力": base_value = value
                 elif name == "武器基础攻击力": weapon_base = value
                 elif "攻击力" in name and "固定" not in name: total_pct += value
                 elif "固定攻击" in name: total_flat += value
         elif basis == "生命值":
-            for name, value, _, _ in filtered:
+            for name, value, _, _, _ in filtered:
                 if name == "角色基础生命值": base_value = value
                 elif "生命值" in name and "固定" not in name: total_pct += value
                 elif "固定生命" in name: total_flat += value
         else:
-            for name, value, _, _ in filtered:
+            for name, value, _, _, _ in filtered:
                 if name == "角色基础防御力": base_value = value
                 elif "防御力" in name and "固定" not in name: total_pct += value
                 elif "固定防御" in name: total_flat += value
@@ -7217,16 +7217,16 @@ class ResultListPage(QWidget):
             base_zone = self._base_override_value
         else:
             base_zone = computed_base_zone
-        total_bonus = sum(v for n, v, _, _ in filtered
+        total_bonus = sum(v for n, v, _, _, _ in filtered
                          if any(s in n for s in BONUS_SUFFIX)
                          and not any(kw in n for kw in CRIT_DMG_KEYWORDS))
         bonus_zone = 1.0 + total_bonus / 100.0
-        total_deepen = sum(v for n, v, _, _ in filtered if DEEPEN_SUFFIX in n)
+        total_deepen = sum(v for n, v, _, _, _ in filtered if DEEPEN_SUFFIX in n)
         deepen_zone = 1.0 + total_deepen / 100.0
-        total_crit_rate = 5.0 + sum(v for n, v, _, _ in filtered
+        total_crit_rate = 5.0 + sum(v for n, v, _, _, _ in filtered
                                      if any(kw in n for kw in CRIT_RATE_KEYWORDS)
                                      and not any(kw in n for kw in CRIT_DMG_KEYWORDS))
-        total_crit_dmg = 150.0 + sum(v for n, v, _, _ in filtered if any(kw in n for kw in CRIT_DMG_KEYWORDS))
+        total_crit_dmg = 150.0 + sum(v for n, v, _, _, _ in filtered if any(kw in n for kw in CRIT_DMG_KEYWORDS))
         crit_zone = total_crit_dmg / 100.0
         def_zone = getattr(self._defense_page, 'def_multiplier', 1.0) if self._defense_page else 1.0
         res_zone = 1.0
@@ -8776,7 +8776,7 @@ class ResultPage(QWidget):
             weapon_base = 0.0
             total_pct = 0.0
             total_flat = 0.0
-            for name, value, _, _ in filtered_items:
+            for name, value, _, _, _ in filtered_items:
                 if name == "角色基础攻击力":
                     base_value = value
                 elif name == "武器基础攻击力":
@@ -8791,7 +8791,7 @@ class ResultPage(QWidget):
             weapon_base = 0.0
             total_pct = 0.0
             total_flat = 0.0
-            for name, value, _, _ in filtered_items:
+            for name, value, _, _, _ in filtered_items:
                 if name == "角色基础生命值":
                     base_value = value
                 elif "生命值" in name and "固定" not in name:
@@ -8804,7 +8804,7 @@ class ResultPage(QWidget):
             weapon_base = 0.0
             total_pct = 0.0
             total_flat = 0.0
-            for name, value, _, _ in filtered_items:
+            for name, value, _, _, _ in filtered_items:
                 if name == "角色基础防御力":
                     base_value = value
                 elif "防御力" in name and "固定" not in name:
@@ -8821,18 +8821,18 @@ class ResultPage(QWidget):
             base_zone = computed_base_zone
         self._computed_base_zone = computed_base_zone  # 保存原始计算值供显示
 
-        total_bonus = sum(v for n, v, _, _ in filtered_items
+        total_bonus = sum(v for n, v, _, _, _ in filtered_items
                          if any(s in n for s in BONUS_SUFFIX)
                          and not any(kw in n for kw in CRIT_DMG_KEYWORDS))
         bonus_zone = 1.0 + total_bonus / 100.0
 
-        total_deepen = sum(v for n, v, _, _ in filtered_items if DEEPEN_SUFFIX in n)
+        total_deepen = sum(v for n, v, _, _, _ in filtered_items if DEEPEN_SUFFIX in n)
         deepen_zone = 1.0 + total_deepen / 100.0
 
-        total_crit_rate = 5.0 + sum(v for n, v, _, _ in filtered_items
+        total_crit_rate = 5.0 + sum(v for n, v, _, _, _ in filtered_items
                                      if any(kw in n for kw in CRIT_RATE_KEYWORDS)
                                      and not any(kw in n for kw in CRIT_DMG_KEYWORDS))
-        total_crit_dmg = 150.0 + sum(v for n, v, _, _ in filtered_items
+        total_crit_dmg = 150.0 + sum(v for n, v, _, _, _ in filtered_items
                                      if any(kw in n for kw in CRIT_DMG_KEYWORDS))
         crit_zone = total_crit_dmg / 100.0
 
