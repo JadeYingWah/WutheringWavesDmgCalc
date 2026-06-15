@@ -6456,8 +6456,8 @@ class ResultDetailDialog(QDialog):
         """跳转到关键词关联页并高亮匹配序列号的行"""
         if not seq:
             return
-        ms = self.window()
-        # 尝试找到 MainScreen（通过 centralWidget 或递归搜索）
+        # 从当前 widget 向上找 MainScreen（centralWidget）
+        ms = self
         while ms and not hasattr(ms, '_navigate_to_key'):
             ms = ms.parent() if hasattr(ms, 'parent') and callable(ms.parent) else None
         if ms and hasattr(ms, 'page_keyword_assoc'):
@@ -6489,8 +6489,8 @@ class ResultDetailDialog(QDialog):
         """跳转到关键词关联页并高亮匹配序列号的行"""
         if not seq:
             return
-        ms = self.window()
-        # 尝试找到 MainScreen（通过 centralWidget 或递归搜索）
+        # 从当前 widget 向上找 MainScreen（centralWidget）
+        ms = self
         while ms and not hasattr(ms, '_navigate_to_key'):
             ms = ms.parent() if hasattr(ms, 'parent') and callable(ms.parent) else None
         if ms and hasattr(ms, 'page_keyword_assoc'):
@@ -8934,8 +8934,8 @@ class ResultPage(QWidget):
         """跳转到关键词关联页并高亮匹配序列号的行"""
         if not seq:
             return
-        ms = self.window()
-        # 尝试找到 MainScreen（通过 centralWidget 或递归搜索）
+        # 从当前 widget 向上找 MainScreen（centralWidget）
+        ms = self
         while ms and not hasattr(ms, '_navigate_to_key'):
             ms = ms.parent() if hasattr(ms, 'parent') and callable(ms.parent) else None
         if ms and hasattr(ms, 'page_keyword_assoc'):
@@ -8967,8 +8967,8 @@ class ResultPage(QWidget):
         """跳转到关键词关联页并高亮匹配序列号的行"""
         if not seq:
             return
-        ms = self.window()
-        # 尝试找到 MainScreen（通过 centralWidget 或递归搜索）
+        # 从当前 widget 向上找 MainScreen（centralWidget）
+        ms = self
         while ms and not hasattr(ms, '_navigate_to_key'):
             ms = ms.parent() if hasattr(ms, 'parent') and callable(ms.parent) else None
         if ms and hasattr(ms, 'page_keyword_assoc'):
@@ -11126,18 +11126,41 @@ class MainScreen(QWidget):
                 if seq_label == expected_seq:
                     pw._highlight_row(r, scroll)
                     return
-        # KeywordAssociationPage — 序列号匹配
+        # KeywordAssociationPage — 序列号匹配 + 平滑滚动 + 黄色叠层
         if nav_key == "keyword_assoc" and hasattr(self, 'page_keyword_assoc'):
             kw_page = self.page_keyword_assoc
+            kw_scroll = self._scrolls.get("keyword_assoc")
             for r in range(kw_page._table.rowCount()):
                 sl = kw_page._table.cellWidget(r, 2)
                 if sl and hasattr(sl, 'text') and sl.text() == seq_label:
-                    # 滚动到目标行并放黄色叠层
-                    QApplication.processEvents()
-                    idx = kw_page._table.model().index(r, 0)
-                    rect = kw_page._table.visualRect(idx)
-                    rect.setWidth(kw_page._table.viewport().width())
-                    _place_highlight_overlay(kw_page._table.viewport(), rect)
+                    if kw_scroll:
+                        QApplication.processEvents()
+                        row_y = sum(kw_page._table.rowHeight(i) for i in range(r))
+                        hdr_h = kw_page._table.horizontalHeader().height() if kw_page._table.horizontalHeader().isVisible() else 0
+                        table_origin = kw_page._table.mapTo(kw_scroll.widget(), QPoint(0, 0))
+                        target_y = table_origin.y() + hdr_h + row_y
+                        vp_h = kw_scroll.viewport().height()
+                        desired = max(0, target_y - vp_h // 5)
+                        sb = kw_scroll.verticalScrollBar()
+                        old_pos = sb.value()
+                        if abs(desired - old_pos) < 2:
+                            QTimer.singleShot(80, lambda: _place_highlight_overlay(
+                                kw_page._table.viewport(), kw_page._table.visualRect(kw_page._table.model().index(r, 0))))
+                            return
+                        anim = QPropertyAnimation(sb, b"value")
+                        anim.setDuration(450)
+                        anim.setStartValue(old_pos)
+                        anim.setEndValue(min(desired, sb.maximum()))
+                        anim.setEasingCurve(QEasingCurve.Type.InOutCubic)
+                        anim.finished.connect(
+                            lambda tb=kw_page._table, row=r:
+                            QTimer.singleShot(80, lambda:
+                                _place_highlight_overlay(tb.viewport(), tb.visualRect(tb.model().index(row, 0)))))
+                        anim.start()
+                    else:
+                        QApplication.processEvents()
+                        _place_highlight_overlay(kw_page._table.viewport(),
+                            kw_page._table.visualRect(kw_page._table.model().index(r, 0)))
                     return
 
     def _on_nav_changed(self, current, _previous):
