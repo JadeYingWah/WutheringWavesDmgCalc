@@ -6532,11 +6532,14 @@ class ResultDetailDialog(QDialog):
             name_w.setReadOnly(True)
             table.setCellWidget(r, 0, name_w)
             # 副名称（带 … 展开编辑按钮）
-            sub_w = QLineEdit(sub_name)
-            sub_w.setObjectName("nameEdit")
-            sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            sub_w.setPlaceholderText("（备注）")
-            table.setCellWidget(r, 1, _make_sub_name_cell(sub_w, lambda n=name: n))
+            sub_container = _make_sub_name_cell(QLineEdit(), lambda n=name: n)
+            sub_w = sub_container.findChild(QLineEdit)
+            if sub_w:
+                sub_w.setText(sub_name)
+                sub_w.setObjectName("nameEdit")
+                sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                sub_w.setPlaceholderText("（备注）")
+            table.setCellWidget(r, 1, sub_container)
             # 序列号
             seq_w = QLabel(seq if seq else "—")
             seq_w.setObjectName("seqLabel")
@@ -8960,11 +8963,14 @@ class ResultPage(QWidget):
             name_w.setReadOnly(True)
             table.setCellWidget(r, 0, name_w)
             # 副名称（带 … 展开编辑按钮）
-            sub_w = QLineEdit(sub_name)
-            sub_w.setObjectName("nameEdit")
-            sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            sub_w.setPlaceholderText("（备注）")
-            table.setCellWidget(r, 1, _make_sub_name_cell(sub_w, lambda n=name: n))
+            sub_container = _make_sub_name_cell(QLineEdit(), lambda n=name: n)
+            sub_w = sub_container.findChild(QLineEdit)
+            if sub_w:
+                sub_w.setText(sub_name)
+                sub_w.setObjectName("nameEdit")
+                sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                sub_w.setPlaceholderText("（备注）")
+            table.setCellWidget(r, 1, sub_container)
             # 序列号
             seq_w = QLabel(seq if seq else "—")
             seq_w.setObjectName("seqLabel")
