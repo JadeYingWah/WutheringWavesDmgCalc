@@ -8063,7 +8063,7 @@ def _render_process_html(
         is_const = name in CONSTANT_ATTRS or "固定" in name or "基础" in name
         fmt = f"{value:.1f}" if is_const else f"{value:.1f}%"
         tip = f"{name} = {fmt}\n来源: {src_label}"
-        sub_key = (name, src_label)
+        sub_key = (name, src_label, nav_key, round(value, 4))
         if sub_map and sub_key in sub_map:
             tip += f"\n副名称: {sub_map[sub_key]}"
         if summary_key and navigate_fn and summary_pages and summary_pages.get(summary_key):
@@ -8886,8 +8886,8 @@ class ResultPage(QWidget):
         sub_map = {}
         for entry in items:
             if len(entry) >= 6 and entry[5]:
-                # 用 (名称, 来源标签) 做键，避免同名不同源的条目覆盖
-                sub_map[(entry[0], entry[2])] = entry[5]
+                # 用 (名称, 来源标签, nav_key, 数值) 做键，避免同名同源不同值条目覆盖
+                sub_map[(entry[0], entry[2], entry[3], round(entry[1], 4))] = entry[5]
 
         # 构建计算过程（可点击值跳转来源）
         self._build_process(
