@@ -8024,7 +8024,7 @@ def _render_process_html(
         is_const = name in CONSTANT_ATTRS or "固定" in name or "基础" in name
         # 全精度显示，去掉末尾多余的零，保留小数点后最多4位
         def _fmt_val(v):
-            s = f"{v:.4f}"
+            s = f"{v:.10f}"
             return s.rstrip("0").rstrip(".") if "." in s else s
         fmt = _fmt_val(value) if is_const else (_fmt_val(value) + "%")
         tip = f"{name} = {fmt}\n来源: {src_label}"
