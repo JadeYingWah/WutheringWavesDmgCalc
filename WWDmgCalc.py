@@ -1,4 +1,4 @@
-﻿
+
 # -*- coding: utf-8 -*-
 #
 # 鸣潮伤害计算器 (Wuthering Waves Damage Calculator)
@@ -4751,6 +4751,21 @@ class DataFlowViewerDialog(QDialog):
         top.addWidget(close_btn)
         root.addLayout(top)
 
+        # 监测目标选择行
+        monitor_row = QHBoxLayout()
+        monitor_row.addWidget(QLabel("监测目标:"))
+        self._monitor_combo = QComboBox()
+        self._monitor_combo.setMinimumWidth(260)
+        self._monitor_combo.currentIndexChanged.connect(self._on_target_changed)
+        monitor_row.addWidget(self._monitor_combo)
+        monitor_row.addSpacing(12)
+        self._hide_filter_cb = QCheckBox("排除隐藏")
+        self._hide_filter_cb.setChecked(True)
+        self._hide_filter_cb.toggled.connect(self.refresh)
+        monitor_row.addWidget(self._hide_filter_cb)
+        monitor_row.addStretch()
+        root.addLayout(monitor_row)
+
         # 树形视图
         self._tree = QTreeWidget()
         self._tree.setObjectName("dataFlowTree")
@@ -4814,6 +4829,9 @@ class DataFlowViewerDialog(QDialog):
         "crit": "暴击", "crit_rate": "暴击率", "crit_dmg": "暴击伤害",
         "defense": "防御", "resistance": "抗性", "other": "其他",
     }
+
+    def _on_target_changed(self, _idx):
+        self.refresh()
 
     def refresh(self):
         self._tree.clear()
@@ -5056,6 +5074,19 @@ class DataFlowViewerDialog(QDialog):
                 _mk(downstream, [f"  {label_text}: {getattr(rp, attr).currentText()}",
                      "", "", "", ""])
 
+        # ── 监测目标选择器 ──
+        rl = ms.page_result_list
+        old_idx = self._monitor_combo.currentIndex()
+        self._monitor_combo.blockSignals(True)
+        self._monitor_combo.clear()
+        self._monitor_combo.addItem("计算结果页（全局）", None)
+        for ci, card in enumerate(rl._items):
+            label = card.get("label", f"卡片{ci}")
+            self._monitor_combo.addItem(f"[卡{ci+1}] {label}", ci)
+        if 0 <= old_idx < self._monitor_combo.count():
+            self._monitor_combo.setCurrentIndex(old_idx)
+        self._monitor_combo.blockSignals(False)
+
         # 触发真实计算并读取结果
         rp.compute()
         real = getattr(rp, '_last_computed', None)
@@ -5078,10 +5109,27 @@ class DataFlowViewerDialog(QDialog):
             return t if len(t) >= 6 else (*t, *[""] * (6 - len(t)))
         deduped_items = [_norm6(t) for t in deduped_items
                          if _matches_filter(t[0], sel_elem, sel_skill, sel_effect)
-                         and (t[0], t[2], t[3], t[4] if len(t) > 4 else "") not in HIDDEN_ITEMS]
+                         and (not self._hide_filter_cb.isChecked() or (t[0], t[2], t[3], t[4] if len(t) > 4 else "") not in HIDDEN_ITEMS)]
 
         # 关键词关联注入（与 compute() 相同逻辑）
+        selected_idx = self._monitor_combo.currentData()
         kw_text = ",".join(getattr(rp, '_keywords', []))
+        # 卡片模式：额外注入该卡片的关键词关联条目
+        if selected_idx is not None and selected_idx < len(rl._items):
+            card = rl._items[selected_idx]
+            card_kws = set(card.get("keywords", []))
+            if card_kws and hasattr(rp, '_keyword_assoc_page') and rp._keyword_assoc_page:
+                for kw_item in rp._keyword_assoc_page.get_items():
+                    kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
+                    if card_kws & kw_entry_kws:
+                        name = kw_item["name"]
+                        if self._hide_filter_cb.isChecked() and (name, "keyword_assoc", kw_item.get("seq", "")) in HIDDEN_ITEMS:
+                            continue
+                        deduped_items.append((
+                            name, kw_item["value"],
+                            kw_item.get("source", "关键词关联"),
+                            "keyword_assoc", kw_item.get("seq", ""), kw_item.get("sub_name", ""),
+                        ))
         if kw_text and getattr(rp, '_keyword_assoc_page', None):
             item_kws = set(k.strip() for k in kw_text.split(",") if k.strip())
             if item_kws:
