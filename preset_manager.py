@@ -813,29 +813,30 @@ def _apply_effects_and_indep(main_screen, effects, indep_zones, tag_prefix=""):
         else:
             page = main_screen.page_combined_trigger
 
-        # 使用 _add_row_with_source 添加行
-        page._counter += 1
-        if "倍率增加" not in name and "倍率提升" not in name:
+        # 使用 _add_row_with_source 添加行（倍率类仅发送到关键词关联）
+        is_mult_kw = "倍率增加" in name or "倍率提升" in name
+        if not is_mult_kw:
+            page._counter += 1
             page._add_row_with_source(name, value, page._counter, source)
 
-        # 设置副名称
-        if sub_name and page._rows:
-            last = page._rows[-1]
-            if 'sub_name_edit' in last:
-                last['sub_name_edit'].setText(sub_name)
+            # 设置副名称
+            if sub_name and page._rows:
+                last = page._rows[-1]
+                if 'sub_name_edit' in last:
+                    last['sub_name_edit'].setText(sub_name)
 
-        # 处理默认隐藏
-        if default_hidden and page._rows:
-            type_label = "常驻" if page.page_key == "combined_perm" else "触发"
-            seq_num = page._counter
-            key = (name, source, page.page_key, f"{type_label}{seq_num}")
-            HIDDEN_ITEMS.add(key)
-            # 更新按钮文字
-            last = page._rows[-1]
-            last['hide_btn'].setText("隐藏中")
-            last['hide_btn'].setObjectName("itemDeleteBtn")
-            last['hide_btn'].style().unpolish(last['hide_btn'])
-            last['hide_btn'].style().polish(last['hide_btn'])
+            # 处理默认隐藏
+            if default_hidden and page._rows:
+                type_label = "常驻" if page.page_key == "combined_perm" else "触发"
+                seq_num = page._counter
+                key = (name, page.page_key, f"{type_label}{seq_num}")
+                HIDDEN_ITEMS.add(key)
+                # 更新按钮文字
+                last = page._rows[-1]
+                last['hide_btn'].setText("隐藏中")
+                last['hide_btn'].setObjectName("itemDeleteBtn")
+                last['hide_btn'].style().unpolish(last['hide_btn'])
+                last['hide_btn'].style().polish(last['hide_btn'])
 
         # 同步到关键词关联页面
         if keywords:
