@@ -4709,6 +4709,7 @@ class DataFlowViewerDialog(QDialog):
         monitor_row.addWidget(QLabel("监测目标:"))
         self._monitor_combo = QComboBox()
         self._monitor_combo.setMinimumWidth(260)
+        self._monitor_combo.setMaxVisibleItems(20)
         self._monitor_combo.currentIndexChanged.connect(self._on_target_changed)
         monitor_row.addWidget(self._monitor_combo)
         monitor_row.addSpacing(12)
