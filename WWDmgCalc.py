@@ -7127,13 +7127,12 @@ class ResultListPage(QWidget):
                             filtered.append((name, value, source, "keyword_assoc", seq))
             item["process_html"] = self._build_card_process_html(filtered, item, sub_map)
         self._refresh_cards()
-        # 如果详情弹窗打开着，同步更新它
+        # 如果详情弹窗打开着，同步更新当前显示的那张卡片（不是第一个未锁定）
         open_dlg = getattr(self, '_open_detail', None)
         if open_dlg is not None and open_dlg.isVisible():
-            for item in self._items:
-                if not item["locked"]:
-                    open_dlg.update_results(item)
-                    break
+            current_item = getattr(open_dlg, '_item', None)
+            if current_item is not None and not current_item.get("locked"):
+                open_dlg.update_results(current_item)
 
     def _recalc_one(self, item, all_items):
         # 构建 sub_map（副名称 tooltip，来自原始数据）
