@@ -815,7 +815,7 @@ def _apply_effects_and_indep(main_screen, effects, indep_zones, tag_prefix=""):
 
         # 使用 _add_row_with_source 添加行
         page._counter += 1
-        if name not in ("倍率增加", "倍率提升"):
+        if "倍率增加" not in name and "倍率提升" not in name:
             page._add_row_with_source(name, value, page._counter, source)
 
         # 设置副名称
