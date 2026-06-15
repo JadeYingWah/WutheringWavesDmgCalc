@@ -7150,9 +7150,10 @@ class ResultListPage(QWidget):
                     for kw_item in self._keyword_assoc_page.get_items():
                         kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
                         if item_kws & kw_entry_kws:
+                            seq = kw_item.get("seq", "")
                             filtered.append((
                                 kw_item["name"], kw_item["value"],
-                                kw_item.get("source", "关键词关联"), "keyword_assoc",
+                                kw_item.get("source", "关键词关联"), "keyword_assoc", seq,
                             ))
             item["process_html"] = self._build_card_process_html(filtered, item)
         self._refresh_cards()
