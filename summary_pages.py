@@ -441,9 +441,18 @@ class SummaryBasePage(QWidget):
                     rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
                     rd['hide_btn'].style().unpolish(rd['hide_btn'])
                     rd['hide_btn'].style().polish(rd['hide_btn'])
-            if page._on_change_cb:
-                page._on_change_cb()
-        # 直接触发计算结果页重算 + 结果列表刷新（避免回调链条导致抖动）
+        # 同步 CombinedEntryPage 中对应行的隐藏按钮状态
+        for _, page, _ in self._external_sources:
+            if isinstance(page, _CombinedEntryPage):
+                for ri, rd in enumerate(page._rows):
+                    type_label = "常驻" if page.page_key == "combined_perm" else "触发"
+                    rd_key = (rd['name_edit'].text(), page.page_key, f"{type_label}{ri + 1}")
+                    is_hid = rd_key in _HIDDEN_ITEMS
+                    rd['hide_btn'].setText("隐藏中" if is_hid else "隐藏")
+                    rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
+                    rd['hide_btn'].style().unpolish(rd['hide_btn'])
+                    rd['hide_btn'].style().polish(rd['hide_btn'])
+        # 仅触发计算结果页重算（不通过回调链——回调会重建表格导致卡顿+滚动丢失）
         window = self.window()
         if window and hasattr(window, 'main_screen'):
             window.main_screen.page_result.compute()

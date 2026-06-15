@@ -1095,8 +1095,11 @@ class CombinedEntryPage(BaseTableAttrPage):
             rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
             rd['hide_btn'].style().unpolish(rd['hide_btn'])
             rd['hide_btn'].style().polish(rd['hide_btn'])
-        if self._on_change_cb:
-            self._on_change_cb()
+        # 仅触发计算结果页重算（不通过回调链——回调会重建表格导致卡顿+滚动丢失）
+        window = self.window()
+        if window and hasattr(window, 'main_screen'):
+            window.main_screen.page_result.compute()
+            window.main_screen.page_result_list.recalc()
 
     def _toggle_combined_lock(self, name, source, rd, btn, seq_num=0):
         """切换锁定状态，联动 LOCKED_SUMMARY_ITEMS。"""
