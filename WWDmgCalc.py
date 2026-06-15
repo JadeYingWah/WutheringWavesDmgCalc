@@ -5058,6 +5058,15 @@ class DataFlowViewerDialog(QDialog):
         sel_elem = sel_elem if sel_elem != "(无)" else None
         sel_skill = sel_skill if sel_skill != "(无)" else None
         sel_effect = sel_effect if sel_effect != "(无)" else None
+        # 卡片模式：覆盖筛选条件
+        selected_idx = self._monitor_combo.currentData()
+        if selected_idx is not None and selected_idx < len(rl._items):
+            card = rl._items[selected_idx]
+            sel_elem = card.get("element")
+            sel_skill = card.get("skill")
+            sel_effect = card.get("effect")
+            basis = card.get("basis", "攻击力")
+
         def _norm6(t):
             """补齐到 6 元组 (name, value, source, nav_key, seq, sub_name)"""
             return t if len(t) >= 6 else (*t, *[""] * (6 - len(t)))
