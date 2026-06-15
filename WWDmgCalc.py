@@ -1055,7 +1055,7 @@ class CombinedEntryPage(BaseTableAttrPage):
         window = self.window()
         if window and hasattr(window, 'main_screen'):
             window.main_screen.page_result.compute()
-            window.main_screen.page_result_list.recalc()
+            window.main_screen.page_result_list.recalc(force=True)
 
     def _toggle_combined_lock(self, name, source, rd, btn, seq_num=0):
         """切换锁定状态，联动 LOCKED_SUMMARY_ITEMS。"""
@@ -7095,9 +7095,9 @@ class ResultListPage(QWidget):
             QMessageBox.critical(self, "错误", f"截图识别失败:\n{e}")
 
     # —— 核心计算 ——
-    def recalc(self):
-        """外部回调触发；仅当开启自动更新时重算所有未锁定条目。"""
-        if not self._auto_update:
+    def recalc(self, force=False):
+        """外部回调触发；仅当开启自动更新或 force 时重算所有未锁定条目。"""
+        if not force and not self._auto_update:
             return
         items_data = _collect_all_items(self._external_sources, self._echo_pages)
         for item in self._items:
