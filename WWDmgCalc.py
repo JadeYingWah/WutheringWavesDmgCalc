@@ -7079,6 +7079,10 @@ class ResultListPage(QWidget):
                 continue
             self._recalc_one(item, items_data)
             # 自动更新时同步重新生成计算过程 HTML
+            sub_map = {}
+            for it in items_data:
+                if len(it) >= 6 and it[5]:
+                    sub_map[(it[0], it[2], it[3], it[4])] = it[5]
             filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_ in items_data
                         if _matches_filter(n, item.get("element"), item.get("skill"), item.get("effect"))
                         and (n, s, nk, "") not in HIDDEN_ITEMS]
@@ -7093,7 +7097,7 @@ class ResultListPage(QWidget):
                                 kw_item["name"], kw_item["value"],
                                 kw_item.get("source", "关键词关联"), "keyword_assoc", seq,
                             ))
-            item["process_html"] = self._build_card_process_html(filtered, item)
+            item["process_html"] = self._build_card_process_html(filtered, item, sub_map)
         self._refresh_cards()
         # 如果详情弹窗打开着，同步更新它
         open_dlg = getattr(self, '_open_detail', None)
@@ -7104,6 +7108,11 @@ class ResultListPage(QWidget):
                     break
 
     def _recalc_one(self, item, all_items):
+        # 构建 sub_map（副名称 tooltip，来自原始数据）
+        sub_map = {}
+        for it in all_items:
+            if len(it) >= 6 and it[5]:
+                sub_map[(it[0], it[2], it[3], it[4])] = it[5]
         filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_sub in all_items
                     if _matches_filter(n, item["element"], item["skill"], item["effect"])
                     and (n, s, nk, sq) not in HIDDEN_ITEMS]
@@ -7191,7 +7200,7 @@ class ResultListPage(QWidget):
         }
         item["process_html"] = self._build_card_process_html(filtered, item)
 
-    def _build_card_process_html(self, filtered, item):
+    def _build_card_process_html(self, filtered, item, sub_map=None):
         """从 filtered 词条列表生成与 ResultPage 相同格式的计算过程 HTML"""
         z = item.get("zones", {})
         if not z:
@@ -7241,11 +7250,6 @@ class ResultListPage(QWidget):
                      if any(kw in n for kw in CRIT_DMG_KEYWORDS)]
         total_crit_dmg = 150.0 + sum(v for _, v, _, _, _ in dmg_items)
 
-        # 构建 sub_map（副名称 tooltip）
-        sub_map = {}
-        for it in filtered:
-            if len(it) >= 6 and it[5]:
-                sub_map[(it[0], it[2], it[3], it[4])] = it[5]
         return _render_process_html(
             basis, zone_label, base_value, weapon_base,
             pct_items, flat_items, total_pct, total_flat, z.get("atk_zone", 0),
