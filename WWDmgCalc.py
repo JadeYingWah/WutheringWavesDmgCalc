@@ -7195,6 +7195,8 @@ class ResultListPage(QWidget):
         base_m = item["base_mult"]
         mult_inc = item.get("mult_increase", 0) + kw_mult_inc
         mult_boosts = list(item.get("mult_boosts", [])) + kw_mult_boosts
+        item["mult_increase"] = mult_inc
+        item["mult_boosts"] = mult_boosts
         mult_zone = (base_m + mult_inc)
         for bv in mult_boosts:
             mult_zone *= (1.0 + bv / 100.0)
