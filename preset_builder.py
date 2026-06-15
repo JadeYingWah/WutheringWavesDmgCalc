@@ -1373,9 +1373,11 @@ class _CharacterPresetWindow(QDialog):
         lines.append(f"元素: {self.char_element.currentText()}    效应: {self.char_effect.currentText()}")
         lines.append(f"基础数值: HP={self.base_hp.value():.0f}, ATK={self.base_atk.value():.0f}, DEF={self.base_def.value():.0f}")
         rp = self._preset_result_page
-        lines.append(f"倍率设置: 基础倍率={rp.base_mult.value():.1f}%, 倍率增加={rp.mult_increase.value():.1f}%")
-        for i, s in enumerate(rp.mult_boosts):
-            lines.append(f"          倍率提升{i + 1}={s.value():.1f}%")
+        inc_vals, _ = rp._gather_mult_data()
+        lines.append(f"倍率设置: 基础倍率={rp.base_mult.value():.1f}%, 倍率增加={sum(inc_vals):.1f}%")
+        _, boost_vals = rp._gather_mult_data()
+        for i, bv in enumerate(boost_vals):
+            lines.append(f"          倍率提升{i + 1}={bv:.1f}%")
         lines.append("")
 
         items = self._resonance_page.get_items()
@@ -1821,8 +1823,8 @@ class _CharacterPresetWindow(QDialog):
             "base_def": self.base_def.value(),
             "multiplier": {
                 "base_mult": rp.base_mult.value(),
-                "mult_increase": rp.mult_increase.value(),
-                "mult_boosts": [s.value() for s in rp.mult_boosts],
+                "mult_increase": sum(rp._gather_mult_data()[0]),
+                "mult_boosts": list(rp._gather_mult_data()[1]),
             },
             "resonance_chain": [
                 {
@@ -1860,10 +1862,7 @@ class _CharacterPresetWindow(QDialog):
         rp = self._preset_result_page
         mult = data.get("multiplier", {})
         rp.base_mult.setValue(mult.get("base_mult", 100.0))
-        rp.mult_increase.setValue(mult.get("mult_increase", 0.0))
-        for _i, _v in enumerate(mult.get("mult_boosts", [0, 0, 0])):
-            if _i < len(rp.mult_boosts):
-                rp.mult_boosts[_i].setValue(_v)
+        # 倍率增加/倍率提升由关键词关联驱动，不再通过固定 spinbox 加载
         chains = data.get("resonance_chain", [])
         items = self._resonance_page.get_items()
         for i, it in enumerate(items):

@@ -299,10 +299,7 @@ class PresetManager:
             if multiplier:
                 rp = main_screen.page_result
                 rp.base_mult.setValue(multiplier.get("base_mult", 100.0))
-                rp.mult_increase.setValue(multiplier.get("mult_increase", 0.0))
-                for _i, _v in enumerate(multiplier.get("mult_boosts", [0, 0, 0])):
-                    if _i < len(rp.mult_boosts):
-                        rp.mult_boosts[_i].setValue(_v)
+                # 倍率增加/倍率提升由关键词关联驱动，不再通过固定 spinbox 加载
 
             # 应用共鸣链效果 —— 先填充共鸣链页面，再由页面同步到综合填写/关键词关联
             chains = char_data.get("resonance_chain", [])
