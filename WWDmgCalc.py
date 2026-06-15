@@ -6466,7 +6466,7 @@ class ResultDetailDialog(QDialog):
             ms._navigate_to_key("keyword_assoc", hl_seq=seq)
 
     def _toggle_kw_hide(self, kw_key, btn):
-        """切换关键词关联条目的隐藏状态"""
+        """切换关键词关联条目的隐藏状态（实时触发重算）"""
         if kw_key in HIDDEN_ITEMS:
             HIDDEN_ITEMS.discard(kw_key)
             if btn:
@@ -6480,6 +6480,12 @@ class ResultDetailDialog(QDialog):
         if btn:
             btn.style().unpolish(btn)
             btn.style().polish(btn)
+        # 实时刷新表格 + 重算
+        self._sync_mult_entries()
+        if hasattr(self, 'auto_compute'):
+            self.auto_compute()
+        elif hasattr(self, '_on_mult_changed'):
+            self._on_mult_changed()
 
     def _jump_to_kw_row(self, seq):
         """跳转到关键词关联页并高亮匹配序列号的行"""
@@ -6493,7 +6499,7 @@ class ResultDetailDialog(QDialog):
             ms._navigate_to_key("keyword_assoc", hl_seq=seq)
 
     def _toggle_kw_hide(self, kw_key, btn):
-        """切换关键词关联条目的隐藏状态"""
+        """切换关键词关联条目的隐藏状态（实时触发重算）"""
         if kw_key in HIDDEN_ITEMS:
             HIDDEN_ITEMS.discard(kw_key)
             if btn:
@@ -6507,6 +6513,12 @@ class ResultDetailDialog(QDialog):
         if btn:
             btn.style().unpolish(btn)
             btn.style().polish(btn)
+        # 实时刷新表格 + 重算
+        self._sync_mult_entries()
+        if hasattr(self, 'auto_compute'):
+            self.auto_compute()
+        elif hasattr(self, '_on_mult_changed'):
+            self._on_mult_changed()
 
     def _populate_mult_table(self, table, rows):
         """填充倍率表格（照搬关键词关联表格结构，来源可跳转，操作可隐藏）"""
@@ -8886,7 +8898,7 @@ class ResultPage(QWidget):
             ms._navigate_to_key("keyword_assoc", hl_seq=seq)
 
     def _toggle_kw_hide(self, kw_key, btn):
-        """切换关键词关联条目的隐藏状态"""
+        """切换关键词关联条目的隐藏状态（实时触发重算）"""
         if kw_key in HIDDEN_ITEMS:
             HIDDEN_ITEMS.discard(kw_key)
             if btn:
@@ -8900,6 +8912,12 @@ class ResultPage(QWidget):
         if btn:
             btn.style().unpolish(btn)
             btn.style().polish(btn)
+        # 实时刷新表格 + 重算
+        self._sync_mult_entries()
+        if hasattr(self, 'auto_compute'):
+            self.auto_compute()
+        elif hasattr(self, '_on_mult_changed'):
+            self._on_mult_changed()
 
     def _jump_to_kw_row(self, seq):
         """跳转到关键词关联页并高亮匹配序列号的行"""
@@ -8913,7 +8931,7 @@ class ResultPage(QWidget):
             ms._navigate_to_key("keyword_assoc", hl_seq=seq)
 
     def _toggle_kw_hide(self, kw_key, btn):
-        """切换关键词关联条目的隐藏状态"""
+        """切换关键词关联条目的隐藏状态（实时触发重算）"""
         if kw_key in HIDDEN_ITEMS:
             HIDDEN_ITEMS.discard(kw_key)
             if btn:
@@ -8927,6 +8945,12 @@ class ResultPage(QWidget):
         if btn:
             btn.style().unpolish(btn)
             btn.style().polish(btn)
+        # 实时刷新表格 + 重算
+        self._sync_mult_entries()
+        if hasattr(self, 'auto_compute'):
+            self.auto_compute()
+        elif hasattr(self, '_on_mult_changed'):
+            self._on_mult_changed()
 
     def _populate_mult_table(self, table, rows):
         """填充倍率表格（照搬关键词关联表格结构，来源可跳转，操作可隐藏）"""
