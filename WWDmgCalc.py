@@ -1,4 +1,4 @@
-﻿
+
 # -*- coding: utf-8 -*-
 #
 # 鸣潮伤害计算器 (Wuthering Waves Damage Calculator)
@@ -1011,7 +1011,7 @@ class CombinedEntryPage(BaseTableAttrPage):
             'chain_num': chain_num,
         }
         type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-        key = (name, source, self.page_key, f"{type_label}{seq_num}")
+        key = (name, self.page_key, f"{type_label}{seq_num}")
         is_locked = key in LOCKED_SUMMARY_ITEMS
         is_hidden = key in HIDDEN_ITEMS
 
@@ -1075,7 +1075,7 @@ class CombinedEntryPage(BaseTableAttrPage):
     def _toggle_combined_hide(self, name, source, btn, seq_num=0):
         """切换隐藏状态，联动 HIDDEN_ITEMS，并同步到其他页。"""
         type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-        key = (name, source, self.page_key, f"{type_label}{seq_num}")
+        key = (name, self.page_key, f"{type_label}{seq_num}")
         if key in HIDDEN_ITEMS:
             HIDDEN_ITEMS.discard(key)
             btn.setText("隐藏")
@@ -1089,7 +1089,7 @@ class CombinedEntryPage(BaseTableAttrPage):
         # 同步同页面其他同名词条的隐藏按钮
         for ri, rd in enumerate(self._rows):
             type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-            rd_key = (rd['name_edit'].text(), rd.get('source', ''), self.page_key, f"{type_label}{ri + 1}")
+            rd_key = (rd['name_edit'].text(), self.page_key, f"{type_label}{ri + 1}")
             is_hid = rd_key in HIDDEN_ITEMS
             rd['hide_btn'].setText("隐藏中" if is_hid else "隐藏")
             rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
@@ -3660,8 +3660,7 @@ def _collect_all_items(external_sources, echo_pages=None):
                     seq_label = f"{type_label}{entry[4]}"
                 if len(entry) >= 6:
                     sub_name = entry[5] or ""
-                if (name, item_src, nav_key, seq_label) not in HIDDEN_ITEMS:
-                    items.append((name, value, item_src, nav_key, seq_label, sub_name))
+                items.append((name, value, item_src, nav_key, seq_label, sub_name))
         elif isinstance(data, dict):
             if 'base_atk' in data:
                 for n, v in [
@@ -6603,7 +6602,7 @@ class ResultDetailDialog(QDialog):
                 value = kw_item.get("value", 0.0)
                 source = kw_item.get("source", "")
                 seq = kw_item.get("seq", "")
-                if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                if (name, "keyword_assoc", seq) in HIDDEN_ITEMS:
                     continue
                 if "倍率增加" in name:
                     inc_vals.append(value)
@@ -6615,7 +6614,7 @@ class ResultDetailDialog(QDialog):
         items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
         filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_ in items_data
                     if _matches_filter(n, self._item.get("element"), self._item.get("skill"), self._item.get("effect"))
-                    and (n, s, nk, sq) not in HIDDEN_ITEMS]
+                    and (n, nk, sq) not in HIDDEN_ITEMS]
         # 关键词注入
         if hasattr(self._page, '_keyword_assoc_page') and self._page._keyword_assoc_page:
             item_kws = set(k.strip() for k in self._item.get("keywords", []))
@@ -7092,7 +7091,7 @@ class ResultListPage(QWidget):
                     sub_map[(it[0], it[2], it[3], it[4])] = it[5]
             filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_ in items_data
                         if _matches_filter(n, item.get("element"), item.get("skill"), item.get("effect"))
-                        and (n, s, nk, sq) not in HIDDEN_ITEMS]
+                        and (n, nk, sq) not in HIDDEN_ITEMS]
             if self._keyword_assoc_page:
                 item_kws = set(k.strip() for k in item.get("keywords", []))
                 if item_kws:
@@ -7103,7 +7102,7 @@ class ResultListPage(QWidget):
                             value = kw_item["value"]
                             source = kw_item.get("source", "关键词关联")
                             seq = kw_item.get("seq", "")
-                            if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                            if (name, "keyword_assoc", seq) in HIDDEN_ITEMS:
                                 continue
                             filtered.append((name, value, source, "keyword_assoc", seq))
             item["process_html"] = self._build_card_process_html(filtered, item, sub_map)
@@ -7124,7 +7123,7 @@ class ResultListPage(QWidget):
                 sub_map[(it[0], it[2], it[3], it[4])] = it[5]
         filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_sub in all_items
                     if _matches_filter(n, item["element"], item["skill"], item["effect"])
-                    and (n, s, nk, sq) not in HIDDEN_ITEMS]
+                    and (n, nk, sq) not in HIDDEN_ITEMS]
         # 从关键词关联页面注入匹配的效果（倍率增加/提升单独提取给倍率乘区）
         kw_mult_inc = 0.0
         kw_mult_boosts = []
@@ -7143,7 +7142,7 @@ class ResultListPage(QWidget):
                     source = kw_item.get("source", "关键词关联")
                     seq = kw_item.get("seq", "")
                     # 检查 HIDDEN_ITEMS
-                    if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                    if (name, "keyword_assoc", seq) in HIDDEN_ITEMS:
                         continue
                     # 注入到 filtered 参与常规乘区分类
                     filtered.append((name, value, source, "keyword_assoc", seq))
@@ -8717,7 +8716,7 @@ class ResultPage(QWidget):
 
         filtered_items = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_sub in items
                           if _matches_filter(n, selected_element, selected_skill, selected_effect)
-                          and (n, s, nk, sq) not in HIDDEN_ITEMS]
+                          and (n, nk, sq) not in HIDDEN_ITEMS]
 
         # 关键词关联注入（与 ResultListPage._recalc_one 相同逻辑）
         kw_text = ",".join(self._keywords)
@@ -8731,7 +8730,7 @@ class ResultPage(QWidget):
                         value = kw_item["value"]
                         source = kw_item.get("source", "关键词关联")
                         seq = kw_item.get("seq", "")
-                        if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                        if (name, "keyword_assoc", seq) in HIDDEN_ITEMS:
                             continue
                         filtered_items.append((
                             name, value, source, "keyword_assoc", seq,
@@ -9072,7 +9071,7 @@ class ResultPage(QWidget):
                 value = kw_item.get("value", 0.0)
                 source = kw_item.get("source", "")
                 seq = kw_item.get("seq", "")
-                if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                if (name, "keyword_assoc", seq) in HIDDEN_ITEMS:
                     continue
                 if "倍率增加" in name:
                     inc_vals.append(value)

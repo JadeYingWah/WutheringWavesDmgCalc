@@ -247,7 +247,7 @@ class SummaryBasePage(QWidget):
             r = table.rowCount()
             table.insertRow(r)
             table.setRowHeight(r, 42)
-            key = (name, src_label, nav_key, seq_label)
+            key = (name, nav_key, seq_label)
             is_locked = key in _LOCKED_SUMMARY_ITEMS
             is_hidden = key in _HIDDEN_ITEMS
             is_const = name in _CONSTANT_ATTRS or "固定" in name
@@ -419,7 +419,7 @@ class SummaryBasePage(QWidget):
 
     def _toggle_hide_item(self, name, src_label, nav_key, btn, seq_label=""):
         """切换词条的隐藏/显示状态并触发全局重算。"""
-        key = (name, src_label, nav_key, seq_label)
+        key = (name, nav_key, seq_label)
         if key in _HIDDEN_ITEMS:
             _HIDDEN_ITEMS.discard(key)
             btn.setText("隐藏")
@@ -435,7 +435,7 @@ class SummaryBasePage(QWidget):
             if isinstance(page, _CombinedEntryPage):
                 for ri, rd in enumerate(page._rows):
                     type_label = "常驻" if page.page_key == "combined_perm" else "触发"
-                    rd_key = (rd['name_edit'].text(), rd.get('source', ''), page.page_key, f"{type_label}{ri + 1}")
+                    rd_key = (rd['name_edit'].text(), page.page_key, f"{type_label}{ri + 1}")
                     is_hid = rd_key in _HIDDEN_ITEMS
                     rd['hide_btn'].setText("隐藏中" if is_hid else "隐藏")
                     rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
@@ -443,6 +443,11 @@ class SummaryBasePage(QWidget):
                     rd['hide_btn'].style().polish(rd['hide_btn'])
             if page._on_change_cb:
                 page._on_change_cb()
+        # 直接触发计算结果页重算 + 结果列表刷新（避免回调链条导致抖动）
+        window = self.window()
+        if window and hasattr(window, 'main_screen'):
+            window.main_screen.page_result.compute()
+            window.main_screen.page_result_list.recalc()
 
     def _toggle_summary_lock(self, name, src_label, nav_key, btn, seq_label=""):
         """切换数值总结中词条的锁定/解锁状态。"""
