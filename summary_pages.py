@@ -77,6 +77,11 @@ class SummaryBasePage(QWidget):
 
         self._external_sources = []
         self._echo_pages = {}
+        self._filter_chips = {}   # group_name -> [chip_widget, ...]
+        self._active_filters = {} # group_name -> "全部" | "无" | specific_value
+        self._filtered_table = None
+        self._filtered_all_items = []
+        self._filter_refill_fn = None
 
     def set_external_sources(self, sources):
         self._external_sources = sources
@@ -88,6 +93,82 @@ class SummaryBasePage(QWidget):
 
     def recalc(self):
         raise NotImplementedError
+
+    def _build_filter_bar(self, groups):
+        """Build filter chip buttons. groups: [(label, options_list), ...]
+        Each option is a string. First option should be "全部".
+        Returns a QWidget containing all filter rows."""
+        container = QWidget()
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(0, 4, 0, 4)
+        layout.setSpacing(4)
+
+        for group_label, options in groups:
+            row = QHBoxLayout()
+            row.setSpacing(4)
+            lbl = QLabel(group_label + ":")
+            lbl.setObjectName("labelSecondary")
+            lbl.setFixedWidth(70)
+            row.addWidget(lbl)
+
+            chips = []
+            for opt in options:
+                btn = QPushButton(opt)
+                btn.setCheckable(True)
+                btn.setFixedHeight(24)
+                btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                btn.setStyleSheet(
+                    "QPushButton { border: 1px solid #555; border-radius: 12px; "
+                    "padding: 1px 10px; font-size: 11px; background: transparent; } "
+                    "QPushButton:hover { border-color: #888; } "
+                    "QPushButton:checked { background: #3a6a9a; color: #fff; border-color: #5a9aca; }")
+                btn.clicked.connect(
+                    lambda checked, g=group_label, o=opt, cl=chips:
+                    self._on_filter_chip_clicked(g, o, cl))
+                chips.append(btn)
+                row.addWidget(btn)
+            row.addStretch()
+            layout.addLayout(row)
+            self._filter_chips[group_label] = chips
+            self._active_filters[group_label] = "全部"
+
+        return container
+
+    def _on_filter_chip_clicked(self, group_name, value, chips):
+        """Handle filter chip click: update checked state, uncheck others in group."""
+        # Block signals to prevent recursion
+        for c in chips:
+            c.blockSignals(True)
+            c.setChecked(c.text() == value)
+            c.blockSignals(False)
+        self._active_filters[group_name] = value
+        self._refilter_table()
+
+    def _matches_filter(self, name):
+        """Check if item name matches all active filter groups."""
+        for group, value in self._active_filters.items():
+            if value == "全部":
+                continue
+            if value == "无":
+                # Must NOT match any option in this group (excluding "全部" and "无")
+                if group in self._filter_chips:
+                    for c in self._filter_chips[group]:
+                        opt = c.text()
+                        if opt not in ("全部", "无") and opt in name:
+                            return False
+            else:
+                if value not in name:
+                    return False
+        return True
+
+    def _refilter_table(self):
+        """Re-apply filters and refill the table."""
+        if self._filtered_table is None:
+            return
+        filtered = [it for it in self._filtered_all_items if self._matches_filter(it[0])]
+        self._filtered_table.setRowCount(0)
+        if self._filter_refill_fn:
+            self._filter_refill_fn(self._filtered_table, filtered, self._navigate)
 
     def _make_result_group(self, title, rows):
         """rows: [(label, value_str), ...]"""
@@ -594,11 +675,21 @@ class SummaryBonusZonePage(SummaryBasePage):
                       if any(s in it[0] for s in damage_calc.BONUS_SUFFIX)
                       and not any(kw in it[0] for kw in damage_calc.CRIT_DMG_KEYWORDS)]
 
+        # 筛选芯片：元素属性 + 技能类型
+        filter_bar = self._build_filter_bar([
+            ("元素属性", ["全部", "无"] + damage_calc.ELEMENTS[1:]),
+            ("技能类型", ["全部", "无"] + list(damage_calc.SKILL_TYPE_NAMES_SET)),
+        ])
+        self._content_layout.addWidget(filter_bar)
+
         label = QLabel("伤害加成 / 伤害提升 词条")
         self._content_layout.addWidget(label)
         t = self._make_source_table(["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"],
                                     [0.22, 0.10, 0.07, 0.14, 0.07, 0.12, 0.10])
-        self._fill_source_table(t, bonus_items, self._navigate)
+        self._filtered_table = t
+        self._filtered_all_items = bonus_items
+        self._filter_refill_fn = self._fill_source_table
+        self._refilter_table()
         self._content_layout.addWidget(t)
 
 
@@ -615,11 +706,22 @@ class SummaryDeepenZonePage(SummaryBasePage):
 
         deepen_items = [it for it in items if damage_calc.DEEPEN_SUFFIX in it[0]]
 
+        # 筛选芯片：元素属性 + 技能类型 + 效应类型
+        filter_bar = self._build_filter_bar([
+            ("元素属性", ["全部", "无"] + damage_calc.ELEMENTS[1:]),
+            ("技能类型", ["全部", "无"] + list(damage_calc.SKILL_TYPE_NAMES_SET)),
+            ("效应类型", ["全部", "无"] + damage_calc.EFFECTS[1:]),
+        ])
+        self._content_layout.addWidget(filter_bar)
+
         label = QLabel("伤害加深 词条")
         self._content_layout.addWidget(label)
         t = self._make_source_table(["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"],
                                     [0.22, 0.10, 0.07, 0.14, 0.07, 0.12, 0.10])
-        self._fill_source_table(t, deepen_items, self._navigate)
+        self._filtered_table = t
+        self._filtered_all_items = deepen_items
+        self._filter_refill_fn = self._fill_source_table
+        self._refilter_table()
         self._content_layout.addWidget(t)
 
 
