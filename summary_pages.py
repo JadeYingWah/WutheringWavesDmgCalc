@@ -147,30 +147,43 @@ class SummaryBasePage(QWidget):
         self._refilter_table()
 
     def _matches_filter(self, name):
-        """OR 逻辑：条目匹配任意一组筛选即通过。
-        「全部」= 包含该组任意值则通过，「无」= 不含该组任意值则通过，
-        具体值 = 包含该值则通过。所有组均为「全部」时显示全部条目。"""
-        all_all = all(v == "全部" for v in self._active_filters.values())
-        if all_all:
+        """混合逻辑：「无」强制 AND（必须不含该组任意值），
+        具体值之间 OR，所有组「全部」时显示全部。"""
+        values = self._active_filters
+
+        # 全部「全部」→ 显示全部
+        if all(v == "全部" for v in values.values()):
             return True
-        for group, value in self._active_filters.items():
+
+        # 第一轮：「无」是强制 AND —— 条目必须通过所有「无」组
+        for group, value in values.items():
+            if value == "无":
+                if group in self._filter_chips:
+                    for c in self._filter_chips[group]:
+                        opt = c.text()
+                        if opt not in ("全部", "无") and opt in name:
+                            return False  # 含有该组属性 → 不通过
+
+        # 第二轮：具体值和「全部」是 OR —— 条目匹配任一即通过
+        has_specific = any(v != "全部" and v != "无" for v in values.values())
+        if has_specific:
+            for group, value in values.items():
+                if value == "全部":
+                    for c in self._filter_chips.get(group, []):
+                        opt = c.text()
+                        if opt not in ("全部", "无") and opt in name:
+                            return True
+                elif value != "无" and value in name:
+                    return True
+            return False
+
+        # 只有「全部」和「无」（无具体值）：通过了「无」的条目 + 匹配任意「全部」组
+        for group, value in values.items():
             if value == "全部":
-                # 该项包含本组任意可选值 → 通过
                 for c in self._filter_chips.get(group, []):
                     opt = c.text()
                     if opt not in ("全部", "无") and opt in name:
                         return True
-            elif value == "无":
-                # 该项不含本组任意可选值 → 通过
-                has_any = any(
-                    c.text() not in ("全部", "无") and c.text() in name
-                    for c in self._filter_chips.get(group, [])
-                )
-                if not has_any:
-                    return True
-            else:
-                if value in name:
-                    return True
         return False
 
     def _refilter_table(self):
