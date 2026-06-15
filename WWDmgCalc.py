@@ -1010,7 +1010,8 @@ class CombinedEntryPage(BaseTableAttrPage):
             'locked': False,
             'chain_num': chain_num,
         }
-        key = (name, source, self.page_key, str(seq_num))
+        type_label = "常驻" if self.page_key == "combined_perm" else "触发"
+        key = (name, source, self.page_key, f"{type_label}{seq_num}")
         is_locked = key in LOCKED_SUMMARY_ITEMS
         is_hidden = key in HIDDEN_ITEMS
 
@@ -1073,7 +1074,8 @@ class CombinedEntryPage(BaseTableAttrPage):
 
     def _toggle_combined_hide(self, name, source, btn, seq_num=0):
         """切换隐藏状态，联动 HIDDEN_ITEMS，并同步到其他页。"""
-        key = (name, source, self.page_key, str(seq_num))
+        type_label = "常驻" if self.page_key == "combined_perm" else "触发"
+        key = (name, source, self.page_key, f"{type_label}{seq_num}")
         if key in HIDDEN_ITEMS:
             HIDDEN_ITEMS.discard(key)
             btn.setText("隐藏")
@@ -1085,8 +1087,9 @@ class CombinedEntryPage(BaseTableAttrPage):
         btn.style().unpolish(btn)
         btn.style().polish(btn)
         # 同步同页面其他同名词条的隐藏按钮
-        for rd in self._rows:
-            rd_key = (rd['name_edit'].text(), rd.get('source', ''), self.page_key, rd['seq_label'].text())
+        for ri, rd in enumerate(self._rows):
+            type_label = "常驻" if self.page_key == "combined_perm" else "触发"
+            rd_key = (rd['name_edit'].text(), rd.get('source', ''), self.page_key, f"{type_label}{ri + 1}")
             is_hid = rd_key in HIDDEN_ITEMS
             rd['hide_btn'].setText("隐藏中" if is_hid else "隐藏")
             rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
@@ -1097,7 +1100,8 @@ class CombinedEntryPage(BaseTableAttrPage):
 
     def _toggle_combined_lock(self, name, source, rd, btn, seq_num=0):
         """切换锁定状态，联动 LOCKED_SUMMARY_ITEMS。"""
-        key = (name, source, self.page_key, str(seq_num))
+        type_label = "常驻" if self.page_key == "combined_perm" else "触发"
+        key = (name, source, self.page_key, f"{type_label}{seq_num}")
         if key in LOCKED_SUMMARY_ITEMS:
             LOCKED_SUMMARY_ITEMS.discard(key)
             rd['locked'] = False
@@ -1117,7 +1121,8 @@ class CombinedEntryPage(BaseTableAttrPage):
 
     def _delete_combined_row(self, name, source, rd, seq_num=0):
         """删除行，同时清除隐藏和锁定状态。"""
-        key = (name, source, self.page_key, str(seq_num))
+        type_label = "常驻" if self.page_key == "combined_perm" else "触发"
+        key = (name, source, self.page_key, f"{type_label}{seq_num}")
         HIDDEN_ITEMS.discard(key)
         LOCKED_SUMMARY_ITEMS.discard(key)
         rd['locked'] = False
@@ -3510,8 +3515,9 @@ class EnemyDefensePage(BaseTableAttrPage):
                 if not scroll: continue
                 pw = scroll.widget()
                 if not isinstance(pw, CombinedEntryPage): continue
+                type_label = "常驻" if key == "combined_perm" else "触发"
                 for r, rd in enumerate(pw._rows):
-                    if seq_label == str(r + 1):
+                    if seq_label == f"{type_label}{r + 1}":
                         pw._highlight_row(r, scroll)
                         return
         except Exception:
@@ -3646,9 +3652,12 @@ def _collect_all_items(external_sources, echo_pages=None):
                 name, value = entry[0], entry[1]
                 # 如果数据自带来源标签（如 CombinedEntryPage），优先使用
                 item_src = entry[3] if len(entry) >= 4 else src_label
-                # 序列号：纯数字，nav_key 已区分 perm/trigger
-                seq_label = str(entry[4]) if len(entry) >= 5 and entry[4] else ""
+                # 序列号：CombinedEntryPage 条目含 seq_num，转为 "常驻N"/"触发N"
+                seq_label = ""
                 sub_name = ""
+                if len(entry) >= 5 and nav_key in ("combined_perm", "combined_trigger"):
+                    type_label = "常驻" if nav_key == "combined_perm" else "触发"
+                    seq_label = f"{type_label}{entry[4]}"
                 if len(entry) >= 6:
                     sub_name = entry[5] or ""
                 items.append((name, value, item_src, nav_key, seq_label, sub_name))
@@ -11046,7 +11055,7 @@ class MainScreen(QWidget):
                 continue
             type_label = "常驻" if key == "combined_perm" else "触发"
             for r, rd in enumerate(pw._rows):
-                expected_seq = str(r + 1)
+                expected_seq = f"{type_label}{r + 1}"
                 if seq_label == expected_seq:
                     pw._highlight_row(r, scroll)
                     return
