@@ -7193,8 +7193,8 @@ class ResultListPage(QWidget):
         indep_zone = getattr(self._indep_zone_page, 'independent_zone', 1.0) if self._indep_zone_page else 1.0
         # 倍率乘区：基础倍率 + 关键词关联注入的倍率增加/倍率提升
         base_m = item["base_mult"]
-        mult_inc = item.get("mult_increase", 0) + kw_mult_inc
-        mult_boosts = list(item.get("mult_boosts", [])) + kw_mult_boosts
+        mult_inc = kw_mult_inc
+        mult_boosts = kw_mult_boosts
         item["mult_increase"] = mult_inc
         item["mult_boosts"] = mult_boosts
         mult_zone = (base_m + mult_inc)
