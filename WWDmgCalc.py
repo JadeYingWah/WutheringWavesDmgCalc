@@ -1,4 +1,4 @@
-﻿
+
 # -*- coding: utf-8 -*-
 #
 # 鸣潮伤害计算器 (Wuthering Waves Damage Calculator)
@@ -7880,7 +7880,7 @@ class ResultListPage(QWidget):
                 "category": item.get("category", ""),
                 "base_mult": item["base_mult"], "mult_increase": item["mult_increase"],
                 "mult_boosts": item["mult_boosts"], "zones": item["zones"],
-                "timestamp": item["timestamp"],
+                "timestamp": item.get("timestamp", ""),
                 "keywords": item.get("keywords", []),
                 "process_html": item.get("process_html", ""),
             }
