@@ -6531,7 +6531,7 @@ class ResultDetailDialog(QDialog):
             name_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             name_w.setReadOnly(True)
             table.setCellWidget(r, 0, name_w)
-            # 副名称（带 … 展开编辑按钮）
+            # 副名称（只读展示，编辑请到关键词关联页）
             sub_container = _make_sub_name_cell(QLineEdit(), lambda n=name: n)
             sub_w = sub_container.findChild(QLineEdit)
             if sub_w:
@@ -6539,6 +6539,7 @@ class ResultDetailDialog(QDialog):
                 sub_w.setObjectName("nameEdit")
                 sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 sub_w.setPlaceholderText("（备注）")
+                sub_w.setReadOnly(True)
             table.setCellWidget(r, 1, sub_container)
             # 序列号
             seq_w = QLabel(seq if seq else "—")
@@ -8962,7 +8963,7 @@ class ResultPage(QWidget):
             name_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             name_w.setReadOnly(True)
             table.setCellWidget(r, 0, name_w)
-            # 副名称（带 … 展开编辑按钮）
+            # 副名称（只读展示，编辑请到关键词关联页）
             sub_container = _make_sub_name_cell(QLineEdit(), lambda n=name: n)
             sub_w = sub_container.findChild(QLineEdit)
             if sub_w:
@@ -8970,6 +8971,7 @@ class ResultPage(QWidget):
                 sub_w.setObjectName("nameEdit")
                 sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 sub_w.setPlaceholderText("（备注）")
+                sub_w.setReadOnly(True)
             table.setCellWidget(r, 1, sub_container)
             # 序列号
             seq_w = QLabel(seq if seq else "—")
