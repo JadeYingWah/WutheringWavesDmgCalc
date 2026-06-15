@@ -6481,7 +6481,7 @@ class ResultDetailDialog(QDialog):
         # 实时刷新表格 + 重算
         self._sync_mult_entries()
         if hasattr(self, 'auto_compute'):
-            self.auto_compute()
+            self.compute()  # 隐藏强制重算，无视 auto_compute 开关
         elif hasattr(self, '_on_mult_changed'):
             self._on_mult_changed()
 
@@ -8940,7 +8940,7 @@ class ResultPage(QWidget):
         # 实时刷新表格 + 重算
         self._sync_mult_entries()
         if hasattr(self, 'auto_compute'):
-            self.auto_compute()
+            self.compute()  # 隐藏强制重算，无视 auto_compute 开关
         elif hasattr(self, '_on_mult_changed'):
             self._on_mult_changed()
 
@@ -10779,7 +10779,7 @@ class MainScreen(QWidget):
                 er._recalc()
                 for sp in sps:
                     sp.recalc()
-                rp.auto_compute()
+                rp.compute()
                 rl.recalc()
             return _cb
 
@@ -10793,7 +10793,7 @@ class MainScreen(QWidget):
             def _cb():
                 for sp in sps:
                     sp.recalc()
-                rp.auto_compute()
+                rp.compute()
                 rl.recalc()
             return _cb
         self.page_char_base._on_change_cb = _make_char_cb(
