@@ -6429,7 +6429,7 @@ class ResultDetailDialog(QDialog):
     def _sync_mult_entries(self):
         """从关键词关联同步倍率值到表格（实时互通，只读展示）"""
         kw_page = getattr(self._page, '_keyword_assoc_page', None)
-        card_kw_set = set(getattr(self._page, '_keywords', []))
+        card_kw_set = set(k.strip() for k in self._item.get("keywords", []))
         inc_rows = []
         boost_rows = []
         if kw_page:
@@ -6639,7 +6639,7 @@ class ResultDetailDialog(QDialog):
         inc_vals = []
         boost_vals = []
         kw_page = self._keyword_assoc_page if hasattr(self, '_keyword_assoc_page') else getattr(getattr(self, '_page', None), '_keyword_assoc_page', None)
-        card_kw_set = set(self._keywords) if hasattr(self, '_keywords') else set(getattr(getattr(self, '_page', None), '_keywords', []))
+        card_kw_set = set(self._keywords) if hasattr(self, '_keywords') else set(k.strip() for k in self._item.get("keywords", []))
         if kw_page and card_kw_set:
             for kw_item in kw_page.get_items():
                 kw_entry_kws = kw_item.get("keywords", "")
@@ -7866,6 +7866,7 @@ class ResultListPage(QWidget):
                 dlg.name_edit.setText(item["label"])
                 dlg.base_mult.setValue(item["base_mult"])
                 # 倍率值由关键词关联驱动，show 时 _sync_mult_entries() 自动填充表格
+                dlg._sync_mult_entries()
                 dlg.filter_basis.setCurrentText(item["basis"])
                 dlg.filter_element.setCurrentText(item["element"] if item["element"] else "(无)")
                 dlg.filter_skill.setCurrentText(item["skill"] if item["skill"] else "(无)")
@@ -7885,6 +7886,7 @@ class ResultListPage(QWidget):
         dlg.setModal(False)
         dlg.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
         self._open_detail = dlg
+        dlg._sync_mult_entries()
         dlg.destroyed.connect(lambda: setattr(self, '_open_detail', None))
         dlg.show()
 
@@ -9131,7 +9133,7 @@ class ResultPage(QWidget):
         inc_vals = []
         boost_vals = []
         kw_page = self._keyword_assoc_page if hasattr(self, '_keyword_assoc_page') else getattr(getattr(self, '_page', None), '_keyword_assoc_page', None)
-        card_kw_set = set(self._keywords) if hasattr(self, '_keywords') else set(getattr(getattr(self, '_page', None), '_keywords', []))
+        card_kw_set = set(self._keywords) if hasattr(self, '_keywords') else set(k.strip() for k in self._item.get("keywords", []))
         if kw_page and card_kw_set:
             for kw_item in kw_page.get_items():
                 kw_entry_kws = kw_item.get("keywords", "")
