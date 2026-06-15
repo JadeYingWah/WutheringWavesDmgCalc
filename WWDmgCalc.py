@@ -3660,7 +3660,8 @@ def _collect_all_items(external_sources, echo_pages=None):
                     seq_label = f"{type_label}{entry[4]}"
                 if len(entry) >= 6:
                     sub_name = entry[5] or ""
-                items.append((name, value, item_src, nav_key, seq_label, sub_name))
+                if (name, item_src, nav_key, seq_label) not in HIDDEN_ITEMS:
+                    items.append((name, value, item_src, nav_key, seq_label, sub_name))
         elif isinstance(data, dict):
             if 'base_atk' in data:
                 for n, v in [
