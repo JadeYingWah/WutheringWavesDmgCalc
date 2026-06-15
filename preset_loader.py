@@ -736,7 +736,7 @@ class PresetLoaderDialog(QDialog):
         if weapon_name:
             refine_spin = QSpinBox()
             refine_spin.setRange(1, 5)
-            refine_spin.setValue(1)
+            refine_spin.setValue(5)
             refine_spin.setSuffix(" 阶")
             refine_spin.setToolTip("选择使用哪一阶的武器精炼数据")
             form.addRow(f"武器等阶 ({weapon_name}):", refine_spin)
