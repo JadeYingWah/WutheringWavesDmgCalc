@@ -6284,9 +6284,9 @@ class ResultDetailDialog(QDialog):
         if "\x1e" in url:
             url = url.split("\x1e")[0]
         if url.startswith("hl:"):
-            parts = url[3:].split(":", 3)
-            if len(parts) >= 4:
-                sk, name, src, nk = parts[0], parts[1], parts[2], parts[3]
+            parts = url[3:].split(":", 4)
+            if len(parts) >= 5:
+                sk, name, src, nk, sq = parts[0], parts[1], parts[2], parts[3], parts[4]
                 # 详情弹窗中的链接跳转到主界面
                 main_win = self.parent()
                 if main_win and hasattr(main_win, 'main_screen'):
@@ -6295,7 +6295,7 @@ class ResultDetailDialog(QDialog):
                         ms._navigate_to(sk)
                     tp = getattr(ms, f'page_{sk}', None)
                     if tp and hasattr(tp, 'highlight_item'):
-                        QTimer.singleShot(200, lambda: tp.highlight_item(name, src, nk))
+                        QTimer.singleShot(200, lambda: tp.highlight_item(name, src, nk, sq))
 
     def _on_detail_process_hover(self, url):
         """鼠标悬停链接时显示来源 tooltip。"""
@@ -8056,9 +8056,10 @@ def _render_process_html(
             return f'<a href="{nav_url}\x1e{t}" style="color:{link_c};font-weight:700;text-decoration:underline;">{text}</a>'
         return f'<span style="color:{accent_c};font-weight:700;" title="{t}">{text}</span>'
 
-    def _hl_link(text, tooltip, summary_key, name, src_label, nav_key):
+    def _hl_link(text, tooltip, summary_key, name, src_label, nav_key, seq_label=None):
         t = _esc(tooltip).replace("\n", "&#10;")
-        href = f"hl:{summary_key}:{_esc(name)}:{_esc(src_label)}:{_esc(nav_key)}\x1e{t}"
+        sq = _esc(seq_label) if seq_label else ""
+        href = f"hl:{summary_key}:{_esc(name)}:{_esc(src_label)}:{_esc(nav_key)}:{sq}\x1e{t}"
         return f'<a href="{href}" style="color:{link_c};font-weight:700;text-decoration:underline;">{text}</a>'
 
     def _item_link(name, value, src_label, nav_key, summary_key=None, seq_label=None):
@@ -8069,7 +8070,7 @@ def _render_process_html(
         if sub_map and sub_key in sub_map:
             tip += f"\n副名称: {sub_map[sub_key]}"
         if summary_key and navigate_fn and summary_pages and summary_pages.get(summary_key):
-            return _hl_link(fmt, tip, summary_key, name, src_label, nav_key)
+            return _hl_link(fmt, tip, summary_key, name, src_label, nav_key, seq_label)
         target = summary_key if summary_key else nav_key
         return _link(fmt, tip, f"nav:{target}" if target else None)
 
@@ -9206,14 +9207,14 @@ class ResultPage(QWidget):
         if "\x1e" in url:
             url = url.split("\x1e")[0]
         if url.startswith("hl:"):
-            parts = url[3:].split(":", 3)
-            if len(parts) >= 4:
-                sk, name, src, nk = parts[0], parts[1], parts[2], parts[3]
+            parts = url[3:].split(":", 4)
+            if len(parts) >= 5:
+                sk, name, src, nk, sq = parts[0], parts[1], parts[2], parts[3], parts[4]
                 if self._navigate:
                     self._navigate(sk)
                 tp = self._summary_pages.get(sk) if self._summary_pages else None
                 if tp:
-                    QTimer.singleShot(200, lambda: tp.highlight_item(name, src, nk))
+                    QTimer.singleShot(200, lambda: tp.highlight_item(name, src, nk, sq))
             return
         if url.startswith("nav:"):
             nk = url[4:]
