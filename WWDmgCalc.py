@@ -6485,62 +6485,6 @@ class ResultDetailDialog(QDialog):
         elif hasattr(self, '_on_mult_changed'):
             self._on_mult_changed()
 
-    def _jump_to_kw_row(self, seq):
-        """跳转到关键词关联页并高亮匹配序列号的行"""
-        if not seq:
-            return
-        # 从当前 widget 向上找 MainScreen（centralWidget）
-        ms = self
-        while ms and not hasattr(ms, '_navigate_to_key'):
-            ms = ms.parent() if hasattr(ms, 'parent') and callable(ms.parent) else None
-        if ms and hasattr(ms, 'page_keyword_assoc'):
-            ms._navigate_to_key("keyword_assoc", hl_seq=seq)
-
-    def _toggle_kw_hide(self, kw_key, btn):
-        """切换关键词关联条目的隐藏状态（实时触发重算）"""
-        if kw_key in HIDDEN_ITEMS:
-            HIDDEN_ITEMS.discard(kw_key)
-            if btn:
-                btn.setText("隐藏")
-                btn.setObjectName("itemLockBtn")
-        else:
-            HIDDEN_ITEMS.add(kw_key)
-            if btn:
-                btn.setText("隐藏中")
-                btn.setObjectName("itemDeleteBtn")
-        if btn:
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
-        # 实时刷新表格 + 重算
-        self._sync_mult_entries()
-        if hasattr(self, 'auto_compute'):
-            self.auto_compute()
-        elif hasattr(self, '_on_mult_changed'):
-            self._on_mult_changed()
-
-    def _get_kw_page(self):
-        """获取关键词关联页引用"""
-        if hasattr(self, '_keyword_assoc_page') and self._keyword_assoc_page:
-            return self._keyword_assoc_page
-        if hasattr(self, '_page') and hasattr(self._page, '_keyword_assoc_page'):
-            return self._page._keyword_assoc_page
-        return None
-
-    def _sync_sub_name_to_kw(self, seq, text):
-        """将倍率表格中的副名称编辑同步回关键词关联对应行"""
-        kw_page = self._get_kw_page()
-        if not kw_page or not seq:
-            return
-        for row in range(kw_page._table.rowCount()):
-            sl = kw_page._table.cellWidget(row, 2)
-            if sl and hasattr(sl, 'text') and sl.text() == seq:
-                sub_cell = kw_page._table.cellWidget(row, 1)
-                if sub_cell:
-                    le = sub_cell.findChild(QLineEdit) if not isinstance(sub_cell, QLineEdit) else sub_cell
-                    if le and le.text() != text:
-                        le.setText(text)
-                return
-
     def _get_kw_page(self):
         """获取关键词关联页引用"""
         if hasattr(self, '_keyword_assoc_page') and self._keyword_assoc_page:
@@ -8990,62 +8934,6 @@ class ResultPage(QWidget):
             self.auto_compute()
         elif hasattr(self, '_on_mult_changed'):
             self._on_mult_changed()
-
-    def _jump_to_kw_row(self, seq):
-        """跳转到关键词关联页并高亮匹配序列号的行"""
-        if not seq:
-            return
-        # 从当前 widget 向上找 MainScreen（centralWidget）
-        ms = self
-        while ms and not hasattr(ms, '_navigate_to_key'):
-            ms = ms.parent() if hasattr(ms, 'parent') and callable(ms.parent) else None
-        if ms and hasattr(ms, 'page_keyword_assoc'):
-            ms._navigate_to_key("keyword_assoc", hl_seq=seq)
-
-    def _toggle_kw_hide(self, kw_key, btn):
-        """切换关键词关联条目的隐藏状态（实时触发重算）"""
-        if kw_key in HIDDEN_ITEMS:
-            HIDDEN_ITEMS.discard(kw_key)
-            if btn:
-                btn.setText("隐藏")
-                btn.setObjectName("itemLockBtn")
-        else:
-            HIDDEN_ITEMS.add(kw_key)
-            if btn:
-                btn.setText("隐藏中")
-                btn.setObjectName("itemDeleteBtn")
-        if btn:
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
-        # 实时刷新表格 + 重算
-        self._sync_mult_entries()
-        if hasattr(self, 'auto_compute'):
-            self.auto_compute()
-        elif hasattr(self, '_on_mult_changed'):
-            self._on_mult_changed()
-
-    def _get_kw_page(self):
-        """获取关键词关联页引用"""
-        if hasattr(self, '_keyword_assoc_page') and self._keyword_assoc_page:
-            return self._keyword_assoc_page
-        if hasattr(self, '_page') and hasattr(self._page, '_keyword_assoc_page'):
-            return self._page._keyword_assoc_page
-        return None
-
-    def _sync_sub_name_to_kw(self, seq, text):
-        """将倍率表格中的副名称编辑同步回关键词关联对应行"""
-        kw_page = self._get_kw_page()
-        if not kw_page or not seq:
-            return
-        for row in range(kw_page._table.rowCount()):
-            sl = kw_page._table.cellWidget(row, 2)
-            if sl and hasattr(sl, 'text') and sl.text() == seq:
-                sub_cell = kw_page._table.cellWidget(row, 1)
-                if sub_cell:
-                    le = sub_cell.findChild(QLineEdit) if not isinstance(sub_cell, QLineEdit) else sub_cell
-                    if le and le.text() != text:
-                        le.setText(text)
-                return
 
     def _get_kw_page(self):
         """获取关键词关联页引用"""
