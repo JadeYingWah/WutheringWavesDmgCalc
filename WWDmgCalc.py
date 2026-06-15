@@ -961,6 +961,12 @@ class CombinedEntryPage(BaseTableAttrPage):
             'chain_num': chain_num,
         }
         type_label = "常驻" if self.page_key == "combined_perm" else "触发"
+        # 用按钮实际行号而非 seq_label.text()——后者会被 _resequence 改写导致 key 失配
+        seq_num = 1
+        for ri, rd in enumerate(self._rows):
+            if rd.get('hide_btn') is btn:
+                seq_num = ri + 1
+                break
         key = (name, self.page_key, f"{type_label}{seq_num}")
         is_locked = key in LOCKED_SUMMARY_ITEMS
         is_hidden = key in HIDDEN_ITEMS
