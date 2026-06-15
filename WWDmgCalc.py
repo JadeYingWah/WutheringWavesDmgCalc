@@ -961,12 +961,6 @@ class CombinedEntryPage(BaseTableAttrPage):
             'chain_num': chain_num,
         }
         type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-        # 用按钮实际行号而非 seq_label.text()——后者会被 _resequence 改写导致 key 失配
-        seq_num = 1
-        for ri, rd in enumerate(self._rows):
-            if rd.get('hide_btn') is btn:
-                seq_num = ri + 1
-                break
         key = (name, self.page_key, f"{type_label}{seq_num}")
         is_locked = key in LOCKED_SUMMARY_ITEMS
         is_hidden = key in HIDDEN_ITEMS
@@ -1031,7 +1025,13 @@ class CombinedEntryPage(BaseTableAttrPage):
     def _toggle_combined_hide(self, name, source, btn, seq_num=0):
         """切换隐藏状态，联动 HIDDEN_ITEMS，并同步到其他页。"""
         type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-        key = (name, self.page_key, f"{type_label}{seq_num}")
+        # find actual row index (seq_label.text() may be stale after _resequence)
+        actual_seq = seq_num
+        for ri, rd in enumerate(self._rows):
+            if rd.get("hide_btn") is btn:
+                actual_seq = ri + 1
+                break
+        key = (name, self.page_key, f"{type_label}{actual_seq}")
         if key in HIDDEN_ITEMS:
             HIDDEN_ITEMS.discard(key)
             btn.setText("隐藏")
