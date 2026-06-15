@@ -489,33 +489,40 @@ class SummaryBasePage(QWidget):
                 page._on_change_cb()
 
     def highlight_item(self, name, src_label, nav_key, seq_label=""):
-        """找到匹配行（名称+序列号）→ 平滑滚动到可见 → 两轮黄色叠层。"""
+        """找到匹配行：优先按序列号匹配，再验证名称。"""
         all_tables = self.findChildren(QTableWidget)
         for t in all_tables:
-            for r in range(t.rowCount() - 1, -1, -1):
-                name_item = t.item(r, 0)
-                if not name_item or name_item.text() != name:
-                    continue
-                # 有序列号时还需匹配序列号列（第2列），避免高亮错行
-                if seq_label:
+            # 第一轮：优先用序列号匹配（列2，唯一键）
+            if seq_label:
+                for r in range(t.rowCount()):
                     seq_item = t.item(r, 2)
-                    if not seq_item or seq_item.text() != seq_label:
-                        continue
-                # 找外层 QScrollArea 做平滑滚动
-                scroll = None
-                p = t.parent()
-                while p:
-                    if isinstance(p, QScrollArea):
-                        scroll = p
-                        break
-                    p = p.parent()
-                if scroll:
-                    self._scroll_and_highlight(t, r, scroll)
-                else:
-                    t.scrollTo(t.model().index(r, 0))
-                    QTimer.singleShot(200, lambda tb=t, row=r:
-                                      self._show_highlight_overlay(tb, row))
-                return
+                    if seq_item and seq_item.text() == seq_label:
+                        name_item = t.item(r, 0)
+                        if name_item and name_item.text() == name:
+                            self._highlight_table_row(t, r)
+                            return
+            # 第二轮回退：只用名称匹配
+            for r in range(t.rowCount()):
+                name_item = t.item(r, 0)
+                if name_item and name_item.text() == name:
+                    self._highlight_table_row(t, r)
+                    return
+
+    def _highlight_table_row(self, t, r):
+        """平滑滚动到行 + 黄色叠层"""
+        scroll = None
+        p = t.parent()
+        while p:
+            if isinstance(p, QScrollArea):
+                scroll = p
+                break
+            p = p.parent()
+        if scroll:
+            self._scroll_and_highlight(t, r, scroll)
+        else:
+            t.scrollTo(t.model().index(r, 0))
+            QTimer.singleShot(200, lambda tb=t, row=r:
+                              self._show_highlight_overlay(tb, row))
 
     def _scroll_and_highlight(self, table, row, scroll):
         """平滑滚动 QScrollArea 使目标行靠近顶部，再放叠层。"""
