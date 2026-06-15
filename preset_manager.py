@@ -342,10 +342,26 @@ class PresetManager:
                                      for v in values]
                         main_screen.page_indep_zone._add_group(group_name, converted)
 
-            # 应用结果列表（预设中保存的计算结果卡片）
+            # 应用结果列表 — 只保留筛选条件、基础倍率、关键词，丢弃区值（由重算重新生成）
             result_list = char_data.get("result_list", [])
             if result_list:
-                main_screen.page_result_list.apply_data(result_list)
+                stripped = []
+                for card in result_list:
+                    stripped.append({
+                        "id": card.get("id", 0),
+                        "label": card.get("label", ""),
+                        "locked": card.get("locked", False),
+                        "basis": card.get("basis", "攻击力"),
+                        "element": card.get("element"),
+                        "skill": card.get("skill"),
+                        "effect": card.get("effect"),
+                        "category": card.get("category", ""),
+                        "base_mult": card.get("base_mult", 100.0),
+                        "mult_increase": 0.0,
+                        "mult_boosts": [],
+                        "keywords": card.get("keywords", []),
+                    })
+                main_screen.page_result_list.apply_data(stripped)
 
             # 应用技能增益
             skill_buff = char_data.get("skill_buff", {})
