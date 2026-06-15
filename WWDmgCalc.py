@@ -6445,6 +6445,8 @@ class ResultDetailDialog(QDialog):
                 source = kw_item.get("source", "")
                 sub_name = kw_item.get("sub_name", "")
                 seq = kw_item.get("seq", "")
+                if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                    continue
                 if "倍率增加" in name:
                     inc_rows.append((name, sub_name, seq, value, source, kw_entry_kws))
                 elif "倍率提升" in name:
@@ -6588,6 +6590,10 @@ class ResultDetailDialog(QDialog):
                     continue
                 name = kw_item.get("name", "")
                 value = kw_item.get("value", 0.0)
+                source = kw_item.get("source", "")
+                seq = kw_item.get("seq", "")
+                if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                    continue
                 if "倍率增加" in name:
                     inc_vals.append(value)
                 elif "倍率提升" in name:
@@ -8859,6 +8865,8 @@ class ResultPage(QWidget):
                 source = kw_item.get("source", "")
                 sub_name = kw_item.get("sub_name", "")
                 seq = kw_item.get("seq", "")
+                if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                    continue
                 if "倍率增加" in name:
                     inc_rows.append((name, sub_name, seq, value, source, kw_entry_kws))
                 elif "倍率提升" in name:
@@ -9002,6 +9010,10 @@ class ResultPage(QWidget):
                     continue
                 name = kw_item.get("name", "")
                 value = kw_item.get("value", 0.0)
+                source = kw_item.get("source", "")
+                seq = kw_item.get("seq", "")
+                if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                    continue
                 if "倍率增加" in name:
                     inc_vals.append(value)
                 elif "倍率提升" in name:
