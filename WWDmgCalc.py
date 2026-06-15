@@ -6452,8 +6452,62 @@ class ResultDetailDialog(QDialog):
         self._populate_mult_table(self.mult_inc_table, inc_rows)
         self._populate_mult_table(self.mult_boost_table, boost_rows)
 
+    def _jump_to_kw_row(self, seq):
+        """跳转到关键词关联页并高亮匹配序列号的行"""
+        if not seq:
+            return
+        ms = self.window()
+        # 尝试找到 MainScreen（通过 centralWidget 或递归搜索）
+        while ms and not hasattr(ms, '_navigate_to_key'):
+            ms = ms.parent() if hasattr(ms, 'parent') and callable(ms.parent) else None
+        if ms and hasattr(ms, 'page_keyword_assoc'):
+            ms._navigate_to_key("keyword_assoc", hl_seq=seq)
+
+    def _toggle_kw_hide(self, kw_key, btn):
+        """切换关键词关联条目的隐藏状态"""
+        if kw_key in HIDDEN_ITEMS:
+            HIDDEN_ITEMS.discard(kw_key)
+            if btn:
+                btn.setText("隐藏")
+                btn.setObjectName("itemLockBtn")
+        else:
+            HIDDEN_ITEMS.add(kw_key)
+            if btn:
+                btn.setText("隐藏中")
+                btn.setObjectName("itemDeleteBtn")
+        if btn:
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+
+    def _jump_to_kw_row(self, seq):
+        """跳转到关键词关联页并高亮匹配序列号的行"""
+        if not seq:
+            return
+        ms = self.window()
+        # 尝试找到 MainScreen（通过 centralWidget 或递归搜索）
+        while ms and not hasattr(ms, '_navigate_to_key'):
+            ms = ms.parent() if hasattr(ms, 'parent') and callable(ms.parent) else None
+        if ms and hasattr(ms, 'page_keyword_assoc'):
+            ms._navigate_to_key("keyword_assoc", hl_seq=seq)
+
+    def _toggle_kw_hide(self, kw_key, btn):
+        """切换关键词关联条目的隐藏状态"""
+        if kw_key in HIDDEN_ITEMS:
+            HIDDEN_ITEMS.discard(kw_key)
+            if btn:
+                btn.setText("隐藏")
+                btn.setObjectName("itemLockBtn")
+        else:
+            HIDDEN_ITEMS.add(kw_key)
+            if btn:
+                btn.setText("隐藏中")
+                btn.setObjectName("itemDeleteBtn")
+        if btn:
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+
     def _populate_mult_table(self, table, rows):
-        """填充倍率表格（照搬关键词关联表格结构，只读）"""
+        """填充倍率表格（照搬关键词关联表格结构，来源可跳转，操作可隐藏）"""
         table.setRowCount(0)
         for name, sub_name, seq, value, source, kw_entry_kws in rows:
             r = table.rowCount()
@@ -6492,22 +6546,30 @@ class ResultDetailDialog(QDialog):
             unit_w.setObjectName("unitLabel")
             unit_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             table.setCellWidget(r, 4, unit_w)
-            # 来源
-            src_w = QLabel(source)
-            src_w.setObjectName("seqLabel")
-            src_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            table.setCellWidget(r, 5, src_w)
+            # 来源（按钮 — 点击跳转关键词关联页对应行）
+            src_btn = QPushButton(source if source else "—")
+            src_btn.setObjectName("itemLockBtn")
+            src_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            src_btn.setToolTip("跳转到关键词关联页定位此行")
+            src_btn.clicked.connect(lambda checked, sq=seq, kw_kws=kw_entry_kws:
+                self._jump_to_kw_row(sq))
+            table.setCellWidget(r, 5, src_btn)
             # 关键词关联
             kw_w = QLabel(kw_entry_kws)
             kw_w.setObjectName("seqLabel")
             kw_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             kw_w.setWordWrap(True)
             table.setCellWidget(r, 6, kw_w)
-            # 操作（空占位）
-            ops_w = QLabel("—")
-            ops_w.setObjectName("seqLabel")
-            ops_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            table.setCellWidget(r, 7, ops_w)
+            # 操作（隐藏按钮）
+            kw_key = (name, source, "keyword_assoc", seq)
+            is_hid = kw_key in HIDDEN_ITEMS
+            hide_btn = QPushButton("隐藏中" if is_hid else "隐藏")
+            hide_btn.setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
+            hide_btn.setFixedSize(48, 28)
+            hide_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            hide_btn.clicked.connect(lambda checked, k=kw_key, b=hide_btn:
+                self._toggle_kw_hide(k, b))
+            table.setCellWidget(r, 7, hide_btn)
 
 
     def _gather_mult_data(self):
@@ -8804,8 +8866,62 @@ class ResultPage(QWidget):
         self._populate_mult_table(self.mult_inc_table, inc_rows)
         self._populate_mult_table(self.mult_boost_table, boost_rows)
 
+    def _jump_to_kw_row(self, seq):
+        """跳转到关键词关联页并高亮匹配序列号的行"""
+        if not seq:
+            return
+        ms = self.window()
+        # 尝试找到 MainScreen（通过 centralWidget 或递归搜索）
+        while ms and not hasattr(ms, '_navigate_to_key'):
+            ms = ms.parent() if hasattr(ms, 'parent') and callable(ms.parent) else None
+        if ms and hasattr(ms, 'page_keyword_assoc'):
+            ms._navigate_to_key("keyword_assoc", hl_seq=seq)
+
+    def _toggle_kw_hide(self, kw_key, btn):
+        """切换关键词关联条目的隐藏状态"""
+        if kw_key in HIDDEN_ITEMS:
+            HIDDEN_ITEMS.discard(kw_key)
+            if btn:
+                btn.setText("隐藏")
+                btn.setObjectName("itemLockBtn")
+        else:
+            HIDDEN_ITEMS.add(kw_key)
+            if btn:
+                btn.setText("隐藏中")
+                btn.setObjectName("itemDeleteBtn")
+        if btn:
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+
+    def _jump_to_kw_row(self, seq):
+        """跳转到关键词关联页并高亮匹配序列号的行"""
+        if not seq:
+            return
+        ms = self.window()
+        # 尝试找到 MainScreen（通过 centralWidget 或递归搜索）
+        while ms and not hasattr(ms, '_navigate_to_key'):
+            ms = ms.parent() if hasattr(ms, 'parent') and callable(ms.parent) else None
+        if ms and hasattr(ms, 'page_keyword_assoc'):
+            ms._navigate_to_key("keyword_assoc", hl_seq=seq)
+
+    def _toggle_kw_hide(self, kw_key, btn):
+        """切换关键词关联条目的隐藏状态"""
+        if kw_key in HIDDEN_ITEMS:
+            HIDDEN_ITEMS.discard(kw_key)
+            if btn:
+                btn.setText("隐藏")
+                btn.setObjectName("itemLockBtn")
+        else:
+            HIDDEN_ITEMS.add(kw_key)
+            if btn:
+                btn.setText("隐藏中")
+                btn.setObjectName("itemDeleteBtn")
+        if btn:
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+
     def _populate_mult_table(self, table, rows):
-        """填充倍率表格（照搬关键词关联表格结构，只读）"""
+        """填充倍率表格（照搬关键词关联表格结构，来源可跳转，操作可隐藏）"""
         table.setRowCount(0)
         for name, sub_name, seq, value, source, kw_entry_kws in rows:
             r = table.rowCount()
@@ -8844,22 +8960,30 @@ class ResultPage(QWidget):
             unit_w.setObjectName("unitLabel")
             unit_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             table.setCellWidget(r, 4, unit_w)
-            # 来源
-            src_w = QLabel(source)
-            src_w.setObjectName("seqLabel")
-            src_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            table.setCellWidget(r, 5, src_w)
+            # 来源（按钮 — 点击跳转关键词关联页对应行）
+            src_btn = QPushButton(source if source else "—")
+            src_btn.setObjectName("itemLockBtn")
+            src_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            src_btn.setToolTip("跳转到关键词关联页定位此行")
+            src_btn.clicked.connect(lambda checked, sq=seq, kw_kws=kw_entry_kws:
+                self._jump_to_kw_row(sq))
+            table.setCellWidget(r, 5, src_btn)
             # 关键词关联
             kw_w = QLabel(kw_entry_kws)
             kw_w.setObjectName("seqLabel")
             kw_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             kw_w.setWordWrap(True)
             table.setCellWidget(r, 6, kw_w)
-            # 操作（空占位）
-            ops_w = QLabel("—")
-            ops_w.setObjectName("seqLabel")
-            ops_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            table.setCellWidget(r, 7, ops_w)
+            # 操作（隐藏按钮）
+            kw_key = (name, source, "keyword_assoc", seq)
+            is_hid = kw_key in HIDDEN_ITEMS
+            hide_btn = QPushButton("隐藏中" if is_hid else "隐藏")
+            hide_btn.setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
+            hide_btn.setFixedSize(48, 28)
+            hide_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            hide_btn.clicked.connect(lambda checked, k=kw_key, b=hide_btn:
+                self._toggle_kw_hide(k, b))
+            table.setCellWidget(r, 7, hide_btn)
 
 
     def _gather_mult_data(self):
@@ -10873,6 +10997,19 @@ class MainScreen(QWidget):
                 expected_seq = f"{type_label}{r + 1}"
                 if seq_label == expected_seq:
                     pw._highlight_row(r, scroll)
+                    return
+        # KeywordAssociationPage — 序列号匹配
+        if nav_key == "keyword_assoc" and hasattr(self, 'page_keyword_assoc'):
+            kw_page = self.page_keyword_assoc
+            for r in range(kw_page._table.rowCount()):
+                sl = kw_page._table.cellWidget(r, 2)
+                if sl and hasattr(sl, 'text') and sl.text() == seq_label:
+                    # 滚动到目标行并放黄色叠层
+                    QApplication.processEvents()
+                    idx = kw_page._table.model().index(r, 0)
+                    rect = kw_page._table.visualRect(idx)
+                    rect.setWidth(kw_page._table.viewport().width())
+                    _place_highlight_overlay(kw_page._table.viewport(), rect)
                     return
 
     def _on_nav_changed(self, current, _previous):
