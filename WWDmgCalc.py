@@ -3646,12 +3646,9 @@ def _collect_all_items(external_sources, echo_pages=None):
                 name, value = entry[0], entry[1]
                 # 如果数据自带来源标签（如 CombinedEntryPage），优先使用
                 item_src = entry[3] if len(entry) >= 4 else src_label
-                # 序列号：CombinedEntryPage 条目含 seq_num，转为 "常驻N"/"触发N"
-                seq_label = ""
+                # 序列号：纯数字，nav_key 已区分 perm/trigger
+                seq_label = str(entry[4]) if len(entry) >= 5 and entry[4] else ""
                 sub_name = ""
-                if len(entry) >= 5 and nav_key in ("combined_perm", "combined_trigger"):
-                    type_label = "常驻" if nav_key == "combined_perm" else "触发"
-                    seq_label = f"{type_label}{entry[4]}"
                 if len(entry) >= 6:
                     sub_name = entry[5] or ""
                 items.append((name, value, item_src, nav_key, seq_label, sub_name))
