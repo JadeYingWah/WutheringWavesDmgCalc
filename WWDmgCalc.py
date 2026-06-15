@@ -6518,6 +6518,52 @@ class ResultDetailDialog(QDialog):
         elif hasattr(self, '_on_mult_changed'):
             self._on_mult_changed()
 
+    def _get_kw_page(self):
+        """获取关键词关联页引用"""
+        if hasattr(self, '_keyword_assoc_page') and self._keyword_assoc_page:
+            return self._keyword_assoc_page
+        if hasattr(self, '_page') and hasattr(self._page, '_keyword_assoc_page'):
+            return self._page._keyword_assoc_page
+        return None
+
+    def _sync_sub_name_to_kw(self, seq, text):
+        """将倍率表格中的副名称编辑同步回关键词关联对应行"""
+        kw_page = self._get_kw_page()
+        if not kw_page or not seq:
+            return
+        for row in range(kw_page._table.rowCount()):
+            sl = kw_page._table.cellWidget(row, 2)
+            if sl and hasattr(sl, 'text') and sl.text() == seq:
+                sub_cell = kw_page._table.cellWidget(row, 1)
+                if sub_cell:
+                    le = sub_cell.findChild(QLineEdit) if not isinstance(sub_cell, QLineEdit) else sub_cell
+                    if le and le.text() != text:
+                        le.setText(text)
+                return
+
+    def _get_kw_page(self):
+        """获取关键词关联页引用"""
+        if hasattr(self, '_keyword_assoc_page') and self._keyword_assoc_page:
+            return self._keyword_assoc_page
+        if hasattr(self, '_page') and hasattr(self._page, '_keyword_assoc_page'):
+            return self._page._keyword_assoc_page
+        return None
+
+    def _sync_sub_name_to_kw(self, seq, text):
+        """将倍率表格中的副名称编辑同步回关键词关联对应行"""
+        kw_page = self._get_kw_page()
+        if not kw_page or not seq:
+            return
+        for row in range(kw_page._table.rowCount()):
+            sl = kw_page._table.cellWidget(row, 2)
+            if sl and hasattr(sl, 'text') and sl.text() == seq:
+                sub_cell = kw_page._table.cellWidget(row, 1)
+                if sub_cell:
+                    le = sub_cell.findChild(QLineEdit) if not isinstance(sub_cell, QLineEdit) else sub_cell
+                    if le and le.text() != text:
+                        le.setText(text)
+                return
+
     def _populate_mult_table(self, table, rows):
         """填充倍率表格（照搬关键词关联表格结构，来源可跳转，操作可隐藏）"""
         table.setRowCount(0)
@@ -6531,7 +6577,7 @@ class ResultDetailDialog(QDialog):
             name_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             name_w.setReadOnly(True)
             table.setCellWidget(r, 0, name_w)
-            # 副名称（只读展示，编辑请到关键词关联页）
+            # 副名称（编辑后自动映射回关键词关联表格）
             sub_container = _make_sub_name_cell(QLineEdit(), lambda n=name: n)
             sub_w = sub_container.findChild(QLineEdit)
             if sub_w:
@@ -6539,7 +6585,7 @@ class ResultDetailDialog(QDialog):
                 sub_w.setObjectName("nameEdit")
                 sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 sub_w.setPlaceholderText("（备注）")
-                sub_w.setReadOnly(True)
+                sub_w.textChanged.connect(lambda text, sq=seq: self._sync_sub_name_to_kw(sq, text))
             table.setCellWidget(r, 1, sub_container)
             # 序列号
             seq_w = QLabel(seq if seq else "—")
@@ -8950,6 +8996,52 @@ class ResultPage(QWidget):
         elif hasattr(self, '_on_mult_changed'):
             self._on_mult_changed()
 
+    def _get_kw_page(self):
+        """获取关键词关联页引用"""
+        if hasattr(self, '_keyword_assoc_page') and self._keyword_assoc_page:
+            return self._keyword_assoc_page
+        if hasattr(self, '_page') and hasattr(self._page, '_keyword_assoc_page'):
+            return self._page._keyword_assoc_page
+        return None
+
+    def _sync_sub_name_to_kw(self, seq, text):
+        """将倍率表格中的副名称编辑同步回关键词关联对应行"""
+        kw_page = self._get_kw_page()
+        if not kw_page or not seq:
+            return
+        for row in range(kw_page._table.rowCount()):
+            sl = kw_page._table.cellWidget(row, 2)
+            if sl and hasattr(sl, 'text') and sl.text() == seq:
+                sub_cell = kw_page._table.cellWidget(row, 1)
+                if sub_cell:
+                    le = sub_cell.findChild(QLineEdit) if not isinstance(sub_cell, QLineEdit) else sub_cell
+                    if le and le.text() != text:
+                        le.setText(text)
+                return
+
+    def _get_kw_page(self):
+        """获取关键词关联页引用"""
+        if hasattr(self, '_keyword_assoc_page') and self._keyword_assoc_page:
+            return self._keyword_assoc_page
+        if hasattr(self, '_page') and hasattr(self._page, '_keyword_assoc_page'):
+            return self._page._keyword_assoc_page
+        return None
+
+    def _sync_sub_name_to_kw(self, seq, text):
+        """将倍率表格中的副名称编辑同步回关键词关联对应行"""
+        kw_page = self._get_kw_page()
+        if not kw_page or not seq:
+            return
+        for row in range(kw_page._table.rowCount()):
+            sl = kw_page._table.cellWidget(row, 2)
+            if sl and hasattr(sl, 'text') and sl.text() == seq:
+                sub_cell = kw_page._table.cellWidget(row, 1)
+                if sub_cell:
+                    le = sub_cell.findChild(QLineEdit) if not isinstance(sub_cell, QLineEdit) else sub_cell
+                    if le and le.text() != text:
+                        le.setText(text)
+                return
+
     def _populate_mult_table(self, table, rows):
         """填充倍率表格（照搬关键词关联表格结构，来源可跳转，操作可隐藏）"""
         table.setRowCount(0)
@@ -8963,7 +9055,7 @@ class ResultPage(QWidget):
             name_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
             name_w.setReadOnly(True)
             table.setCellWidget(r, 0, name_w)
-            # 副名称（只读展示，编辑请到关键词关联页）
+            # 副名称（编辑后自动映射回关键词关联表格）
             sub_container = _make_sub_name_cell(QLineEdit(), lambda n=name: n)
             sub_w = sub_container.findChild(QLineEdit)
             if sub_w:
@@ -8971,7 +9063,7 @@ class ResultPage(QWidget):
                 sub_w.setObjectName("nameEdit")
                 sub_w.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 sub_w.setPlaceholderText("（备注）")
-                sub_w.setReadOnly(True)
+                sub_w.textChanged.connect(lambda text, sq=seq: self._sync_sub_name_to_kw(sq, text))
             table.setCellWidget(r, 1, sub_container)
             # 序列号
             seq_w = QLabel(seq if seq else "—")
