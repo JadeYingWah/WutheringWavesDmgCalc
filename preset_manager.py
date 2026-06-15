@@ -360,6 +360,7 @@ class PresetManager:
                         "mult_increase": 0.0,
                         "mult_boosts": [],
                         "keywords": card.get("keywords", []),
+                        "zones": {},
                     })
                 main_screen.page_result_list.apply_data(stripped)
 
