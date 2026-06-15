@@ -122,6 +122,8 @@ class SummaryBasePage(QWidget):
                     "padding: 1px 10px; font-size: 11px; background: transparent; } "
                     "QPushButton:hover { border-color: #888; } "
                     "QPushButton:checked { background: #3a6a9a; color: #fff; border-color: #5a9aca; }")
+                if opt == "全部":
+                    btn.setChecked(True)
                 btn.clicked.connect(
                     lambda checked, g=group_label, o=opt, cl=chips:
                     self._on_filter_chip_clicked(g, o, cl))
