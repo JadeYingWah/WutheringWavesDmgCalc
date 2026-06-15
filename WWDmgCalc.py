@@ -295,56 +295,6 @@ class WelcomeScreen(QWidget):
                     author_map[a] = []
                 cat_label = {"character":"角色","weapon":"武器","echo_set":"套装","character_buff":"增益"}.get(p["category"], p["category"])
                 author_map[a].append(f"[{cat_label}] {p['name']}")
-        # 补充：从 CONTRIBUTORS.md 读取已有记录
-        try:
-            import sys as _imported_sys
-            if getattr(_imported_sys, "frozen", False):
-                root_dir = os.path.dirname(os.path.dirname(_imported_sys.executable))
-            else:
-                root_dir = os.path.dirname(os.path.abspath(__file__))
-            contrib_path = os.path.join(root_dir, "CONTRIBUTORS.md")
-            if os.path.exists(contrib_path):
-                with open(contrib_path, "r", encoding="utf-8-sig") as cf:
-                    for line in cf:
-                        line = line.strip()
-                        if not line.startswith("|"):
-                            continue
-                        if line.startswith("|-"):
-                            continue
-                        parts = [p.strip() for p in line.split("|") if p.strip()]
-                        if len(parts) >= 3 and parts[0] not in ("贡献者") and parts[0] != "*(虚位以待)*":
-                            name = parts[0]
-                            content = parts[1] if len(parts) > 1 else ""
-                            if name not in author_map:
-                                author_map[name] = []
-                            raw_items = content.replace("<br>", chr(10)).split(chr(10))
-                            for item in raw_items:
-                                item = item.strip()
-                                if not item:
-                                    continue
-                                # 标准化格式：echo_set/xxx.json → [套装] xxx
-                                normalized = item
-                                for cat_key, cat_label in {"character":"角色","weapon":"武器","echo_set":"套装","character_buff":"增益"}.items():
-                                    prefix = cat_key + "/"
-                                    if item.startswith(prefix):
-                                        normalized = item[len(prefix):]
-                                        if normalized.endswith(".json"):
-                                            normalized = normalized[:-5]
-                                        normalized = "[" + cat_label + "] " + normalized
-                                        break
-                                # 格式不同也能去重
-                                already = False
-                                for existing in author_map.get(name, []):
-                                    if normalized == existing or normalized.replace(" ", "") == existing.replace(" ", ""):
-                                        already = True
-                                        break
-                                if not already:
-                                    if name not in author_map:
-                                        author_map[name] = []
-                                    author_map[name].append(normalized)
-        except Exception:
-            import traceback
-            traceback.print_exc()
         if not author_map:
             QMessageBox.information(self, "贡献者名单", "暂无贡献者记录。\n欢迎你成为第一位贡献者！")
             return
