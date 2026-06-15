@@ -115,7 +115,7 @@ WEAPON_RESONANCE_ATTRS = [
     "治疗效果加成", "共鸣效率加成",
     "声骸技能伤害加成", "声骸技能伤害加深",
     "光噪加深", "风蚀加深", "虚湮加深", "聚爆加深", "霜渐加深", "电磁加深",
-    "倍率增加", "倍率提升",
+
 ]
 
 # 武器附加属性类型（角色与武器页使用）
@@ -1210,7 +1210,8 @@ class KeywordAssociationPage(QWidget):
         input_row = QHBoxLayout()
         input_row.setSpacing(6)
 
-        self._name_combo = SearchCombo(WEAPON_RESONANCE_ATTRS)
+        kw_attr_list = list(WEAPON_RESONANCE_ATTRS) + ["倍率增加", "倍率提升"]
+        self._name_combo = SearchCombo(kw_attr_list)
         self._name_combo.lineEdit().setPlaceholderText("输入搜索...")
         input_row.addWidget(self._name_combo, stretch=3)
 
