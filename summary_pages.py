@@ -232,19 +232,20 @@ class SummaryBasePage(QWidget):
             table.setColumnCount(7)
             table.setHorizontalHeaderLabels(["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"])
             if isinstance(table, _PropTable):
-                table._proportions = [0.18, 0.18, 0.07, 0.14, 0.06, 0.10, 0.08]
+                table._proportions = [0.16, 0.18, 0.07, 0.14, 0.06, 0.10, 0.12]
         hdr = table.horizontalHeader()
         hdr.setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
-        hdr.setStretchLastSection(True) #操作 自动伸缩
+        hdr.setStretchLastSection(False)
         hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         hdr.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)  # 副名称内容最长
         for i in range(2, 7):
-            hdr.setSectionResizeMode(i, QHeaderView.ResizeMode.Interactive)
+            hdr.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
         hdr.resizeSection(0, 140)   # 名称
         hdr.resizeSection(2, 80)    # 序列号
         hdr.resizeSection(3, 140)   # 数值
         hdr.resizeSection(4, 60)    # 取值
         hdr.resizeSection(5, 80)    # 来源
+        hdr.resizeSection(6, 130)   # 操作（锁定/解锁/隐藏/查看总结等按钮）
 
         table.setRowCount(0)
         for item in items:
