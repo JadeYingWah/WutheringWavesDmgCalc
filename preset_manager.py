@@ -353,9 +353,6 @@ class PresetManager:
                                      for v in values]
                         main_screen.page_indep_zone._add_group(group_name, converted)
 
-            # 重排序列号——_counter 可能已有旧值，与行数对齐
-            main_screen.page_combined_perm._resequence()
-            main_screen.page_combined_trigger._resequence()
 
             # 应用结果列表 — 只保留筛选条件、基础倍率、关键词，丢弃区值（由重算重新生成）
             result_list = char_data.get("result_list", [])
@@ -449,7 +446,11 @@ class PresetManager:
                 tag_prefix=f"{buff_data.get('name', '')} 增益"
             )
 
-        # ── 5. 触发全局重算 ──
+        # ── 5. 重排序列号 ──
+        main_screen.page_combined_perm._resequence()
+        main_screen.page_combined_trigger._resequence()
+
+        # ── 6. 触发全局重算 ──
         # 模拟一次完整的数据变更回调
         if hasattr(main_screen.page_combined_perm, '_on_change_cb') and \
            main_screen.page_combined_perm._on_change_cb:
