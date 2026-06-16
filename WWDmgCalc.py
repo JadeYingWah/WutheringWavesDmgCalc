@@ -5141,7 +5141,7 @@ class DataFlowViewerDialog(QDialog):
             return t if len(t) >= 6 else (*t, *[""] * (6 - len(t)))
         deduped_items = [_norm6(t) for t in deduped_items
                          if _matches_filter(t[0], sel_elem, sel_skill, sel_effect)
-                         and (not self._hide_filter_cb.isChecked() or (t[0], t[2], t[3], t[4] if len(t) > 4 else "") not in HIDDEN_ITEMS)]
+                         and (not self._hide_filter_cb.isChecked() or (t[0], t[3], t[4] if len(t) > 4 else "") not in HIDDEN_ITEMS)]
 
         # 关键词关联注入（与 compute() 相同逻辑）
         selected_idx = self._monitor_combo.currentData()
@@ -5155,7 +5155,7 @@ class DataFlowViewerDialog(QDialog):
                     kw_entry_kws = set(k.strip() for k in kw_item.get("keywords", "").split(",") if k.strip())
                     if card_kws & kw_entry_kws:
                         name = kw_item["name"]
-                        if self._hide_filter_cb.isChecked() and (name, kw_item.get("source", ""), "keyword_assoc", kw_item.get("seq", "")) in HIDDEN_ITEMS:
+                        if self._hide_filter_cb.isChecked() and (name, "keyword_assoc", kw_item.get("seq", "")) in HIDDEN_ITEMS:
                             continue
                         deduped_items.append((
                             name, kw_item["value"],
@@ -6652,7 +6652,7 @@ class ResultDetailDialog(QDialog):
             kw_w.setWordWrap(True)
             table.setCellWidget(r, 6, kw_w)
             # 操作（隐藏按钮）
-            kw_key = (name, source, "keyword_assoc", seq)
+            kw_key = (name, "keyword_assoc", seq)
             is_hid = kw_key in HIDDEN_ITEMS
             hide_btn = QPushButton("隐藏中" if is_hid else "隐藏")
             hide_btn.setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
@@ -6687,7 +6687,7 @@ class ResultDetailDialog(QDialog):
                 value = kw_item.get("value", 0.0)
                 source = kw_item.get("source", "")
                 seq = kw_item.get("seq", "")
-                if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                if (name, "keyword_assoc", seq) in HIDDEN_ITEMS:
                     continue
                 if "倍率增加" in name:
                     inc_vals.append(value)
@@ -7187,7 +7187,7 @@ class ResultListPage(QWidget):
                             value = kw_item["value"]
                             source = kw_item.get("source", "关键词关联")
                             seq = kw_item.get("seq", "")
-                            if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                            if (name, "keyword_assoc", seq) in HIDDEN_ITEMS:
                                 continue
                             filtered.append((name, value, source, "keyword_assoc", seq))
             item["process_html"] = self._build_card_process_html(filtered, item, sub_map)
@@ -7226,7 +7226,7 @@ class ResultListPage(QWidget):
                     source = kw_item.get("source", "关键词关联")
                     seq = kw_item.get("seq", "")
                     # 检查 HIDDEN_ITEMS
-                    if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                    if (name, "keyword_assoc", seq) in HIDDEN_ITEMS:
                         continue
                     # 注入到 filtered 参与常规乘区分类
                     filtered.append((name, value, source, "keyword_assoc", seq))
@@ -8814,7 +8814,7 @@ class ResultPage(QWidget):
                         value = kw_item["value"]
                         source = kw_item.get("source", "关键词关联")
                         seq = kw_item.get("seq", "")
-                        if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                        if (name, "keyword_assoc", seq) in HIDDEN_ITEMS:
                             continue
                         filtered_items.append((
                             name, value, source, "keyword_assoc", seq,
@@ -9123,7 +9123,7 @@ class ResultPage(QWidget):
             kw_w.setWordWrap(True)
             table.setCellWidget(r, 6, kw_w)
             # 操作（隐藏按钮）
-            kw_key = (name, source, "keyword_assoc", seq)
+            kw_key = (name, "keyword_assoc", seq)
             is_hid = kw_key in HIDDEN_ITEMS
             hide_btn = QPushButton("隐藏中" if is_hid else "隐藏")
             hide_btn.setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
@@ -9158,7 +9158,7 @@ class ResultPage(QWidget):
                 value = kw_item.get("value", 0.0)
                 source = kw_item.get("source", "")
                 seq = kw_item.get("seq", "")
-                if (name, source, "keyword_assoc", seq) in HIDDEN_ITEMS:
+                if (name, "keyword_assoc", seq) in HIDDEN_ITEMS:
                     continue
                 if "倍率增加" in name:
                     inc_vals.append(value)
