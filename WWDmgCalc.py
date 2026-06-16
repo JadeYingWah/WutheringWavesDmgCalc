@@ -4898,6 +4898,36 @@ class DataFlowViewerDialog(QDialog):
                                       f"{chain}-{tp}", "", cat))
                     chain_effect_map[(eff['name'], round(eff['value'], 4), chain)] = uid
 
+        # 独立乘区（上游来源——乘区内各组数值）
+        if hasattr(ms, 'page_indep_zone'):
+            indep = ms.page_indep_zone
+            for gd in indep._groups:
+                gname = gd.get('name_edit', QLineEdit()).text() or "未命名组"
+                for ri, (ne, vs, _hc) in enumerate(gd.get('rows', [])):
+                    uid = _nid()
+                    ename = ne.text() or f"行{ri+1}"
+                    nm = f"[独立乘区]{gname}/{ename}"
+                    all_items.append((uid, nm, vs.value(),
+                                     "独立乘区", "indep", f"{gname}", "",
+                                     damage_calc.classify_item_category(nm)))
+
+        # 敌人减伤（上游来源——展示等级/抗性，不参与乘区分类）
+        if hasattr(ms, 'page_enemy_defense'):
+            def_vals = ms.page_enemy_defense.collect_data()
+            if def_vals.get('char_level') or def_vals.get('enemy_level'):
+                uid = _nid()
+                all_items.append((uid, "敌人等级/防御", 0,
+                                 "敌人减伤", "enemy_defense",
+                                 f"敌Lv{def_vals.get('enemy_level',0)}/我Lv{def_vals.get('char_level',0)}", "",
+                                 "other"))
+        if hasattr(ms, 'page_enemy_resistance'):
+            for (row, col), spin in ms.page_enemy_resistance._spins.items():
+                if col == 0 and abs(spin.value()) > 0.0001:
+                    uid = _nid()
+                    all_items.append((uid, f"抗性-{row}", spin.value(),
+                                     "敌人减伤", "enemy_resistance", f"{row}基础", "",
+                                     "resistance"))
+
         # 关键词关联（中间层）
         kw_items = ms.page_keyword_assoc.get_items()
         kw_uid_map = {}
@@ -4943,7 +4973,7 @@ class DataFlowViewerDialog(QDialog):
                 src_groups[src] = []
             src_groups[src].append(item)
 
-        src_order = ["角色武器", "声骸4费", "声骸3费", "声骸1费", "共鸣"]
+        src_order = ["角色武器", "声骸4费", "声骸3费", "声骸1费", "共鸣", "独立乘区", "敌人减伤"]
         for src in sorted(src_groups.keys(),
                           key=lambda s: src_order.index(s) if s in src_order else 99):
             items = src_groups[src]
