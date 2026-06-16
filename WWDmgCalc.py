@@ -1187,16 +1187,16 @@ class KeywordAssociationPage(QWidget):
         self._table.setSizeAdjustPolicy(QTableWidget.SizeAdjustPolicy.AdjustToContents)
 
         hdr = self._table.horizontalHeader()
-        hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)  # 名称弹性填充
         for i in range(1, 8):
             hdr.setSectionResizeMode(i, QHeaderView.ResizeMode.Fixed)
-        hdr.resizeSection(1, 130)   # 副名称
-        hdr.resizeSection(2, 110)    # 序列号
-        hdr.resizeSection(3, 150)   # 数值
-        hdr.resizeSection(4, 70)    # 取值
-        hdr.resizeSection(5, 90)    # 来源
-        hdr.resizeSection(6, 120)   # 关键词关联
-        hdr.resizeSection(7, 80)    # 操作
+        hdr.resizeSection(1, 180)   # 副名称（+50）
+        hdr.resizeSection(2, 140)   # 序列号（+30）
+        hdr.resizeSection(3, 180)   # 数值（+30）
+        hdr.resizeSection(4, 80)    # 取值（+10）
+        hdr.resizeSection(5, 100)   # 来源（+10）
+        hdr.resizeSection(6, 140)   # 关键词关联（+20）
+        hdr.resizeSection(7, 90)    # 操作（+10）
 
         layout.addWidget(self._table, stretch=1)
 
