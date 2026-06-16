@@ -161,6 +161,18 @@ def _init_logger():
     """初始化模块级 logger + 加载持久化日志。"""
     os.makedirs(_ERROR_LOG_DIR, exist_ok=True)
 
+    # 全局未捕获异常 → 自动写入日志（不替换已有 hook）
+    _old_hook = sys.excepthook
+    def _global_excepthook(etype, value, tb):
+        try:
+            import traceback
+            tb_text = ''.join(traceback.format_exception(etype, value, tb))
+            _add_log_entry("CRITICAL", f"未捕获异常: {value}", tb_text)
+        except Exception:
+            pass
+        _old_hook(etype, value, tb)
+    sys.excepthook = _global_excepthook
+
     logger = logging.getLogger("WWDmgCalc")
     logger.setLevel(logging.WARNING)
     if logger.handlers:
@@ -280,7 +292,23 @@ def _analyze_error(entry):
     combined = (summary + " " + detail).lower()
     parts = ["【分析】"]
 
-    if "ocr" in combined:
+    if "attributeerror" in combined or "has no attribute" in combined:
+        parts.append("• 类或对象缺少某个方法/属性（AttributeError）。")
+        parts.append("• 常见原因：类定义被打断（如缩进错误导致方法被踢出类外）。")
+        parts.append("• 常见原因：模块导入顺序导致类定义不完整。")
+    elif "keyerror" in combined:
+        parts.append("• 字典/配置中缺少必需的键（KeyError）。")
+        parts.append("• 常见原因：JSON 文件结构变更但代码未同步更新。")
+    elif "typeerror" in combined and "not subscriptable" in combined:
+        parts.append("• 对不支持索引操作的对象使用了 [] 下标（TypeError）。")
+        parts.append("• 常见原因：期望返回列表/字典但实际得到 None 或其他类型。")
+    elif "runtimeerror" in combined and "len=" in combined:
+        parts.append("• _validate_items 断言触发 — 数据流元组长度异常。")
+        parts.append("• 某个页面构造了格式不正确的词条元组（应为 6 元组）。")
+    elif "nameerror" in combined or ("name '" in combined and "is not defined" in combined):
+        parts.append("• 变量名拼写错误或忘记导入（NameError）。")
+        parts.append("• 常见原因：删除了方法但调用方未更新。")
+    elif "ocr" in combined:
         if "识别失败" in combined or "未能识别" in combined:
             parts.append("• OCR 引擎未能从图片中提取有效文字。")
             parts.append("• 可能原因：图片分辨率过低、文字模糊、UI 缩放异常。")
@@ -322,6 +350,8 @@ def _analyze_error(entry):
         parts.append("⛔ 致命：程序崩溃或异常退出。")
     elif entry.get("level") == "ERROR":
         parts.append("⚠ 错误：功能受阻但程序可继续运行。")
+    elif "attributeerror" in combined or "has no attribute" in combined:
+        parts.append("⚠ 错误：核心功能不可用，需开发者修复代码。")
     elif "失败" in combined:
         parts.append("⚠ 功能请求未能完成（如识别/解析失败）。")
     else:
@@ -337,9 +367,17 @@ def _analyze_error(entry):
         parts.append("• 运行 pip install -r requirements.txt 安装依赖。")
     elif "json" in combined:
         parts.append("• 备份后删除损坏文件，重启程序自动重建。")
-    elif "name '" in combined or "not defined" in combined:
+    elif "attributeerror" in combined or "has no attribute" in combined:
+        parts.append("• 检查对应模块的类定义是否完整（注意缩进）。")
+        parts.append("• 反馈给开发者：提供完整错误信息即可。")
+    elif "keyerror" in combined:
+        parts.append("• 检查所用的预设/配置文件是否与当前版本兼容。")
+    elif "nameerror" in combined or ("name '" in combined and "is not defined" in combined):
         parts.append("• 检查对应模块的 import 语句和全局变量定义。")
         parts.append("• 通常为代码重构遗漏，反馈给开发者即可。")
+    elif "runtimeerror" in combined and "len=" in combined:
+        parts.append("• 数据流格式异常：检查最近修改的页面数据收集代码。")
+        parts.append("• 反馈给开发者：附带错误信息中的完整 item 内容。")
     elif "线程" in combined or "thread" in combined:
         parts.append("• 重启程序可恢复该功能。")
     else:

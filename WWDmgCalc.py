@@ -3679,7 +3679,13 @@ def _collect_all_items(external_sources, echo_pages=None):
                               f"{ei}号声骸副词{si}"))
     for _i, _it in enumerate(items):
         if len(_it) < 6:
-            raise RuntimeError(f"_collect_all_items item {_i} len={len(_it)} != 6: {_it}")
+            msg = f"_collect_all_items item {_i} len={len(_it)} != 6: {_it}"
+            try:
+                import logging
+                logging.getLogger("WWDmgCalc").error(msg)
+            except Exception:
+                pass
+            raise RuntimeError(msg)
     return items
 
 
