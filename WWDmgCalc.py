@@ -994,6 +994,13 @@ class CombinedEntryPage(BaseTableAttrPage):
 
         self.table.setCellWidget(row, 6, ops_widget)
 
+        # 数值总结页锁定的行在综合填写也禁用编辑+删除
+        key = (name, source, self.page_key, f"{type_label}{seq_num}")
+        if key in LOCKED_SUMMARY_ITEMS:
+            name_edit.setReadOnly(True)
+            value_spin.setEnabled(False)
+            del_btn.setEnabled(False)
+
         row_data['delete_btn'] = del_btn
         self._rows.append(row_data)
 
