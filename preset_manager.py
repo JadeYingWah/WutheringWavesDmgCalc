@@ -352,6 +352,13 @@ class PresetManager:
                         converted = [(v.get("name", ""), v.get("value", 0.0), v.get("hidden", False))
                                      for v in values]
                         main_screen.page_indep_zone._add_group(group_name, converted)
+    # 重排序列号
+    for p in [main_screen.page_combined_perm, main_screen.page_combined_trigger]:
+        p._resequence()
+    # resequence after all effects applied
+    if effects:
+        for p in [main_screen.page_combined_perm, main_screen.page_combined_trigger]:
+            p._resequence()
 
             # 应用结果列表 — 只保留筛选条件、基础倍率、关键词，丢弃区值（由重算重新生成）
             result_list = char_data.get("result_list", [])
@@ -844,8 +851,8 @@ def _apply_effects_and_indep(main_screen, effects, indep_zones, tag_prefix=""):
                 HIDDEN_ITEMS.add(key)
                 # hide_btn 已从 CombinedEntry 移除，default_hidden 仅写入 HIDDEN_ITEMS
 
-        # 同步到关键词关联页面
-        if keywords:
+        # 同步到关键词关联页面（仅倍率效果）
+        if keywords and ("倍率增加" in name or "倍率提升" in name):
             kw_seq_counter += 1
             seq_text = f"{tag_prefix}关联{kw_seq_counter}" if tag_prefix else f"关联{kw_seq_counter}"
             main_screen.page_keyword_assoc.add_effect_with_seq(
@@ -862,3 +869,6 @@ def _apply_effects_and_indep(main_screen, effects, indep_zones, tag_prefix=""):
         for v in values:
             converted.append((v.get("name", ""), v.get("value", 0.0), v.get("hidden", False)))
         main_screen.page_indep_zone._add_group(group_name, converted)
+    # 重排序列号
+    for p in [main_screen.page_combined_perm, main_screen.page_combined_trigger]:
+        p._resequence()

@@ -4552,6 +4552,10 @@ class ResonanceBuffPage(QWidget):
                 eff.get("keywords", ""),
                 seq_text)
 
+        # 重排序列号（_counter 可能已有值，需对齐行数）
+        self._main_screen.page_combined_perm._resequence()
+        self._main_screen.page_combined_trigger._resequence()
+
         # 触发下游重算（综合填写→数值总结→计算结果→结果列表）
         if self._main_screen.page_combined_perm._on_change_cb:
             self._main_screen.page_combined_perm._on_change_cb()
