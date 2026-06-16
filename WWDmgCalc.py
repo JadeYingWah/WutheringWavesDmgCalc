@@ -872,12 +872,12 @@ class CombinedEntryPage(BaseTableAttrPage):
         hdr.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         for i in range(1, 7):
             hdr.setSectionResizeMode(i, QHeaderView.ResizeMode.Interactive)
-        hdr.resizeSection(1, 180)   # 副名称
+        hdr.resizeSection(1, 210)   # 副名称（加宽30px）
         hdr.resizeSection(2, 80)   # 序列号
         hdr.resizeSection(3, 180)  # 数值
         hdr.resizeSection(4, 80)   # 取值
         hdr.resizeSection(5, 85)   # 来源
-        hdr.resizeSection(6, 90)   # 操作
+        hdr.resizeSection(6, 60)   # 操作（收窄30%）
 
         # —— 在输入行中添加来源选择（SearchCombo 右侧自带 ▼/▲ 展开/收起箭头） ——
         self.source_combo = SearchCombo(self.SOURCES)
