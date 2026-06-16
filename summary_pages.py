@@ -248,7 +248,8 @@ class SummaryBasePage(QWidget):
             table.insertRow(r)
             table.setRowHeight(r, 42)
             key = (name, nav_key, seq_label)
-            is_hidden = key in _HIDDEN_ITEMS
+            from WWDmgCalc import HIDDEN_ITEMS
+            is_hidden = key in HIDDEN_ITEMS
             is_const = name in _CONSTANT_ATTRS or "固定" in name
 
             # 名称
@@ -408,13 +409,13 @@ class SummaryBasePage(QWidget):
     def _toggle_hide_item(self, name, src_label, nav_key, btn, seq_label=""):
         """切换词条的隐藏/显示状态并触发全局重算。"""
         key = (name, nav_key, seq_label)
-        if key in _HIDDEN_ITEMS:
-            _HIDDEN_ITEMS.discard(key)
+        from WWDmgCalc import HIDDEN_ITEMS
+        if key in HIDDEN_ITEMS:
+            HIDDEN_ITEMS.discard(key)
             btn.setText("隐藏")
             btn.setObjectName("itemLockBtn")
         else:
-            _HIDDEN_ITEMS.add(key)
-            import sys; sys.stderr.write("[ADDED] id=" + str(id(_HIDDEN_ITEMS)) + " key=" + str(key) + " total=" + str(len(_HIDDEN_ITEMS)) + chr(10))
+            HIDDEN_ITEMS.add(key)
             btn.setText("隐藏中")
             btn.setObjectName("itemDeleteBtn")
         btn.style().unpolish(btn)
@@ -439,8 +440,9 @@ class SummaryBasePage(QWidget):
 
     def _delete_summary_item(self, name, src_label, nav_key, seq_label=""):
         """从数值总结中删除词条（同时删除来源页面中的对应条目）。"""
+        from WWDmgCalc import HIDDEN_ITEMS
         key = (name, nav_key, seq_label)
-        _HIDDEN_ITEMS.discard(key)
+        HIDDEN_ITEMS.discard(key)
         for _, page, nk in self._external_sources:
             if nk == nav_key:
                 data = page.collect_data()
