@@ -837,13 +837,14 @@ class _EffectTabDialog(QDialog):
         layout.addWidget(desc)
 
         SearchCombo, WEAPON_RESONANCE_ATTRS = _get_search_combo()
+        MULTIPLIER_ONLY_ATTRS = [a for a in WEAPON_RESONANCE_ATTRS if "倍率" in a]
 
         spec_group = QGroupBox("特定增益")
         spec_group.setMinimumHeight(300)
         spec_layout = QVBoxLayout(spec_group)
 
         spec_input = QHBoxLayout()
-        self._spec_combo = SearchCombo(WEAPON_RESONANCE_ATTRS)
+        self._spec_combo = SearchCombo(MULTIPLIER_ONLY_ATTRS)
         self._spec_combo.lineEdit().setPlaceholderText("输入搜索...")
         spec_input.addWidget(self._spec_combo, stretch=3)
 
@@ -2403,10 +2404,11 @@ class _CharacterBuffWindow(QDialog):
         desc.setObjectName("labelSecondary"); desc.setWordWrap(True); layout.addWidget(desc)
 
         SearchCombo, WEAPON_RESONANCE_ATTRS = _get_search_combo()
+        MULTIPLIER_ONLY_ATTRS = [a for a in WEAPON_RESONANCE_ATTRS if "倍率" in a]
         spec_group = QGroupBox("特定增益"); spec_group.setMinimumHeight(300)
         spec_layout = QVBoxLayout(spec_group)
         spec_input = QHBoxLayout()
-        self._spec_combo = SearchCombo(WEAPON_RESONANCE_ATTRS); self._spec_combo.lineEdit().setPlaceholderText("输入搜索...")
+        self._spec_combo = SearchCombo(MULTIPLIER_ONLY_ATTRS); self._spec_combo.lineEdit().setPlaceholderText("输入搜索...")
         spec_input.addWidget(self._spec_combo, stretch=3)
         self._spec_value = QDoubleSpinBox(); self._spec_value.setRange(0, 99999); self._spec_value.setDecimals(4); self._spec_value.setFixedWidth(100)
         spec_input.addWidget(self._spec_value); spec_input.addWidget(QLabel("%"))

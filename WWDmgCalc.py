@@ -115,8 +115,12 @@ WEAPON_RESONANCE_ATTRS = [
     "治疗效果加成", "共鸣效率加成",
     "声骸技能伤害加成", "声骸技能伤害加深",
     "光噪加深", "风蚀加深", "虚湮加深", "聚爆加深", "霜渐加深", "电磁加深",
+    "倍率增加", "倍率提升",
 
 ]
+
+# 用于特定增益表格下拉框（仅倍率词条）
+MULTIPLIER_ONLY_ATTRS = [a for a in WEAPON_RESONANCE_ATTRS if "倍率" in a]
 
 # 武器附加属性类型（角色与武器页使用）
 WEAPON_BONUS_TYPES = ["生命值", "攻击力", "防御力", "暴击率", "暴击伤害", "共鸣效率"]
@@ -5819,7 +5823,7 @@ class ResonanceChainEditDialog(QDialog):
 
         input_row = QHBoxLayout()
         # SearchCombo and CombinedEntryPage are defined in this file
-        self._spec_combo = SearchCombo(WEAPON_RESONANCE_ATTRS)
+        self._spec_combo = SearchCombo(MULTIPLIER_ONLY_ATTRS)
         self._spec_combo.lineEdit().setPlaceholderText("输入搜索...")
         input_row.addWidget(self._spec_combo, stretch=3)
 
