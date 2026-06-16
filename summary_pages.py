@@ -21,7 +21,8 @@ import damage_calc
 # 从主编导入共享工具（运行时注入）
 _fix_table_height = None
 _place_highlight_overlay = None
-from shared_state import HIDDEN_ITEMS, LOCKED_SUMMARY_ITEMS
+_HIDDEN_ITEMS = set()
+_LOCKED_SUMMARY_ITEMS = set()
 _CombinedEntryPage = None
 _collect_all_items = None
 _PropTable = None
