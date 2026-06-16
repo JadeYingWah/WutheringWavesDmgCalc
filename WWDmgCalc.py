@@ -8171,15 +8171,15 @@ def _render_process_html(
     # 倍率乘区
     mult_parts = [
         _txt("("),
-        _link(f"{base_m:.1f}%", f"基础倍率 = {base_m:.1f}%\n手动输入", None),
+        _link(f"{base_m:.3f}%", f"基础倍率 = {base_m:.3f}%\n手动输入", None),
         _txt(" + "),
-        _link(f"{mult_inc:.1f}%", f"倍率增加 = {mult_inc:.1f}%\n手动输入", None),
+        _link(f"{mult_inc:.3f}%", f"倍率增加 = {mult_inc:.3f}%\n手动输入", None),
         _txt(")"),
     ]
     for j, bv in enumerate(mult_boosts_vals):
         if bv > 0:
             mult_parts.append(_txt(" × (1 + "))
-            mult_parts.append(_link(f"{bv:.1f}%", f"倍率提升{j+1} = {bv:.1f}%\n手动输入", None))
+            mult_parts.append(_link(f"{bv:.3f}%", f"倍率提升{j+1} = {bv:.3f}%\n手动输入", None))
             mult_parts.append(_txt(")"))
     mult_parts.append(_txt(" = "))
     mult_parts.append(_link(f"{mult_zone:.10f}%", f"倍率乘区结果 = {mult_zone:.10f}%", None))
