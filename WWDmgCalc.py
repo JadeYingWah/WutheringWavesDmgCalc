@@ -8700,6 +8700,7 @@ class ResultPage(QWidget):
         self._base_override_value = value
 
     def compute(self):
+        import sys; sys.stderr.write("[DEBUG HIDDEN] " + str(sorted(HIDDEN_ITEMS)) + chr(10))
         items = _collect_all_items(self._external_sources, self._echo_pages)
 
         selected_element = self.filter_element.currentText()
