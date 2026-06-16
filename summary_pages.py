@@ -34,12 +34,12 @@ _make_sub_name_cell = None
 def inject_dependencies(fix_table_height_fn, place_hl_fn, hidden_set, locked_set, combined_cls, collect_fn, prop_table_cls, cell_center_fn, constant_attrs, make_sub_name_cell_fn=None):
     """由主编在 import 后调用，注入共享依赖"""
     global _fix_table_height, _place_highlight_overlay
-    global HIDDEN_ITEMS, LOCKED_SUMMARY_ITEMS, _CombinedEntryPage, _collect_all_items
+    global _HIDDEN_ITEMS, _LOCKED_SUMMARY_ITEMS, _CombinedEntryPage, _collect_all_items
     global _PropTable, _cell_center, _CONSTANT_ATTRS, _make_sub_name_cell
     _fix_table_height = fix_table_height_fn
     _place_highlight_overlay = place_hl_fn
-    HIDDEN_ITEMS = hidden_set
-    LOCKED_SUMMARY_ITEMS = locked_set
+    _HIDDEN_ITEMS = hidden_set
+    _LOCKED_SUMMARY_ITEMS = locked_set
     _CombinedEntryPage = combined_cls
     _collect_all_items = collect_fn
     _PropTable = prop_table_cls
@@ -248,8 +248,7 @@ class SummaryBasePage(QWidget):
             table.insertRow(r)
             table.setRowHeight(r, 42)
             key = (name, nav_key, seq_label)
-            from WWDmgCalc import HIDDEN_ITEMS
-            is_hidden = key in HIDDEN_ITEMS
+            is_hidden = key in _HIDDEN_ITEMS
             is_const = name in _CONSTANT_ATTRS or "固定" in name
 
             # 名称
@@ -409,13 +408,13 @@ class SummaryBasePage(QWidget):
     def _toggle_hide_item(self, name, src_label, nav_key, btn, seq_label=""):
         """切换词条的隐藏/显示状态并触发全局重算。"""
         key = (name, nav_key, seq_label)
-        from WWDmgCalc import HIDDEN_ITEMS
-        if key in HIDDEN_ITEMS:
-            HIDDEN_ITEMS.discard(key)
+        key = (name, nav_key, seq_label)
+        if key in _HIDDEN_ITEMS:
+            _HIDDEN_ITEMS.discard(key)
             btn.setText("隐藏")
             btn.setObjectName("itemLockBtn")
         else:
-            HIDDEN_ITEMS.add(key)
+            _HIDDEN_ITEMS.add(key)
             btn.setText("隐藏中")
             btn.setObjectName("itemDeleteBtn")
         btn.style().unpolish(btn)
@@ -440,9 +439,8 @@ class SummaryBasePage(QWidget):
 
     def _delete_summary_item(self, name, src_label, nav_key, seq_label=""):
         """从数值总结中删除词条（同时删除来源页面中的对应条目）。"""
-        from WWDmgCalc import HIDDEN_ITEMS
         key = (name, nav_key, seq_label)
-        HIDDEN_ITEMS.discard(key)
+        _HIDDEN_ITEMS.discard(key)
         for _, page, nk in self._external_sources:
             if nk == nav_key:
                 data = page.collect_data()
