@@ -1060,7 +1060,12 @@ class CombinedEntryPage(BaseTableAttrPage):
     def _toggle_combined_lock(self, name, source, rd, btn, seq_num=0):
         """切换锁定状态，联动 LOCKED_SUMMARY_ITEMS。"""
         type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-        key = (name, source, self.page_key, f"{type_label}{seq_num}")
+        actual_seq = seq_num
+        for ri, rdx in enumerate(self._rows):
+            if rdx is rd:
+                actual_seq = ri + 1
+                break
+        key = (name, source, self.page_key, f"{type_label}{actual_seq}")
         if key in LOCKED_SUMMARY_ITEMS:
             LOCKED_SUMMARY_ITEMS.discard(key)
             rd['locked'] = False
@@ -1081,7 +1086,12 @@ class CombinedEntryPage(BaseTableAttrPage):
     def _delete_combined_row(self, name, source, rd, seq_num=0):
         """删除行，同时清除隐藏和锁定状态。"""
         type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-        key = (name, source, self.page_key, f"{type_label}{seq_num}")
+        actual_seq = seq_num
+        for ri, rdx in enumerate(self._rows):
+            if rdx is rd:
+                actual_seq = ri + 1
+                break
+        key = (name, source, self.page_key, f"{type_label}{actual_seq}")
         HIDDEN_ITEMS.discard(key)
         LOCKED_SUMMARY_ITEMS.discard(key)
         rd['locked'] = False
@@ -3656,6 +3666,9 @@ def _collect_all_items(external_sources, echo_pages=None):
             for si, (ss_name, ss_val, *_) in enumerate(data['sub_stats'], 1):
                 items.append((f"[声骸]副词条-{ss_name}", ss_val, src_label, nav_key,
                               f"{ei}号声骸副词{si}"))
+    for _i, _it in enumerate(items):
+        if len(_it) < 6:
+            raise RuntimeError(f"_collect_all_items item {_i} len={len(_it)} != 6: {_it}")
     return items
 
 

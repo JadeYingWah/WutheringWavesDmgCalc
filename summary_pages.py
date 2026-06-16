@@ -247,7 +247,7 @@ class SummaryBasePage(QWidget):
             r = table.rowCount()
             table.insertRow(r)
             table.setRowHeight(r, 42)
-            key = (name, nav_key, seq_label)
+            key = (name, src_label, nav_key, seq_label)
             is_locked = key in _LOCKED_SUMMARY_ITEMS
             is_hidden = key in _HIDDEN_ITEMS
             is_const = name in _CONSTANT_ATTRS or "固定" in name
@@ -419,7 +419,7 @@ class SummaryBasePage(QWidget):
 
     def _toggle_hide_item(self, name, src_label, nav_key, btn, seq_label=""):
         """切换词条的隐藏/显示状态并触发全局重算。"""
-        key = (name, nav_key, seq_label)
+        key = (name, src_label, nav_key, seq_label)
         if key in _HIDDEN_ITEMS:
             _HIDDEN_ITEMS.discard(key)
             btn.setText("隐藏")
@@ -435,23 +435,13 @@ class SummaryBasePage(QWidget):
             if isinstance(page, _CombinedEntryPage):
                 for ri, rd in enumerate(page._rows):
                     type_label = "常驻" if page.page_key == "combined_perm" else "触发"
-                    rd_key = (rd['name_edit'].text(), page.page_key, f"{type_label}{ri + 1}")
+                    rd_key = (rd['name_edit'].text(), rd.get('source', ''), page.page_key, f"{type_label}{ri + 1}")
                     is_hid = rd_key in _HIDDEN_ITEMS
                     rd['hide_btn'].setText("隐藏中" if is_hid else "隐藏")
                     rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
                     rd['hide_btn'].style().unpolish(rd['hide_btn'])
                     rd['hide_btn'].style().polish(rd['hide_btn'])
-        # 同步 CombinedEntryPage 中对应行的隐藏按钮状态
-        for _, page, _ in self._external_sources:
-            if isinstance(page, _CombinedEntryPage):
-                for ri, rd in enumerate(page._rows):
-                    type_label = "常驻" if page.page_key == "combined_perm" else "触发"
-                    rd_key = (rd['name_edit'].text(), page.page_key, f"{type_label}{ri + 1}")
-                    is_hid = rd_key in _HIDDEN_ITEMS
-                    rd['hide_btn'].setText("隐藏中" if is_hid else "隐藏")
-                    rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
-                    rd['hide_btn'].style().unpolish(rd['hide_btn'])
-                    rd['hide_btn'].style().polish(rd['hide_btn'])
+
         # 仅触发计算结果页重算（不通过回调链——回调会重建表格导致卡顿+滚动丢失）
         window = self.window()
         if window and hasattr(window, 'main_screen'):
