@@ -425,11 +425,15 @@ class SummaryBasePage(QWidget):
                     type_label = "常驻" if page.page_key == "combined_perm" else "触发"
 
 
-        # 仅触发计算结果页重算（不通过回调链——回调会重建表格导致卡顿+滚动丢失）
+        # 强制刷新所有总结页 + 重算
         window = self.window()
         if window and hasattr(window, 'main_screen'):
-            window.main_screen.page_result.compute()
-            window.main_screen.page_result_list.recalc()
+            ms = window.main_screen
+            for sp in [ms.page_summary_base, ms.page_summary_bonus,
+                       ms.page_summary_deepen, ms.page_summary_crit]:
+                sp.recalc()
+            ms.page_result.compute()
+            ms.page_result_list.recalc(force=True)
 
 
     def _delete_summary_item(self, name, src_label, nav_key, seq_label=""):
