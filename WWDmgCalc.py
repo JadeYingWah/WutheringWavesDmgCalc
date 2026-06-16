@@ -1000,7 +1000,7 @@ class CombinedEntryPage(BaseTableAttrPage):
         view_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         view_btn.clicked.connect(
             lambda _, n=name, s=source, nk=self.page_key, rd=row_data:
-            self._navigate_to_summary(n, s, nk, f"{'常驻' if self.page_key == 'combined_perm' else '触发'}{rd['seq_label'].text()}"))
+            self._navigate_to_summary(n, s, nk, rd['seq_label'].text()))
         ops_layout.addWidget(view_btn)
 
         # 删除按钮
