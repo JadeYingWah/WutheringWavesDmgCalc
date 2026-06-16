@@ -1086,6 +1086,13 @@ class CombinedEntryPage(BaseTableAttrPage):
             rd['name_edit'].setReadOnly(True)
         btn.style().unpolish(btn)
         btn.style().polish(btn)
+        # 强制刷新数值总结页（与隐藏同步一致，回调链防重入可能跳过）
+        window = self.window()
+        if window and hasattr(window, 'main_screen'):
+            ms = window.main_screen
+            for sp in [ms.page_summary_base, ms.page_summary_bonus,
+                       ms.page_summary_deepen, ms.page_summary_crit]:
+                sp.recalc()
 
     def _delete_combined_row(self, name, source, rd, seq_num=0):
         """删除行，同时清除隐藏和锁定状态。"""
