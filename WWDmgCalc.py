@@ -3584,13 +3584,14 @@ def _collect_all_items(external_sources, echo_pages=None):
                               f"{ei}号声骸副词{si}", ""))
     for _i, _it in enumerate(items):
         if len(_it) < 6:
-            msg = f"_collect_all_items item {_i} len={len(_it)} != 6: {_it}"
+            msg = f"_collect_all_items tuple too short (len={len(_it)} != 6): {_it}"
             try:
-                import logging
-                logging.getLogger("WWDmgCalc").error(msg)
+                from error_handler.error_system import _add_log_entry
+                _add_log_entry("WARNING", msg, f"item {_i}: padded to 6-tuple")
             except Exception:
                 pass
-            raise RuntimeError(msg)
+            # pad to 6-tuple instead of crashing
+            items[_i] = (*_it, *([""] * (6 - len(_it))))
     return items
 
 
