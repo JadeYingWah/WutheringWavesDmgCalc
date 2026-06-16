@@ -3575,13 +3575,13 @@ def _collect_all_items(external_sources, echo_pages=None):
             nav_key = f"echo_{eid}"
             ms_name, ms_val = data['main_stat']
             items.append((f"[声骸]主词条-{ms_name}", ms_val, src_label, nav_key,
-                          f"{ei}号声骸主词"))
+                          f"{ei}号声骸主词", ""))
             fs_name, fs_val = data['fixed_stat']
             items.append((f"[声骸]固定词条-{fs_name}", fs_val, src_label, nav_key,
-                          f"{ei}号声骸固词"))
+                          f"{ei}号声骸固词", ""))
             for si, (ss_name, ss_val, *_) in enumerate(data['sub_stats'], 1):
                 items.append((f"[声骸]副词条-{ss_name}", ss_val, src_label, nav_key,
-                              f"{ei}号声骸副词{si}"))
+                              f"{ei}号声骸副词{si}", ""))
     for _i, _it in enumerate(items):
         if len(_it) < 6:
             msg = f"_collect_all_items item {_i} len={len(_it)} != 6: {_it}"
