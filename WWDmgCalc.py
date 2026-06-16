@@ -6615,7 +6615,7 @@ class ResultDetailDialog(QDialog):
         items_data = _collect_all_items(self._page._external_sources, self._page._echo_pages)
         filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_ in items_data
                     if _matches_filter(n, self._item.get("element"), self._item.get("skill"), self._item.get("effect"))
-                    and (n, s, nk, sq) not in HIDDEN_ITEMS]
+                    and (n, nk, sq) not in HIDDEN_ITEMS]
         # 关键词注入
         if hasattr(self._page, '_keyword_assoc_page') and self._page._keyword_assoc_page:
             item_kws = set(k.strip() for k in self._item.get("keywords", []))
@@ -7092,7 +7092,7 @@ class ResultListPage(QWidget):
                     sub_map[(it[0], it[2], it[3], it[4])] = it[5]
             filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_ in items_data
                         if _matches_filter(n, item.get("element"), item.get("skill"), item.get("effect"))
-                        and (n, s, nk, sq) not in HIDDEN_ITEMS]
+                        and (n, nk, sq) not in HIDDEN_ITEMS]
             if self._keyword_assoc_page:
                 item_kws = set(k.strip() for k in item.get("keywords", []))
                 if item_kws:
@@ -7123,7 +7123,7 @@ class ResultListPage(QWidget):
                 sub_map[(it[0], it[2], it[3], it[4])] = it[5]
         filtered = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_sub in all_items
                     if _matches_filter(n, item["element"], item["skill"], item["effect"])
-                    and (n, s, nk, sq) not in HIDDEN_ITEMS]
+                    and (n, nk, sq) not in HIDDEN_ITEMS]
         # 从关键词关联页面注入匹配的效果（倍率增加/提升单独提取给倍率乘区）
         kw_mult_inc = 0.0
         kw_mult_boosts = []
@@ -8716,7 +8716,7 @@ class ResultPage(QWidget):
 
         filtered_items = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_sub in items
                           if _matches_filter(n, selected_element, selected_skill, selected_effect)
-                          and (n, s, nk, sq) not in HIDDEN_ITEMS]
+                          and (n, nk, sq) not in HIDDEN_ITEMS]
 
         # 关键词关联注入（与 ResultListPage._recalc_one 相同逻辑）
         kw_text = ",".join(self._keywords)
