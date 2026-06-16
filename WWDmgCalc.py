@@ -1005,8 +1005,18 @@ class CombinedEntryPage(BaseTableAttrPage):
         self._rows.append(row_data)
 
     def _toggle_lock(self, rd):
-        """锁定切换——CombinedEntryPage 已移除 hide/lock 按钮，仅翻转逻辑状态"""
+        """锁定切换——同步写入 LOCKED_SUMMARY_ITEMS"""
         rd['locked'] = not rd['locked']
+        type_label = "常驻" if self.page_key == "combined_perm" else "触发"
+        for ri, rdx in enumerate(self._rows):
+            if rdx is rd:
+                lk_seq = f"{type_label}{ri + 1}"
+                lk_key = (rd['name_edit'].text(), self.page_key, lk_seq)
+                if rd['locked']:
+                    LOCKED_SUMMARY_ITEMS.add(lk_key)
+                else:
+                    LOCKED_SUMMARY_ITEMS.discard(lk_key)
+                break
 
     def _delete_combined_row(self, name, source, rd, seq_num=0):
         """删除行，同时清除隐藏和锁定状态。"""
@@ -4032,6 +4042,11 @@ class SaveManager:
         for rd in rows:
             page._counter = max(page._counter, rd.get("seq", 0))
             src = rd.get("source", "")
+            # 预先写入 LOCKED_SUMMARY_ITEMS，使 _add_row_with_source 能读到锁
+            lk_type = "常驻" if page.page_key == "combined_perm" else "触发"
+            lk_seq = f"{lk_type}{rd.get('seq', 0)}"
+            if rd.get('locked'):
+                LOCKED_SUMMARY_ITEMS.add((rd['name'], page.page_key, lk_seq))
             if src and hasattr(page, '_add_row_with_source'):
                 page._add_row_with_source(rd["name"], rd["value"], rd["seq"], src)
             else:
