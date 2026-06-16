@@ -414,7 +414,7 @@ class SummaryBasePage(QWidget):
             btn.setObjectName("itemLockBtn")
         else:
             _HIDDEN_ITEMS.add(key)
-            import sys; sys.stderr.write("[ADDED] " + str(key) + " | total: " + str(len(_HIDDEN_ITEMS)) + chr(10))
+            import sys; sys.stderr.write("[ADDED] id=" + str(id(_HIDDEN_ITEMS)) + " key=" + str(key) + " total=" + str(len(_HIDDEN_ITEMS)) + chr(10))
             btn.setText("隐藏中")
             btn.setObjectName("itemDeleteBtn")
         btn.style().unpolish(btn)
