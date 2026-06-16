@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 from shared_state import HIDDEN_ITEMS, LOCKED_SUMMARY_ITEMS, HIDDEN_ECHO_IDS
 #
 # 鸣潮伤害计算器 (Wuthering Waves Damage Calculator)
@@ -4845,7 +4845,7 @@ class DataFlowViewerDialog(QDialog):
         # 敌人减伤（上游来源——展示等级/抗性，不参与乘区分类）
         if hasattr(ms, 'page_enemy_defense'):
             def_vals = ms.page_enemy_defense.collect_data()
-            if def_vals.get('char_level') or def_vals.get('enemy_level'):
+            if isinstance(def_vals, dict) and (def_vals.get('char_level') or def_vals.get('enemy_level')):
                 uid = _nid()
                 all_items.append((uid, "敌人等级/防御", 0,
                                  "敌人减伤", "enemy_defense",
