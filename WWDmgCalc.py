@@ -977,26 +977,6 @@ class CombinedEntryPage(BaseTableAttrPage):
         ops_layout.setContentsMargins(2, 0, 2, 0)
         ops_layout.setSpacing(3)
 
-        # 隐藏按钮 — 联动 HIDDEN_ITEMS（动态读取 seq_label 避免重序列后失效）
-        hide_btn = QPushButton("隐藏中" if is_hidden else "隐藏")
-        hide_btn.setObjectName("itemDeleteBtn" if is_hidden else "itemLockBtn")
-        hide_btn.setFixedSize(48, 28)
-        hide_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        hide_btn.clicked.connect(
-            lambda _, n=name, s=source, btn=hide_btn, rd=row_data:
-            self._toggle_combined_hide(n, s, btn, rd['seq_label'].text()))
-        ops_layout.addWidget(hide_btn)
-
-        # 锁定按钮 — 联动 LOCKED_SUMMARY_ITEMS
-        lock_btn = QPushButton("解锁" if is_locked else "锁定")
-        lock_btn.setObjectName("itemDeleteBtn" if is_locked else "itemLockBtn")
-        lock_btn.setFixedSize(48, 28)
-        lock_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        lock_btn.clicked.connect(
-            lambda _, n=name, s=source, rd=row_data, btn=lock_btn:
-            self._toggle_combined_lock(n, s, rd, btn, rd['seq_label'].text()))
-        ops_layout.addWidget(lock_btn)
-
         # 查看总结按钮（跳转到对应数值总结页面并高亮）
         view_btn = QPushButton("查看总结")
         view_btn.setObjectName("itemLockBtn")
@@ -1020,123 +1000,12 @@ class CombinedEntryPage(BaseTableAttrPage):
 
         self.table.setCellWidget(row, 6, ops_widget)
 
-        row_data['hide_btn'] = hide_btn
-        row_data['lock_btn'] = lock_btn
         row_data['delete_btn'] = del_btn
-        if is_locked:
-            row_data['locked'] = True
-            value_spin.setEnabled(False)
-            name_edit.setReadOnly(True)
         self._rows.append(row_data)
 
-
-    def _sync_summary_row(self, name, seq_label, is_hide=True):
-        """当场同步数值总结页中匹配行的 hide/lock 按钮文字"""
-        window = self.window()
-        if not window or not hasattr(window, 'main_screen'):
-            return
-        ms = window.main_screen
-        for sp in [ms.page_summary_base, ms.page_summary_bonus,
-                   ms.page_summary_deepen, ms.page_summary_crit]:
-            for tbl in sp.findChildren(QTableWidget):
-                if tbl.horizontalHeader().count() < 7:
-                    continue
-                for r in range(tbl.rowCount()):
-                    ni = tbl.item(r, 0)
-                    si = tbl.item(r, 2)
-                    if ni is None or si is None:
-                        continue
-                    if ni.text() != name or si.text() != seq_label:
-                        continue
-                    ops_w = tbl.cellWidget(r, 6)
-                    if ops_w is None:
-                        continue
-                    for btn in ops_w.findChildren(QPushButton):
-                        txt = btn.text()
-                        if txt in ("隐藏", "隐藏中"):
-                            if is_hide:
-                                is_active = (name, self.page_key, seq_label) in HIDDEN_ITEMS
-                                btn.setText("隐藏中" if is_active else "隐藏")
-                                btn.setObjectName("itemDeleteBtn" if is_active else "itemLockBtn")
-                                btn.style().unpolish(btn)
-                                btn.style().polish(btn)
-                        elif txt in ("锁定", "解锁"):
-                            if not is_hide:
-                                is_active = (name, self.page_key, seq_label) in LOCKED_SUMMARY_ITEMS
-                                btn.setText("解锁" if is_active else "锁定")
-                                btn.setObjectName("itemDeleteBtn" if is_active else "itemLockBtn")
-                                btn.style().unpolish(btn)
-                                btn.style().polish(btn)
-
-    def _toggle_combined_hide(self, name, source, btn, seq_num=0):
-        """切换隐藏状态，联动 HIDDEN_ITEMS，并同步到其他页。"""
-        type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-        # find actual row index (seq_label.text() may be stale after _resequence)
-        actual_seq = seq_num
-        for ri, rd in enumerate(self._rows):
-            if rd.get("hide_btn") is btn:
-                actual_seq = ri + 1
-                break
-        key = (name, self.page_key, f"{type_label}{actual_seq}")
-        if key in HIDDEN_ITEMS:
-            HIDDEN_ITEMS.discard(key)
-            btn.setText("隐藏")
-            btn.setObjectName("itemLockBtn")
-        else:
-            HIDDEN_ITEMS.add(key)
-            btn.setText("隐藏中")
-            btn.setObjectName("itemDeleteBtn")
-        btn.style().unpolish(btn)
-        btn.style().polish(btn)
-        # 同步同页面其他同名词条的隐藏按钮
-        for ri, rd in enumerate(self._rows):
-            type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-            rd_key = (rd['name_edit'].text(), self.page_key, f"{type_label}{ri + 1}")
-            is_hid = rd_key in HIDDEN_ITEMS
-            rd['hide_btn'].setText("隐藏中" if is_hid else "隐藏")
-            rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
-            rd['hide_btn'].style().unpolish(rd['hide_btn'])
-            rd['hide_btn'].style().polish(rd['hide_btn'])
-        # 统一通过 _on_change_cb 刷新全链路（combined_cb → sp.recalc + compute + update_all）
-        window = self.window()
-        if window and hasattr(window, 'main_screen'):
-            ms = window.main_screen
-            ms.page_result.compute()
-            ms.page_result_list.recalc(force=True)
-            if self._on_change_cb:
-                self._on_change_cb()
-            # 当场同步数值总结页按钮：走完回调链后直接改
-            self._sync_summary_row(name, f"{type_label}{actual_seq}", is_hide=True)
-
-    def _toggle_combined_lock(self, name, source, rd, btn, seq_num=0):
-        """切换锁定状态，联动 LOCKED_SUMMARY_ITEMS。"""
-        type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-        actual_seq = seq_num
-        for ri, rdx in enumerate(self._rows):
-            if rdx is rd:
-                actual_seq = ri + 1
-                break
-        key = (name, self.page_key, f"{type_label}{actual_seq}")
-        if key in LOCKED_SUMMARY_ITEMS:
-            LOCKED_SUMMARY_ITEMS.discard(key)
-            rd['locked'] = False
-            btn.setText("锁定")
-            btn.setObjectName("itemLockBtn")
-            rd['value_spin'].setEnabled(True)
-            rd['name_edit'].setReadOnly(False)
-        else:
-            LOCKED_SUMMARY_ITEMS.add(key)
-            rd['locked'] = True
-            btn.setText("解锁")
-            btn.setObjectName("itemDeleteBtn")
-            rd['value_spin'].setEnabled(False)
-            rd['name_edit'].setReadOnly(True)
-        btn.style().unpolish(btn)
-        btn.style().polish(btn)
-        # 统一通过 _on_change_cb 刷新全链路
-        if self._on_change_cb:
-            self._on_change_cb()
-        self._sync_summary_row(name, f"{type_label}{actual_seq}", is_hide=False)
+    def _toggle_lock(self, rd):
+        """锁定切换——CombinedEntryPage 已移除 hide/lock 按钮，仅翻转逻辑状态"""
+        rd['locked'] = not rd['locked']
 
     def _delete_combined_row(self, name, source, rd, seq_num=0):
         """删除行，同时清除隐藏和锁定状态。"""
