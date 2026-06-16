@@ -967,11 +967,6 @@ class CombinedEntryPage(BaseTableAttrPage):
             'locked': False,
             'chain_num': chain_num,
         }
-        type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-        key = (name, self.page_key, f"{type_label}{seq_num}")
-        is_locked = key in LOCKED_SUMMARY_ITEMS
-        is_hidden = key in HIDDEN_ITEMS
-
         ops_widget = QWidget()
         ops_layout = QHBoxLayout(ops_widget)
         ops_layout.setContentsMargins(2, 0, 2, 0)
