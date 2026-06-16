@@ -1190,7 +1190,7 @@ class CombinedEntryPage(BaseTableAttrPage):
             navigate_fn(summary_key)
             if target_page:
                 # 防御/抗性页面用序列号匹配，总结页面用名称匹配
-                hl_name = seq_label if summary_key in ("enemy_defense", "enemy_resistance") else name
+                hl_name = seq_label  # seq_label 含 常驻N/触发N 前缀，避免同名词条跳转到第一行
                 QTimer.singleShot(200, lambda n=hl_name, s=source, nk=nav_key, sq=seq_label:
                                   target_page.highlight_item(n, s, nk, sq))
 
