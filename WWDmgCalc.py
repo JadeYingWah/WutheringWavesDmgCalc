@@ -6489,6 +6489,11 @@ class ResultDetailDialog(QDialog):
 
 
     # ── 倍率动态列表 ──
+    # ⚠️ 以下 7 个方法（~183 行）与 ResultPage（~L8959 同名方法）完全重复：
+    #    _sync_mult_entries / _jump_to_kw_row / _toggle_kw_hide / _get_kw_page
+    #    _sync_sub_name_to_kw / _populate_mult_table / _gather_mult_data
+    # 修改此处必须同步修改 ResultPage 的对应方法，否则行为分歧。
+    # 未来重构：抽取到共享 mixin，从两个类引入，消除双份维护负担。见 docs/项目总结.md
 
     def _sync_mult_entries(self):
         """从关键词关联同步倍率值到表格（实时互通，只读展示）"""
@@ -8957,6 +8962,9 @@ class ResultPage(QWidget):
 
 
     # ── 倍率动态列表 ──
+    # ⚠️ 以下 7 个方法（~183 行）与 ResultDetailDialog（~L6493 同名方法）完全重复。
+    # 修改此处必须同步修改 ResultDetailDialog 的对应方法，否则行为分歧。
+    # 未来重构：抽取到共享 mixin，从两个类引入，消除双份维护负担。见 docs/项目总结.md
 
     def _sync_mult_entries(self):
         """从关键词关联同步倍率值到表格（实时互通，只读展示）"""
