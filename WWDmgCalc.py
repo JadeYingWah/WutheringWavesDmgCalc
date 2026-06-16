@@ -3835,8 +3835,9 @@ class SaveManager:
 
     @staticmethod
     def save_to_file(state, filepath):
+        from preset_manager import _round_floats
         with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(state, f, ensure_ascii=False, indent=2)
+            json.dump(_round_floats(state), f, ensure_ascii=False, indent=2)
 
     @staticmethod
     def load_from_file(filepath):

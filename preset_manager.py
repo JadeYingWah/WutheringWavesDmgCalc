@@ -222,6 +222,16 @@ class PresetManager:
 
         return True, None
 
+
+def _round_floats(obj, decimals=4):
+    if isinstance(obj, float):
+        return round(obj, decimals)
+    elif isinstance(obj, dict):
+        return {k: _round_floats(v, decimals) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return type(obj)(_round_floats(v, decimals) for v in obj)
+    return obj
+
     @staticmethod
     def save_preset(data, name, source="user", overwrite=False):
         """保存预设到指定目录。
@@ -263,7 +273,7 @@ class PresetManager:
         try:
             os.makedirs(target_dir, exist_ok=True)
             with open(fpath, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
+                json.dump(_round_floats(data), f, ensure_ascii=False, indent=2)
         except Exception as e:
             return None, f"保存失败: {e}"
         return fpath, None
