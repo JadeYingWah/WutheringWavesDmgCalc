@@ -1,5 +1,5 @@
-﻿
 # -*- coding: utf-8 -*-
+from shared_state import HIDDEN_ITEMS, LOCKED_SUMMARY_ITEMS, HIDDEN_ECHO_IDS
 #
 # 鸣潮伤害计算器 (Wuthering Waves Damage Calculator)
 # ====================================================
@@ -3123,11 +3123,11 @@ DEEPEN_SUFFIX = "加深"
 CRIT_RATE_KEYWORDS = {"暴击率"}
 
 # 隐藏词条集合：key 为 (name, src_label)，隐藏后不参与计算
-HIDDEN_ITEMS = set()
+
 # 锁定词条集合：key 为 (name, src_label)，锁定后数值不可改、不可删除
-LOCKED_SUMMARY_ITEMS = set()
+
 # 隐藏声骸集合：echo_id 在其中的声骸不参与计算
-HIDDEN_ECHO_IDS = set()
+
 CRIT_DMG_KEYWORDS = {"暴击伤害", "暴击伤害加成", "暴伤", "暴傷"}
 
 def cell_center(table, row, col, widget):
