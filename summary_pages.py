@@ -30,7 +30,7 @@ _CONSTANT_ATTRS = set()
 _make_sub_name_cell = None
 
 
-def inject_dependencies(fix_table_height_fn, place_hl_fn, hidden_set, locked_set, combined_cls, collect_fn, prop_table_cls, cell_center_fn, constant_attrs, make_sub_name_cell_fn=None):
+def inject_dependencies(fix_table_height_fn, place_hl_fn, combined_cls, collect_fn, prop_table_cls, cell_center_fn, constant_attrs, make_sub_name_cell_fn=None):
     """由主编在 import 后调用，注入共享依赖"""
     global _fix_table_height, _place_highlight_overlay
     global _CombinedEntryPage, _collect_all_items

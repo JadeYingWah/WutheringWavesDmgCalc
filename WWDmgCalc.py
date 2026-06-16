@@ -4266,7 +4266,7 @@ class QuickLoadDialog(QDialog):
 
 from summary_pages import SummaryBaseZonePage, SummaryBonusZonePage, SummaryDeepenZonePage, SummaryCritZonePage
 from summary_pages import inject_dependencies as _inject_summary_deps
-_inject_summary_deps(fix_table_height, _place_highlight_overlay, HIDDEN_ITEMS, LOCKED_SUMMARY_ITEMS, CombinedEntryPage, _collect_all_items, PropTable, cell_center, CONSTANT_ATTRS)
+_inject_summary_deps(fix_table_height, _place_highlight_overlay, CombinedEntryPage, _collect_all_items, PropTable, cell_center, CONSTANT_ATTRS)
 # _make_sub_name_cell 在下方定义，通过 setter 延迟注入
 
 from indep_zone import IndepZonePage
