@@ -55,6 +55,17 @@ GITHUB_RAW_URLS = [
 ]
 
 
+def _round_floats(obj, decimals=4):
+    """递归清洗 float 到 decimals 位小数，消除 IEEE 754 垃圾尾数"""
+    if isinstance(obj, float):
+        return round(obj, decimals)
+    elif isinstance(obj, dict):
+        return {k: _round_floats(v, decimals) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return type(obj)(_round_floats(v, decimals) for v in obj)
+    return obj
+
+
 class PresetManager:
     """预设管理器：列出、加载、验证、应用、导出、更新官方预设"""
 
@@ -221,16 +232,6 @@ class PresetManager:
                 return False, "角色增益必须填写名称"
 
         return True, None
-
-
-def _round_floats(obj, decimals=4):
-    if isinstance(obj, float):
-        return round(obj, decimals)
-    elif isinstance(obj, dict):
-        return {k: _round_floats(v, decimals) for k, v in obj.items()}
-    elif isinstance(obj, (list, tuple)):
-        return type(obj)(_round_floats(v, decimals) for v in obj)
-    return obj
 
     @staticmethod
     def save_preset(data, name, source="user", overwrite=False):
