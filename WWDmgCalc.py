@@ -8702,6 +8702,8 @@ class ResultPage(QWidget):
     def compute(self):
         items = _collect_all_items(self._external_sources, self._echo_pages)
 
+        import sys; hidden_sample = list(HIDDEN_ITEMS)[:8]; item_keys_sample = [(n, nk, sq) for n, _, _, nk, sq, *_ in items[:20] if nk in ("combined_perm","combined_trigger")]; sys.stderr.write("[COMPUTE] HIDDEN_ITEMS=" + str(hidden_sample) + "| ITEM_KEYS=" + str(item_keys_sample[:5]) + chr(10))
+
         selected_element = self.filter_element.currentText()
         if selected_element == "(无)":
             selected_element = None
