@@ -759,10 +759,19 @@ class SummaryCritZonePage(SummaryBasePage):
         total_rate = 5.0 + total_rate_sources
         total_dmg = 150.0 + total_dmg_sources
 
+        # 时效筛选
+        filter_bar = self._build_filter_bar([
+            ("时效类型", ["全部", "常驻", "触发"]),
+        ])
+        self._content_layout.addWidget(filter_bar)
+
         self._content_layout.addWidget(QLabel("暴击率 词条 (基础 5%)"))
         t1 = self._make_source_table(["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"],
                                      [0.22, 0.10, 0.07, 0.14, 0.07, 0.12, 0.10])
-        self._fill_source_table(t1, rate_items, self._navigate)
+        self._filtered_table = t1
+        self._filtered_all_items = rate_items
+        self._filter_refill_fn = self._fill_source_table
+        self._refilter_table()
         self._content_layout.addWidget(t1)
 
         # 暴击率计算过程
