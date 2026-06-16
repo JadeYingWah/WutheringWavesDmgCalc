@@ -8715,6 +8715,7 @@ class ResultPage(QWidget):
         filtered_items = [(n, v, s, nk, sq) for n, v, s, nk, sq, *_sub in items
                           if _matches_filter(n, selected_element, selected_skill, selected_effect)
                           and (n, nk, sq) not in HIDDEN_ITEMS]
+        import sys; fk = [(n, nk, sq) for n, _, _, nk, sq in filtered_items[:3]]; sys.stderr.write("[FILTER] first 3=" + str(fk) + chr(10))
 
         # 关键词关联注入（与 ResultListPage._recalc_one 相同逻辑）
         kw_text = ",".join(self._keywords)

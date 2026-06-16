@@ -408,6 +408,7 @@ class SummaryBasePage(QWidget):
     def _toggle_hide_item(self, name, src_label, nav_key, btn, seq_label=""):
         """切换词条的隐藏/显示状态并触发全局重算。"""
         key = (name, nav_key, seq_label)
+        import sys; sys.stderr.write("[TOGGLE] key=" + str(key) + " was_hidden=" + str(key in _HIDDEN_ITEMS) + chr(10))
         if key in _HIDDEN_ITEMS:
             _HIDDEN_ITEMS.discard(key)
             btn.setText("隐藏")
