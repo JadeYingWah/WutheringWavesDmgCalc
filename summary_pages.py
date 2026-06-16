@@ -461,17 +461,18 @@ class SummaryBasePage(QWidget):
             btn.setObjectName("itemDeleteBtn")
         btn.style().unpolish(btn)
         btn.style().polish(btn)
-        # 同步 CombinedEntryPage 中对应行的锁定按钮文字
+        # 同步到综合填写：禁用/启用对应行的编辑和删除
         for _, page, _ in self._external_sources:
             if isinstance(page, _CombinedEntryPage):
                 for ri, rd in enumerate(page._rows):
                     type_label = "常驻" if page.page_key == "combined_perm" else "触发"
-                    rd_key = (rd['name_edit'].text(), page.page_key, f"{type_label}{ri + 1}")
-                    is_lk = rd_key in _LOCKED_SUMMARY_ITEMS
-                    rd['lock_btn'].setText("解锁" if is_lk else "锁定")
-                    rd['lock_btn'].setObjectName("itemDeleteBtn" if is_lk else "itemLockBtn")
-                    rd['lock_btn'].style().unpolish(rd['lock_btn'])
-                    rd['lock_btn'].style().polish(rd['lock_btn'])
+                    rd_seq = f"{type_label}{ri + 1}"
+                    if rd['name_edit'].text() == name and rd_seq == seq_label:
+                        is_lk = key in _LOCKED_SUMMARY_ITEMS
+                        rd['name_edit'].setReadOnly(is_lk)
+                        rd['value_spin'].setEnabled(not is_lk)
+                        rd['delete_btn'].setEnabled(not is_lk)
+                        break
         # 触发全局重算
         for _, page, _ in self._external_sources:
             if page._on_change_cb:
