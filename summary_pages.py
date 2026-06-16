@@ -247,7 +247,7 @@ class SummaryBasePage(QWidget):
             r = table.rowCount()
             table.insertRow(r)
             table.setRowHeight(r, 42)
-            key = (name, src_label, nav_key, seq_label)
+            key = (name, nav_key, seq_label)
             is_locked = key in _LOCKED_SUMMARY_ITEMS
             is_hidden = key in _HIDDEN_ITEMS
             is_const = name in _CONSTANT_ATTRS or "固定" in name
@@ -419,7 +419,7 @@ class SummaryBasePage(QWidget):
 
     def _toggle_hide_item(self, name, src_label, nav_key, btn, seq_label=""):
         """切换词条的隐藏/显示状态并触发全局重算。"""
-        key = (name, src_label, nav_key, seq_label)
+        key = (name, nav_key, seq_label)
         if key in _HIDDEN_ITEMS:
             _HIDDEN_ITEMS.discard(key)
             btn.setText("隐藏")
@@ -450,7 +450,7 @@ class SummaryBasePage(QWidget):
 
     def _toggle_summary_lock(self, name, src_label, nav_key, btn, seq_label=""):
         """切换数值总结中词条的锁定/解锁状态。"""
-        key = (name, src_label, nav_key, seq_label)
+        key = (name, nav_key, seq_label)
         if key in _LOCKED_SUMMARY_ITEMS:
             _LOCKED_SUMMARY_ITEMS.discard(key)
             btn.setText("锁定")
@@ -479,7 +479,7 @@ class SummaryBasePage(QWidget):
 
     def _delete_summary_item(self, name, src_label, nav_key, seq_label=""):
         """从数值总结中删除词条（同时删除来源页面中的对应条目）。"""
-        key = (name, src_label, nav_key, seq_label)
+        key = (name, nav_key, seq_label)
         _HIDDEN_ITEMS.discard(key)
         _LOCKED_SUMMARY_ITEMS.discard(key)
         for _, page, nk in self._external_sources:

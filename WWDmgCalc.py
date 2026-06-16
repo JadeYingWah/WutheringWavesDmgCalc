@@ -755,7 +755,8 @@ class BaseTableAttrPage(QWidget):
         name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.table.setCellWidget(row, 0, name_edit)
 
-        seq_label = QLabel(str(seq_num))
+        type_label = "常驻" if self.page_key == "combined_perm" else "触发"
+        seq_label = QLabel(f"{type_label}{seq_num}")
         seq_label.setObjectName("seqLabel")
         seq_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.table.setCellWidget(row, 1, seq_label)
@@ -835,7 +836,8 @@ class BaseTableAttrPage(QWidget):
 
     def _resequence(self):
         for i, rd in enumerate(self._rows):
-            rd['seq_label'].setText(str(i + 1))
+            tp = "常驻" if self.page_key == "combined_perm" else "触发"
+            rd['seq_label'].setText(f"{tp}{i + 1}")
 
     def collect_data(self):
         return [(rd['name_edit'].text(), rd['value_spin'].value(), rd['locked']) for rd in self._rows]
@@ -922,7 +924,8 @@ class CombinedEntryPage(BaseTableAttrPage):
         sub_name_edit.editingFinished.connect(self._on_item_value_changed)
         self.table.setCellWidget(row, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
-        seq_label = QLabel(str(seq_num))
+        type_label = "常驻" if self.page_key == "combined_perm" else "触发"
+        seq_label = QLabel(f"{type_label}{seq_num}")
         seq_label.setObjectName("seqLabel")
         seq_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.table.setCellWidget(row, 2, seq_label)
@@ -961,7 +964,7 @@ class CombinedEntryPage(BaseTableAttrPage):
             'chain_num': chain_num,
         }
         type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-        key = (name, source, self.page_key, f"{type_label}{seq_num}")
+        key = (name, self.page_key, f"{type_label}{seq_num}")
         is_locked = key in LOCKED_SUMMARY_ITEMS
         is_hidden = key in HIDDEN_ITEMS
 
@@ -1031,7 +1034,7 @@ class CombinedEntryPage(BaseTableAttrPage):
             if rd.get("hide_btn") is btn:
                 actual_seq = ri + 1
                 break
-        key = (name, source, self.page_key, f"{type_label}{actual_seq}")
+        key = (name, self.page_key, f"{type_label}{actual_seq}")
         if key in HIDDEN_ITEMS:
             HIDDEN_ITEMS.discard(key)
             btn.setText("隐藏")
@@ -1045,7 +1048,7 @@ class CombinedEntryPage(BaseTableAttrPage):
         # 同步同页面其他同名词条的隐藏按钮
         for ri, rd in enumerate(self._rows):
             type_label = "常驻" if self.page_key == "combined_perm" else "触发"
-            rd_key = (rd['name_edit'].text(), rd.get('source', ''), self.page_key, f"{type_label}{ri + 1}")
+            rd_key = (rd['name_edit'].text(), self.page_key, f"{type_label}{ri + 1}")
             is_hid = rd_key in HIDDEN_ITEMS
             rd['hide_btn'].setText("隐藏中" if is_hid else "隐藏")
             rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
@@ -1068,7 +1071,7 @@ class CombinedEntryPage(BaseTableAttrPage):
             if rdx is rd:
                 actual_seq = ri + 1
                 break
-        key = (name, source, self.page_key, f"{type_label}{actual_seq}")
+        key = (name, self.page_key, f"{type_label}{actual_seq}")
         if key in LOCKED_SUMMARY_ITEMS:
             LOCKED_SUMMARY_ITEMS.discard(key)
             rd['locked'] = False
@@ -1097,7 +1100,7 @@ class CombinedEntryPage(BaseTableAttrPage):
             if rdx is rd:
                 actual_seq = ri + 1
                 break
-        key = (name, source, self.page_key, f"{type_label}{actual_seq}")
+        key = (name, self.page_key, f"{type_label}{actual_seq}")
         HIDDEN_ITEMS.discard(key)
         LOCKED_SUMMARY_ITEMS.discard(key)
         rd['locked'] = False
@@ -1195,9 +1198,10 @@ class CombinedEntryPage(BaseTableAttrPage):
                                   target_page.highlight_item(n, s, nk, sq))
 
     def collect_data(self):
-        """返回带来源标签、序列号、副名称的完整数据列表。"""
+        """返回 6 元组 (name,val,locked,source,seq,sub)，seq 已带 常驻N/触发N 前缀"""
+        prefix = "常驻" if self.page_key == "combined_perm" else "触发"
         return [(rd['name_edit'].text(), rd['value_spin'].value(),
-                 rd['locked'], rd.get('source', ''), i + 1,
+                 rd['locked'], rd.get('source', ''), f"{prefix}{i + 1}",
                  rd.get('sub_name_edit', QLineEdit()).text()) for i, rd in enumerate(self._rows)]
 
 
@@ -3632,8 +3636,8 @@ def _collect_all_items(external_sources, echo_pages=None):
                 seq_label = ""
                 sub_name = ""
                 if len(entry) >= 5 and nav_key in ("combined_perm", "combined_trigger"):
-                    type_label = "常驻" if nav_key == "combined_perm" else "触发"
-                    seq_label = f"{type_label}{entry[4]}"
+                    raw_seq = entry[4]
+                    seq_label = str(raw_seq) if str(raw_seq).isdigit() else raw_seq
                 if len(entry) >= 6:
                     sub_name = entry[5] or ""
                 items.append((name, value, item_src, nav_key, seq_label, sub_name))
