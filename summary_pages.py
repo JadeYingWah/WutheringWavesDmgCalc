@@ -135,13 +135,18 @@ class SummaryBasePage(QWidget):
         return container
 
     def _on_filter_chip_clicked(self, group_name, value, chips):
-        """Handle filter chip click: update checked state, uncheck others in group."""
-        # Block signals to prevent recursion
+        """Handle filter chip click.
+        
+        时效类型单独设置 _timing_override，其他走通用 _active_filters。
+        """
         for c in chips:
             c.blockSignals(True)
             c.setChecked(c.text() == value)
             c.blockSignals(False)
-        self._active_filters[group_name] = value
+        if group_name == "时效类型":
+            self._timing_override = value if value != "全部" else None
+        else:
+            self._active_filters[group_name] = value
         self._refilter_table()
 
     def _matches_filter(self, name):
@@ -185,13 +190,23 @@ class SummaryBasePage(QWidget):
         return False
 
     def _refilter_table(self):
-        """Re-apply filters and refill the table."""
+        """Re-apply filters and refill the table. Items are 6-tuples."""
         if self._filtered_table is None:
             return
-        filtered = [it for it in self._filtered_all_items if self._matches_filter(it[0])]
+        filtered = [it for it in self._filtered_all_items
+                    if self._matches_filter(it[0]) and self._matches_timing(it[3])]
         self._filtered_table.setRowCount(0)
         if self._filter_refill_fn:
             self._filter_refill_fn(self._filtered_table, filtered, self._navigate)
+
+    def _matches_timing(self, nav_key):
+        if self._timing_override is None:
+            return True
+        if self._timing_override == "常驻" and nav_key != "combined_perm":
+            return False
+        if self._timing_override == "触发" and nav_key != "combined_trigger":
+            return False
+        return True
 
     def _make_result_group(self, title, rows):
         """rows: [(label, value_str), ...]"""
@@ -673,6 +688,7 @@ class SummaryBonusZonePage(SummaryBasePage):
 
         # 筛选芯片：元素属性 + 技能类型
         filter_bar = self._build_filter_bar([
+            ("时效类型", ["全部", "常驻", "触发"]),
             ("元素属性", ["全部", "无"] + damage_calc.ELEMENTS[1:]),
             ("技能类型", ["全部", "无"] + list(damage_calc.SKILL_TYPE_NAMES_SET)),
         ])
@@ -704,6 +720,7 @@ class SummaryDeepenZonePage(SummaryBasePage):
 
         # 筛选芯片：元素属性 + 技能类型 + 效应类型
         filter_bar = self._build_filter_bar([
+            ("时效类型", ["全部", "常驻", "触发"]),
             ("元素属性", ["全部", "无"] + damage_calc.ELEMENTS[1:]),
             ("技能类型", ["全部", "无"] + list(damage_calc.SKILL_TYPE_NAMES_SET)),
             ("效应类型", ["全部", "无"] + damage_calc.EFFECTS[1:]),
