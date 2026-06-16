@@ -201,14 +201,14 @@ class SummaryBasePage(QWidget):
             self._filter_refill_fn(self._filtered_table, filtered, self._navigate)
 
     def _matches_timing(self, nav_key):
+        """时效筛选：声骸/角色武器/敌人减伤等源归属常驻。"""
         if self._timing_override is None:
             return True
-        if self._timing_override == "常驻" and nav_key != "combined_perm":
-            return False
-        if self._timing_override == "触发" and nav_key != "combined_trigger":
-            return False
+        if self._timing_override == "常驻":
+            return nav_key not in ("combined_trigger", "keyword_assoc")
+        if self._timing_override == "触发":
+            return nav_key == "combined_trigger"
         return True
-
     def _make_result_group(self, title, rows):
         """rows: [(label, value_str), ...]"""
         group = QGroupBox(title)
