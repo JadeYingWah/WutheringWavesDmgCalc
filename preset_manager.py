@@ -450,6 +450,14 @@ class PresetManager:
         main_screen.page_combined_perm._resequence()
         main_screen.page_combined_trigger._resequence()
 
+        # 扫描所有 default_hidden 行，写入 HIDDEN_ITEMS（_resequence 后序号才正确）
+        from WWDmgCalc import HIDDEN_ITEMS
+        for page in [main_screen.page_combined_perm, main_screen.page_combined_trigger]:
+            for ri, rd in enumerate(page._rows):
+                if rd.get('default_hidden'):
+                    type_label = "常驻" if page.page_key == "combined_perm" else "触发"
+                    HIDDEN_ITEMS.add((rd['name_edit'].text(), page.page_key, f"{type_label}{ri + 1}"))
+
         # ── 6. 触发全局重算 ──
         # 模拟一次完整的数据变更回调
         if hasattr(main_screen.page_combined_perm, '_on_change_cb') and \
@@ -841,13 +849,9 @@ def _apply_effects_and_indep(main_screen, effects, indep_zones, tag_prefix=""):
                 if 'sub_name_edit' in last:
                     last['sub_name_edit'].setText(sub_name)
 
-            # 处理默认隐藏
-            if default_hidden and page._rows:
-                type_label = "常驻" if page.page_key == "combined_perm" else "触发"
-                seq_num = page._counter
-                key = (name, page.page_key, f"{type_label}{seq_num}")
-                HIDDEN_ITEMS.add(key)
-                # hide_btn 已从 CombinedEntry 移除，default_hidden 仅写入 HIDDEN_ITEMS
+                if default_hidden:
+                    last = page._rows[-1]
+                    last['default_hidden'] = True
 
         # 同步到关键词关联页面
         if keywords:
