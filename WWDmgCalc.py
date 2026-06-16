@@ -8716,6 +8716,10 @@ class ResultPage(QWidget):
                           if _matches_filter(n, selected_element, selected_skill, selected_effect)
                           and (n, nk, sq) not in HIDDEN_ITEMS]
 
+        # ═══ 最终防线：再次过滤 HIDDEN_ITEMS（确保不在集合中的项被排除） ═══
+        filtered_items = [(n, v, s, nk, sq) for n, v, s, nk, sq in filtered_items
+                          if (n, nk, sq) not in HIDDEN_ITEMS]
+
         # 关键词关联注入（与 ResultListPage._recalc_one 相同逻辑）
         kw_text = ",".join(self._keywords)
         if kw_text and getattr(self, '_keyword_assoc_page', None):
