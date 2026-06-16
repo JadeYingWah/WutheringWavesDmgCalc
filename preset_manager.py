@@ -291,7 +291,7 @@ def _round_floats(obj, decimals=4):
             main_screen: MainScreen 实例
         """
         # ── 导入必要引用（延迟导入避免循环依赖） ──
-        from WWDmgCalc import HIDDEN_ITEMS, _APP_DIR as _a
+        from WWDmgCalc import HIDDEN_ITEMS
 
         # ── 0. 清除旧的独立乘区组（避免重复叠加） ──
         main_screen.page_indep_zone.remove_all_groups()

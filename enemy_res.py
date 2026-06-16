@@ -6,66 +6,27 @@ __all__ = ["EnemyResistancePage"]
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QTableWidget, QTableWidgetItem, QCheckBox, QDoubleSpinBox,
-    QGroupBox, QScrollArea, QApplication, QGraphicsOpacityEffect,
+    QGroupBox, QScrollArea, QApplication,
     QHeaderView, QSizePolicy,
 )
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, QRect
 
 import damage_calc
 
-# ── 从主编注入 ──
+# ── 从主编注入（不再本地复制，消除 ~50 行冗余） ──
+_cell_center = None
+_fix_table_height = None
 _CombinedEntryPage = None
-
-
+_PropTable = None
 _place_highlight_overlay = None
 
-def inject_deps(combined_entry_cls, place_hl_fn):
-    global _CombinedEntryPage, _place_highlight_overlay
+def inject_deps(combined_entry_cls, cell_center_fn, fix_table_height_fn, prop_table_cls, place_hl_fn):
+    global _cell_center, _fix_table_height, _CombinedEntryPage, _PropTable, _place_highlight_overlay
+    _cell_center = cell_center_fn
+    _fix_table_height = fix_table_height_fn
     _CombinedEntryPage = combined_entry_cls
+    _PropTable = prop_table_cls
     _place_highlight_overlay = place_hl_fn
-
-
-# ── 小工具（从主编复制，避免循环导入） ──
-
-def _cell_center(table, row, col, widget):
-    container = QWidget()
-    cl = QHBoxLayout(container)
-    cl.setContentsMargins(0, 0, 0, 0)
-    cl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    cl.addWidget(widget)
-    table.setCellWidget(row, col, container)
-
-
-def _fix_table_height(table):
-    h = table.horizontalHeader().height()
-    for r in range(table.rowCount()):
-        h += table.rowHeight(r)
-    table.setMinimumHeight(h + 4)
-
-
-class _PropTable(QTableWidget):
-    """QTableWidget with proportional column widths."""
-    def __init__(self, proportions, parent=None):
-        super().__init__(parent)
-        self._proportions = proportions
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        w = self.viewport().width()
-        if w > 0:
-            total = sum(self._proportions)
-            for i, p in enumerate(self._proportions):
-                self.setColumnWidth(i, max(30, int(w * p / total)))
-
-    def wheelEvent(self, event):
-        p = self.parent()
-        while p:
-            if isinstance(p, QScrollArea):
-                p.wheelEvent(event)
-                return
-            p = p.parent()
-        super().wheelEvent(event)
 
 
 class EnemyResistancePage(QWidget):

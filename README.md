@@ -47,7 +47,7 @@
 想让你的预设被更多人使用？
 
 1. 用「预设构建器」制作预设，**填写作者名**
-2. 打开 `tools/上传官方预设/PresetUploader.exe`
+2. 打开 `tools/上传官方预设/PresetUploader.exe`（源码位于 `tools/preset_uploader/main.py`）
 3. 填写你的 GitHub 用户名 → 选择预设文件 → 提交投稿
 4. 自动创建 Pull Request，审核合并后你的名字会出现在贡献者名单中 🎖️
 

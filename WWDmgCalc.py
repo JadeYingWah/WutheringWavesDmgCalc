@@ -3609,7 +3609,7 @@ class EnemyDefensePage(BaseTableAttrPage):
 
 from enemy_res import EnemyResistancePage
 from enemy_res import inject_deps as _inject_enemy_res
-_inject_enemy_res(CombinedEntryPage, _place_highlight_overlay)
+_inject_enemy_res(CombinedEntryPage, cell_center, fix_table_height, PropTable, _place_highlight_overlay)
 # ==================== 通用数据收集 ====================
 
 def _collect_all_items(external_sources, echo_pages=None):
