@@ -1053,10 +1053,16 @@ class CombinedEntryPage(BaseTableAttrPage):
                             if is_hide:
                                 is_active = (name, self.page_key, seq_label) in HIDDEN_ITEMS
                                 btn.setText("隐藏中" if is_active else "隐藏")
+                                btn.setObjectName("itemDeleteBtn" if is_active else "itemLockBtn")
+                                btn.style().unpolish(btn)
+                                btn.style().polish(btn)
                         elif txt in ("锁定", "解锁"):
                             if not is_hide:
                                 is_active = (name, self.page_key, seq_label) in LOCKED_SUMMARY_ITEMS
                                 btn.setText("解锁" if is_active else "锁定")
+                                btn.setObjectName("itemDeleteBtn" if is_active else "itemLockBtn")
+                                btn.style().unpolish(btn)
+                                btn.style().polish(btn)
 
     def _toggle_combined_hide(self, name, source, btn, seq_num=0):
         """切换隐藏状态，联动 HIDDEN_ITEMS，并同步到其他页。"""
