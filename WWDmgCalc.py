@@ -3796,12 +3796,10 @@ class SaveManager:
         # 0. 恢复隐藏/锁定状态（兼容旧 2 元素和新 3 元素格式）
         HIDDEN_ITEMS.clear()
         for entry in state.get("hidden_items", []):
-            if len(entry) >= 4:
-                HIDDEN_ITEMS.add((entry[0], entry[1], entry[2], entry[3]))
-            elif len(entry) == 3:
-                HIDDEN_ITEMS.add((entry[0], entry[1], entry[2], ""))  # 兼容旧格式
+            if len(entry) >= 3:
+                HIDDEN_ITEMS.add((entry[0], entry[2], entry[3]))  # 3元组: name, nav_key, seq
             elif len(entry) == 2:
-                HIDDEN_ITEMS.add((entry[0], entry[1], "", ""))
+                HIDDEN_ITEMS.add((entry[0], entry[1], ""))
         LOCKED_SUMMARY_ITEMS.clear()
         for entry in state.get("locked_items", []):
             if len(entry) >= 4:
