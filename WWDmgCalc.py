@@ -6621,7 +6621,7 @@ class ResultDetailDialog(QDialog):
             src_btn.setObjectName("itemLockBtn")
             src_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             src_btn.setToolTip("跳转到关键词关联页定位此行")
-            src_btn.clicked.connect(lambda checked, sq=seq, kw_kws=kw_entry_kws:
+            src_btn.clicked.connect(lambda checked, sq=seq:
                 self._jump_to_kw_row(sq))
             table.setCellWidget(r, 5, src_btn)
             # 关键词关联
@@ -9089,7 +9089,7 @@ class ResultPage(QWidget):
             src_btn.setObjectName("itemLockBtn")
             src_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             src_btn.setToolTip("跳转到关键词关联页定位此行")
-            src_btn.clicked.connect(lambda checked, sq=seq, kw_kws=kw_entry_kws:
+            src_btn.clicked.connect(lambda checked, sq=seq:
                 self._jump_to_kw_row(sq))
             table.setCellWidget(r, 5, src_btn)
             # 关键词关联
