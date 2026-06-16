@@ -767,13 +767,11 @@ class SummaryCritZonePage(SummaryBasePage):
         self._content_layout.addWidget(filter_bar)
 
         self._content_layout.addWidget(QLabel("暴击率 词条 (基础 5%)"))
-        t1 = self._make_source_table(["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"],
-                                     [0.22, 0.10, 0.07, 0.14, 0.07, 0.12, 0.10])
-        self._filtered_table = t1
-        self._filtered_all_items = rate_items
-        self._filter_refill_fn = self._fill_source_table
-        self._refilter_table()
-        self._content_layout.addWidget(t1)
+        self._rate_table = self._make_source_table(["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"],
+                                                   [0.22, 0.10, 0.07, 0.14, 0.07, 0.12, 0.10])
+        self._rate_items = rate_items
+        self._fill_source_table(self._rate_table, self._rate_items, self._navigate)
+        self._content_layout.addWidget(self._rate_table)
 
         # 暴击率计算过程
         rate_calc = self._make_result_group("暴击率计算过程", [
@@ -784,10 +782,11 @@ class SummaryCritZonePage(SummaryBasePage):
         self._content_layout.addWidget(rate_calc)
 
         self._content_layout.addWidget(QLabel("暴击伤害 词条 (基础 150%)"))
-        t2 = self._make_source_table(["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"],
-                                     [0.22, 0.10, 0.07, 0.14, 0.07, 0.12, 0.10])
-        self._fill_source_table(t2, dmg_items, self._navigate)
-        self._content_layout.addWidget(t2)
+        self._dmg_table = self._make_source_table(["名称", "副名称", "序列号", "数值", "取值", "来源", "操作"],
+                                                  [0.22, 0.10, 0.07, 0.14, 0.07, 0.12, 0.10])
+        self._dmg_items = dmg_items
+        self._fill_source_table(self._dmg_table, self._dmg_items, self._navigate)
+        self._content_layout.addWidget(self._dmg_table)
 
         # 暴击伤害计算过程
         dmg_calc = self._make_result_group("暴击伤害计算过程", [
@@ -803,6 +802,17 @@ class SummaryCritZonePage(SummaryBasePage):
             ("期望暴击乘区", f"{(1.0 + min(total_rate, 100.0) / 100.0 * (total_dmg / 100.0 - 1.0)):.10f}"),
         ])
         self._content_layout.addWidget(result_group)
+
+    def _refilter_table(self):
+        """暴击页双表同时按时效筛选刷新."""
+        if not hasattr(self, '_rate_table'):
+            return
+        rate_f = [it for it in self._rate_items if self._matches_timing(it[3])]
+        dmg_f = [it for it in self._dmg_items if self._matches_timing(it[3])]
+        self._rate_table.setRowCount(0)
+        self._fill_source_table(self._rate_table, rate_f, self._navigate)
+        self._dmg_table.setRowCount(0)
+        self._fill_source_table(self._dmg_table, dmg_f, self._navigate)
 
 
 
