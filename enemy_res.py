@@ -258,7 +258,7 @@ class EnemyResistancePage(QWidget):
         for table in [self.perm_table, self.trig_table]:
             for r in range(table.rowCount()):
                 item = table.item(r, 2)
-                if item and item.text() == name:
+                if item and item.text() == seq_label:
                     scroll = None
                     p = table.parent()
                     while p:

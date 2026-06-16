@@ -4674,9 +4674,11 @@ class ResonanceBuffPage(QWidget):
                     if 'sub_name_edit' in last:
                         last['sub_name_edit'].setText(eff["sub_name"])
 
-        # 关键词关联：按共鸣链内效果顺序生成序号（共鸣链X关联1, 2, 3...）
+        # 关键词关联：仅倍率效果送入，非倍率走综合填写
         kw_page = self._main_screen.page_keyword_assoc
         for idx, eff in enumerate(effects, 1):
+            if "倍率" not in eff.get("name", ""):
+                continue
             seq_text = f"共鸣链{chain_num}关联{idx}"
             kw_page.add_effect_with_seq(
                 eff["name"], eff["value"], eff.get("type", "常驻"),

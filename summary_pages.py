@@ -435,7 +435,7 @@ class SummaryBasePage(QWidget):
             if isinstance(page, _CombinedEntryPage):
                 for ri, rd in enumerate(page._rows):
                     type_label = "常驻" if page.page_key == "combined_perm" else "触发"
-                    rd_key = (rd['name_edit'].text(), rd.get('source', ''), page.page_key, f"{type_label}{ri + 1}")
+                    rd_key = (rd['name_edit'].text(), page.page_key, f"{type_label}{ri + 1}")
                     is_hid = rd_key in _HIDDEN_ITEMS
                     rd['hide_btn'].setText("隐藏中" if is_hid else "隐藏")
                     rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
@@ -466,7 +466,7 @@ class SummaryBasePage(QWidget):
             if isinstance(page, _CombinedEntryPage):
                 for ri, rd in enumerate(page._rows):
                     type_label = "常驻" if page.page_key == "combined_perm" else "触发"
-                    rd_key = (rd['name_edit'].text(), rd.get('source', ''), page.page_key, f"{type_label}{ri + 1}")
+                    rd_key = (rd['name_edit'].text(), page.page_key, f"{type_label}{ri + 1}")
                     is_lk = rd_key in _LOCKED_SUMMARY_ITEMS
                     rd['lock_btn'].setText("解锁" if is_lk else "锁定")
                     rd['lock_btn'].setObjectName("itemDeleteBtn" if is_lk else "itemLockBtn")
