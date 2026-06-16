@@ -53,8 +53,8 @@ def set_make_sub_name_cell(fn):
 
 
 class SummaryBasePage(QWidget):
-    _timing_override = None  # "常驻"/"触发"/None(全部)
     """数值总结页基类. 汇总展示某一乘区的所有来源条目, 行可点击跳转."""
+    _timing_override = None  # "常驻"/"触发"/None(全部)
     def __init__(self, title_text, desc_text=""):
         super().__init__()
         layout = QVBoxLayout(self)
