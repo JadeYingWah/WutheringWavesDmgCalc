@@ -248,7 +248,6 @@ class SummaryBasePage(QWidget):
             table.insertRow(r)
             table.setRowHeight(r, 42)
             key = (name, nav_key, seq_label)
-            is_locked = key in _LOCKED_SUMMARY_ITEMS
             is_hidden = key in _HIDDEN_ITEMS
             is_const = name in _CONSTANT_ATTRS or "固定" in name
 
@@ -290,7 +289,6 @@ class SummaryBasePage(QWidget):
             vs.setAlignment(Qt.AlignmentFlag.AlignCenter)
             vs.setValue(value)
             vs.setFixedWidth(100)
-            vs.setEnabled(not is_locked)
             vs.valueChanged.connect(
                 lambda v, n=name, sl=src_label, nk=nav_key, sq=seq_label:
                 self._on_summary_value_changed(n, v, sl, nk, sq))
@@ -324,20 +322,10 @@ class SummaryBasePage(QWidget):
                 self._toggle_hide_item(n, sl, nk, btn, sq))
             ops_layout.addWidget(hide_btn)
 
-            lock_btn = QPushButton("解锁" if is_locked else "锁定")
-            lock_btn.setObjectName("itemDeleteBtn" if is_locked else "itemLockBtn")
-            lock_btn.setFixedSize(48, 28)
-            lock_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            lock_btn.clicked.connect(
-                lambda _, n=name, sl=src_label, nk=nav_key, btn=lock_btn, sq=seq_label:
-                self._toggle_summary_lock(n, sl, nk, btn, sq))
-            ops_layout.addWidget(lock_btn)
-
             del_btn = QPushButton("删除")
             del_btn.setObjectName("itemDeleteBtn")
             del_btn.setFixedSize(48, 28)
             del_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            del_btn.setEnabled(not is_locked)
             del_btn.clicked.connect(
                 lambda _, n=name, sl=src_label, nk=nav_key, sq=seq_label:
                 self._delete_summary_item(n, sl, nk, sq))
@@ -435,12 +423,7 @@ class SummaryBasePage(QWidget):
             if isinstance(page, _CombinedEntryPage):
                 for ri, rd in enumerate(page._rows):
                     type_label = "常驻" if page.page_key == "combined_perm" else "触发"
-                    rd_key = (rd['name_edit'].text(), page.page_key, f"{type_label}{ri + 1}")
-                    is_hid = rd_key in _HIDDEN_ITEMS
-                    rd['hide_btn'].setText("隐藏中" if is_hid else "隐藏")
-                    rd['hide_btn'].setObjectName("itemDeleteBtn" if is_hid else "itemLockBtn")
-                    rd['hide_btn'].style().unpolish(rd['hide_btn'])
-                    rd['hide_btn'].style().polish(rd['hide_btn'])
+
 
         # 仅触发计算结果页重算（不通过回调链——回调会重建表格导致卡顿+滚动丢失）
         window = self.window()
@@ -448,41 +431,11 @@ class SummaryBasePage(QWidget):
             window.main_screen.page_result.compute()
             window.main_screen.page_result_list.recalc()
 
-    def _toggle_summary_lock(self, name, src_label, nav_key, btn, seq_label=""):
-        """切换数值总结中词条的锁定/解锁状态。"""
-        key = (name, nav_key, seq_label)
-        if key in _LOCKED_SUMMARY_ITEMS:
-            _LOCKED_SUMMARY_ITEMS.discard(key)
-            btn.setText("锁定")
-            btn.setObjectName("itemLockBtn")
-        else:
-            _LOCKED_SUMMARY_ITEMS.add(key)
-            btn.setText("解锁")
-            btn.setObjectName("itemDeleteBtn")
-        btn.style().unpolish(btn)
-        btn.style().polish(btn)
-        # 同步到综合填写：禁用/启用对应行的编辑和删除
-        for _, page, _ in self._external_sources:
-            if isinstance(page, _CombinedEntryPage):
-                for ri, rd in enumerate(page._rows):
-                    type_label = "常驻" if page.page_key == "combined_perm" else "触发"
-                    rd_seq = f"{type_label}{ri + 1}"
-                    if rd['name_edit'].text() == name and rd_seq == seq_label:
-                        is_lk = key in _LOCKED_SUMMARY_ITEMS
-                        rd['name_edit'].setReadOnly(is_lk)
-                        rd['value_spin'].setEnabled(not is_lk)
-                        rd['delete_btn'].setEnabled(not is_lk)
-                        break
-        # 触发全局重算
-        for _, page, _ in self._external_sources:
-            if page._on_change_cb:
-                page._on_change_cb()
 
     def _delete_summary_item(self, name, src_label, nav_key, seq_label=""):
         """从数值总结中删除词条（同时删除来源页面中的对应条目）。"""
         key = (name, nav_key, seq_label)
         _HIDDEN_ITEMS.discard(key)
-        _LOCKED_SUMMARY_ITEMS.discard(key)
         for _, page, nk in self._external_sources:
             if nk == nav_key:
                 data = page.collect_data()

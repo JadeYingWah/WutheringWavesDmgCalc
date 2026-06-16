@@ -842,12 +842,7 @@ def _apply_effects_and_indep(main_screen, effects, indep_zones, tag_prefix=""):
                 seq_num = page._counter
                 key = (name, page.page_key, f"{type_label}{seq_num}")
                 HIDDEN_ITEMS.add(key)
-                # 更新按钮文字
-                last = page._rows[-1]
-                last['hide_btn'].setText("隐藏中")
-                last['hide_btn'].setObjectName("itemDeleteBtn")
-                last['hide_btn'].style().unpolish(last['hide_btn'])
-                last['hide_btn'].style().polish(last['hide_btn'])
+                # hide_btn 已从 CombinedEntry 移除，default_hidden 仅写入 HIDDEN_ITEMS
 
         # 同步到关键词关联页面
         if keywords:
