@@ -987,7 +987,6 @@ class CombinedEntryPage(BaseTableAttrPage):
         del_btn.setObjectName("itemDeleteBtn")
         del_btn.setFixedSize(48, 28)
         del_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        del_btn.setEnabled(not is_locked)
         del_btn.clicked.connect(
             lambda _, n=name, s=source, rd=row_data:
             self._delete_combined_row(n, s, rd, rd['seq_label'].text()))
