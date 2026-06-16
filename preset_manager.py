@@ -839,7 +839,7 @@ def _apply_effects_and_indep(main_screen, effects, indep_zones, tag_prefix=""):
             if default_hidden and page._rows:
                 type_label = "常驻" if page.page_key == "combined_perm" else "触发"
                 seq_num = page._counter
-                key = (name, page.page_key, f"{type_label}{seq_num}")
+                key = (name, source, page.page_key, f"{type_label}{seq_num}")
                 HIDDEN_ITEMS.add(key)
                 # 更新按钮文字
                 last = page._rows[-1]
