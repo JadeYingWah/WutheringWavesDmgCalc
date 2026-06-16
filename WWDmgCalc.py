@@ -1152,7 +1152,7 @@ class KeywordAssociationPage(QWidget):
         input_row = QHBoxLayout()
         input_row.setSpacing(6)
 
-        kw_attr_list = list(WEAPON_RESONANCE_ATTRS) + ["倍率增加", "倍率提升"]
+        kw_attr_list = MULTIPLIER_ONLY_ATTRS
         self._name_combo = SearchCombo(kw_attr_list)
         self._name_combo.lineEdit().setPlaceholderText("输入搜索...")
         input_row.addWidget(self._name_combo, stretch=3)
