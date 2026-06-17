@@ -5504,7 +5504,7 @@ class ResonanceChainEditDialog(QDialog):
         close_btn.setObjectName("backButton")
         close_btn.setFixedSize(80, 32)
         close_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        close_btn.clicked.connect(self.close)
+        close_btn.clicked.connect(self._close_and_save)
         bottom.addWidget(close_btn)
         layout.addLayout(bottom)
 
@@ -5974,6 +5974,12 @@ class ResonanceChainEditDialog(QDialog):
     def _debounced_sync(self):
         """防抖：300ms 内多次变更只同步一次"""
         self._sync_timer.start()
+
+    def _close_and_save(self):
+        """关闭前保存：停掉防抖定时器，立即同步一次"""
+        self._sync_timer.stop()
+        self._collect_and_sync()
+        self.close()
 
     def _collect_and_sync(self):
         """收集所有表格数据，更新 item，同步到下游页面"""
