@@ -105,9 +105,9 @@ WEAPON_RESONANCE_ATTRS = [
     "暴击伤害加成", "暴击率加成",
     "共鸣解放伤害加深", "共鸣技能伤害加深", "重击伤害加深", "普攻伤害加深",
     "无视防御", "忽视防御", "减少防御",
-    "共鸣解放伤害无视防御", "共鸣技能伤害无视防御",
-    "重击伤害无视防御", "普攻伤害无视防御",
-    "变奏技能伤害无视防御", "声骸技能伤害无视防御",
+    "共鸣解放无视防御", "共鸣技能无视防御",
+    "重击无视防御", "普攻无视防御",
+    "变奏技能无视防御", "声骸技能无视防御",
     "全属性抗性减少", "伤害加深", "伤害加成", "伤害提升",
     "冷凝抗性无视", "热熔抗性无视", "气动抗性无视",
     "导电抗性无视", "衍射抗性无视", "湮灭抗性无视",
@@ -3297,7 +3297,7 @@ class EnemyDefensePage(BaseTableAttrPage):
         self.recalc()
 
     def _build_def_table_block(self, key):
-        label_text = "通用无视/忽视/减少防御" if key == "通用" else f"{key}伤害无视防御"
+        label_text = "通用无视/忽视/减少防御" if key == "通用" else f"{key}无视防御"
         block = QWidget()
         bl = QVBoxLayout(block)
         bl.setContentsMargins(0, 0, 0, 0)
