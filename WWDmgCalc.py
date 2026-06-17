@@ -3428,6 +3428,19 @@ class EnemyDefensePage(BaseTableAttrPage):
                     _anim()
                     return
 
+                    cur = sb.value()
+                    steps = 15
+                    dlt = (target - cur) / steps
+
+                    def _anim(s=1):
+                        sb.setValue(int(cur + dlt * s))
+                        if s < steps:
+                            QTimer.singleShot(16, lambda ss=s+1: _anim(ss))
+                        else:
+                            QTimer.singleShot(60, lambda: self._highlight_def_row(table, r))
+                    _anim()
+                    return
+
 
 
     # ========== 外部来源 ==========
@@ -3497,14 +3510,11 @@ class EnemyDefensePage(BaseTableAttrPage):
             pass
 
     def _highlight_def_row(self, table, row):
-        vp = table.viewport()
-        row_height = table.rowHeight(row)
-        y = table.rowViewportPosition(row)
-        overlay = QWidget(vp)
-        overlay.setStyleSheet("background: rgba(255, 193, 7, 0.28); border-radius: 4px;")
-        overlay.setGeometry(0, y, vp.width(), row_height)
-        overlay.show()
-        QTimer.singleShot(1200, overlay.deleteLater)
+        """在防御减伤表格行上放置黄色叠层，双轮渐入渐出"""
+        idx = table.model().index(row, 0)
+        rect = table.visualRect(idx)
+        rect.setWidth(table.viewport().width())
+        _place_highlight_overlay(table.viewport(), rect)
 
     def collect_data(self):
         return {
