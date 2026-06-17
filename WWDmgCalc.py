@@ -4007,7 +4007,9 @@ class SaveManager:
                 ps = pages.get(key, {})
                 ed.char_level.setValue(ps.get("char_level", 90))
                 ed.enemy_level.setValue(ps.get("enemy_level", 100))
-                ed._pending_trigger_states = ps.get("trigger_states", {})
+                ed._pending_disabled = ps.get("disabled_items", [])
+                ed._pending_timing_filters = ps.get("timing_filters", {})
+                ed._pending_view_skill = ps.get("view_skill", None)
 
         # 3. EnemyResistancePage
         er_data = pages.get("enemy_resistance", {})
@@ -4129,13 +4131,20 @@ class SaveManager:
         SaveManager._rebuild_bindings(ms)
 
         # 11. 恢复 trigger_states（必须在 _rebuild_bindings 之后）
+        # 11. 恢复防御页状态（必须在 _rebuild_bindings 之后）
         ed_page = ms._scrolls["enemy_defense"].widget()
-        if hasattr(ed_page, '_pending_trigger_states'):
-            ed_page.recalc()  # 先触发 recalc 建立 UI
-            for key, val in ed_page._pending_trigger_states.items():
-                ed_page._trigger_states[key] = val
-            del ed_page._pending_trigger_states
-            ed_page.recalc()  # 用恢复后的 trigger_states 重新计算
+        if hasattr(ed_page, "_pending_disabled"):
+            ed_page._disabled_items = {tuple(it) for it in ed_page._pending_disabled}
+            del ed_page._pending_disabled
+        if hasattr(ed_page, "_pending_timing_filters"):
+            ed_page._timing_filters.update(ed_page._pending_timing_filters)
+            del ed_page._pending_timing_filters
+        if hasattr(ed_page, "_pending_view_skill"):
+            ed_page._view_skill = ed_page._pending_view_skill
+            del ed_page._pending_view_skill
+            if hasattr(ed_page, "_refresh_view_chips"):
+                ed_page._refresh_view_chips()
+        ed_page.recalc()
 
         er_page = ms.page_enemy_resistance
         if hasattr(er_page, '_pending_trigger_states'):
