@@ -8531,12 +8531,13 @@ class ResultPage(QWidget):
 
         # 筛选条件与倍率变更时自动计算（受 _auto_compute 开关控制）
         for w in [self.base_mult,
-        for w in [self.base_mult,
                   self.filter_basis, self.filter_element,
                   self.filter_effect]:
+            if hasattr(w, "valueChanged"):
                 w.valueChanged.connect(self.auto_compute)
-            elif hasattr(w, 'currentTextChanged'):
+            elif hasattr(w, "currentTextChanged"):
                 w.currentTextChanged.connect(self.auto_compute)
+        # 技能类型切换直接触发计算（影响防御乘区）
         self.filter_skill.currentTextChanged.connect(self.compute)
 
 
