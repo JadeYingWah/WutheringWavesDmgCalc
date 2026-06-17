@@ -37,6 +37,7 @@ class EnemyResistancePage(QWidget):
     def __init__(self):
         super().__init__()
         self._on_change_cb = None
+        self._res_mult = {}  # {rtype: zone_value}
         layout = QVBoxLayout(self)
         layout.setSpacing(8)
 
@@ -424,6 +425,7 @@ class EnemyResistancePage(QWidget):
             res_mult = damage_calc.calc_resistance_zone(
                 table_final[rtype], 0, 0, ext_reduce[rtype]
             )
+            self._res_mult[rtype] = res_mult
 
             # 最终抗性列
             fres = QTableWidgetItem(f"{final_res:.1f}%")
@@ -461,22 +463,17 @@ class EnemyResistancePage(QWidget):
             self._apply_preset(self._current_preset)
 
     def get_resistance_multiplier(self, element_name=None):
-        """Return resistance multiplier for a given element, or the minimum if no element specified."""
-        multipliers = {}
-        for i, rtype in enumerate(self.TYPES):
-            item = self.table.item(i, 5)
-            if item and item.text():
-                try:
-                    multipliers[rtype] = float(item.text())
-                except ValueError:
-                    pass
-        if not multipliers:
+        """抗性乘数；优先用 _res_mult 缓存避免 widget 时序问题。"""
+        if not hasattr(self, "_res_mult") or not self._res_mult:
+            self._recalc()
+        m = dict(self._res_mult) if hasattr(self, "_res_mult") and self._res_mult else {}
+        if not m:
             return 1.0
         if element_name and element_name != "(无)":
-            key = element_name + "抗性"
-            if key in multipliers:
-                return multipliers[key]
-        return min(multipliers.values())
+            k = element_name + "抗性"
+            if k in m:
+                return m[k]
+        return min(m.values())
 
 
 
