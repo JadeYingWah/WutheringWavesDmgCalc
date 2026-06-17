@@ -3282,22 +3282,54 @@ class EnemyDefensePage(BaseTableAttrPage):
         hdr.addStretch()
 
         timing_opts = ["全部", "常驻", "触发"]
+        chip_group = QWidget()
+        cg_layout = QHBoxLayout(chip_group)
+        cg_layout.setContentsMargins(0, 0, 0, 0)
+        cg_layout.setSpacing(0)
         chips = []
         for i, opt in enumerate(timing_opts):
             btn = QPushButton(opt)
             btn.setCheckable(True)
-            btn.setFixedSize(48, 22)
+            btn.setFixedSize(56, 24)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            base_style = ("QPushButton {{ background: #6b6b80; color: #c0c4ce; "
-                          "border-radius: 10px; border: none; font-size: 11px; padding: 1px 6px; }}")
-            active_style = ("QPushButton:checked {{ background: #e94560; color: white; "
-                            "font-weight: bold; }}")
-            btn.setStyleSheet(base_style + active_style)
+            base = (
+                "QPushButton {"
+                "  background: transparent;"
+                "  color: #8b8fa3;"
+                "  border: 1px solid #4a4d5e;"
+                "  font-size: 11px;"
+                "  padding: 1px 0px;"
+            )
+            if i == 0:
+                base += "  border-top-left-radius: 12px;  border-bottom-left-radius: 12px;"
+            elif i == len(timing_opts) - 1:
+                base += "  border-top-right-radius: 12px;  border-bottom-right-radius: 12px;"
+            else:
+                base += "  border-radius: 0px;  border-left: 0px;"
+            if i > 0:
+                base += "  border-left: 0px;"
+            base += "}"
+            hover = (
+                "QPushButton:hover:!checked {"
+                "  background: rgba(255,255,255,0.05);"
+                "  color: #c0c4ce;"
+                "}"
+            )
+            checked = (
+                "QPushButton:checked {"
+                "  background: #e94560;"
+                "  color: #ffffff;"
+                "  border-color: #e94560;"
+                "  font-weight: bold;"
+                "}"
+            )
+            btn.setStyleSheet(base + hover + checked)
             if i == 0:
                 btn.setChecked(True)
             btn.clicked.connect(lambda _, o=opt, c=chips, k=key: self._on_timing_chip(k, o, c))
             chips.append(btn)
-            hdr.addWidget(btn)
+            cg_layout.addWidget(btn)
+        hdr.addWidget(chip_group)
         bl.addLayout(hdr)
 
         table = self._make_def_table(
