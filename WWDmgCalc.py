@@ -3521,6 +3521,8 @@ class EnemyDefensePage(BaseTableAttrPage):
             "char_level": self.char_level.value(),
             "enemy_level": self.enemy_level.value(),
             "timing_filters": dict(self._timing_filters),
+            "disabled_items": [list(it) for it in self._disabled_items],
+            "view_skill": self._view_skill,
         }
 
     def apply_data(self, data):
@@ -3531,11 +3533,25 @@ class EnemyDefensePage(BaseTableAttrPage):
             self.enemy_level.setValue(data["enemy_level"])
         if "timing_filters" in data:
             self._timing_filters.update(data["timing_filters"])
+        if "disabled_items" in data:
+            self._disabled_items = {tuple(it) for it in data["disabled_items"]}
+        if "view_skill" in data:
+            self._view_skill = data["view_skill"]
+            self._refresh_view_chips()
         self.recalc()
 
     def _toggle_lock(self, rd):
         super()._toggle_lock(rd)
         self.recalc()
+
+    def _refresh_view_chips(self):
+        """根据 _view_skill 刷新芯片选中状态"""
+        for btn in self._view_chips:
+            btn.setChecked(False)
+        for btn in self._view_chips:
+            if (btn.text() == "无类别" and self._view_skill is None) or btn.text() == self._view_skill:
+                btn.setChecked(True)
+                break
 
     def _on_view_skill(self, skill):
         if self._view_skill == skill:
@@ -3812,7 +3828,9 @@ class SaveManager:
                 rows.append(row_data)
             page_state = {"rows": rows, "counter": pw._counter}
             if key == "enemy_defense":
-                page_state["trigger_states"] = dict(pw._trigger_states)
+                page_state["disabled_items"] = [list(it) for it in pw._disabled_items]
+                page_state["timing_filters"] = dict(pw._timing_filters)
+                page_state["view_skill"] = pw._view_skill
                 page_state["char_level"] = pw.char_level.value()
                 page_state["enemy_level"] = pw.enemy_level.value()
             pages[key] = page_state
