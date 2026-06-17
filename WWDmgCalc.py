@@ -4303,7 +4303,7 @@ class SaveManager:
         def _make_defense_resistance_cb():
             for sp in _summary_pages:
                 sp.recalc()
-            ms.page_result.auto_compute()
+            ms.page_result.compute()
             ms.page_result_list.recalc()
         ms.page_enemy_defense._on_change_cb = _make_defense_resistance_cb
         ms.page_enemy_resistance._on_change_cb = _make_defense_resistance_cb
@@ -11040,7 +11040,7 @@ class MainScreen(QWidget):
         def _make_defense_resistance_cb():
             for sp in _summary_pages:
                 sp.recalc()
-            self.page_result.auto_compute()
+            self.page_result.compute()
             self.page_result_list.recalc()
         self.page_enemy_defense._on_change_cb = _make_defense_resistance_cb
         self.page_enemy_resistance._on_change_cb = _make_defense_resistance_cb
