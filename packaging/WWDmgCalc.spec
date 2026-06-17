@@ -1,4 +1,4 @@
-# -*- mode: python ; coding: utf-8 -*-
+﻿# -*- mode: python ; coding: utf-8 -*-
 import sys, os
 
 # 自动定位 rapidocr_onnxruntime（兼容不同 env/CI）
@@ -28,6 +28,7 @@ a = Analysis(
     ('../preset_builder.py', '.'),
     ('../preset_loader.py', '.'),
     ('../theme_system.py', '.'),
+    ('../ocr_engine.py', '.'),
     ('../ico/icon.ico', '.'),
     ('../models', 'models'),
     (_rapidocr, 'rapidocr_onnxruntime'),

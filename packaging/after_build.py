@@ -29,7 +29,7 @@ import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DIST = os.path.join(ROOT, 'dist')
+DIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dist')
 OUT = os.path.join(DIST, 'WutheringWavesDmgCalc')
 
 
@@ -133,7 +133,7 @@ def main():
 
     # 8. 移入工具目录（Git 代理 + 上传预设）
     TOOLS_DIR = os.path.join(OUT, 'tools')
-    TOOLS_SRC = os.path.join(DIST, '..', 'packaging', 'dist_tools')
+    TOOLS_SRC = DIST
     for src_name, exe_name, folder_label in [
         ('GitProxyManager', 'GitProxyManager', 'Git代理管理'),
         ('PresetUploader', 'PresetUploader', '上传官方预设'),
