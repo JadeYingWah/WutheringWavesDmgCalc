@@ -96,9 +96,10 @@ pytest tests/ -q
 
 # 打包
 cd packaging
-python -m PyInstaller WWDmgCalc.spec --distpath ../dist --workpath ../build/WWDmgCalc_build --clean
-python -m PyInstaller git_proxy_manager.spec --distpath dist_tools --workpath build_tools --clean
-python -m PyInstaller preset_uploader.spec --distpath dist_tools --workpath build_tools --clean
+rm -rf build dist __pycache__
+pyinstaller --clean --noconfirm WWDmgCalc.spec
+pyinstaller --clean --noconfirm git_proxy_manager.spec
+pyinstaller --clean --noconfirm preset_uploader.spec
 cd .. && python packaging/after_build.py
 ```
 
