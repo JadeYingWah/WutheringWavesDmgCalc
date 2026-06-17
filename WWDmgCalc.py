@@ -3182,8 +3182,10 @@ class PropTable(QTableWidget):
         super().wheelEvent(event)
 
 class EnemyDefensePage(BaseTableAttrPage):
-    """敌人防御减伤页. 汇总外部减防词条计算最终防御乘区."""
+    """敌人防御减伤页. 通用+6技能类型 无视防御表格，按技能分离计算."""
     navigate_requested = None
+
+    _SKILL_NAMES = ["普攻", "重击", "共鸣技能", "共鸣解放", "变奏技能", "声骸技能"]
 
     def __init__(self):
         super().__init__(
@@ -3195,7 +3197,6 @@ class EnemyDefensePage(BaseTableAttrPage):
         self._input_row_widget.setVisible(False)
         self.table.setVisible(False)
 
-        # 把注释合并到标题内：双行标题（大标题 + 小副标题）
         self._desc_label.setVisible(False)
         old_title = self._title_label
         title_idx = self.layout().indexOf(old_title)
@@ -3215,11 +3216,10 @@ class EnemyDefensePage(BaseTableAttrPage):
         self.layout().insertWidget(title_idx, container)
         self._title_label = main
 
-        # _external_sources: [(label, page, nav_key, category), ...]  category="常驻"|"触发"
         self._external_sources = []
-        self._trigger_states = {}  # {item_key: True/False}
+        self._timing_filters = {}
 
-        # ========== 计算结果（放在最前面）==========
+        # ========== 计算结果 ==========
         result_group = QGroupBox("计算结果")
         result_layout = QFormLayout(result_group)
         self.total_ignore_label = QLabel("0.0%")
@@ -3246,63 +3246,95 @@ class EnemyDefensePage(BaseTableAttrPage):
         level_layout.addRow("敌人等级:", self.enemy_level)
         self.layout().insertWidget(3, level_group)
 
-        # ========== 防御减伤·常驻 ==========
-        perm_label = QLabel("防御减伤 · 常驻")
-        perm_label.setObjectName("groupBoxTitle")
-        self.layout().insertWidget(4, perm_label)
-        self.perm_table = self._make_def_table(
-            ["启用", "属性名称", "序列号", "数值", "来源"],
-            proportions=[0.08, 0.25, 0.12, 0.22, 0.22]
-        )
-        self.layout().insertWidget(5, self.perm_table)
+        # ========== 防御词条（可滚动）==========
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._tables_container = QWidget()
+        self._tables_layout = QVBoxLayout(self._tables_container)
+        self._tables_layout.setSpacing(12)
+        self._tables_layout.setContentsMargins(0, 4, 0, 8)
+        scroll.setWidget(self._tables_container)
+        self.layout().insertWidget(4, scroll)
 
-        # ========== 防御减伤·触发 ==========
-        trig_header = QHBoxLayout()
-        trig_label = QLabel("防御减伤 · 触发")
-        trig_label.setObjectName("groupBoxTitle")
-        trig_header.addWidget(trig_label)
-        trig_header.addStretch()
-        all_btn = QPushButton("全选")
-        all_btn.setObjectName("backButton")
-        all_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        all_btn.clicked.connect(self._trigger_select_all)
-        trig_header.addWidget(all_btn)
-        none_btn = QPushButton("全不选")
-        none_btn.setObjectName("backButton")
-        none_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        none_btn.clicked.connect(self._trigger_select_none)
-        trig_header.addWidget(none_btn)
-        self.layout().insertLayout(6, trig_header)
-        self.trig_table = self._make_def_table(
-            ["启用", "属性名称", "序列号", "数值", "来源"],
-            proportions=[0.08, 0.25, 0.12, 0.22, 0.22]
-        )
-        self.layout().insertWidget(7, self.trig_table)
+        self._def_tables = {}
+        for key in ["通用"] + self._SKILL_NAMES:
+            self._build_def_table_block(key)
+            self._timing_filters[key] = "全部"
+
+        self._tables_layout.addStretch()
 
         self.char_level.valueChanged.connect(self.recalc)
         self.enemy_level.valueChanged.connect(self.recalc)
         self.recalc()
 
+    def _build_def_table_block(self, key):
+        label_text = "通用无视/忽视/减少防御" if key == "通用" else f"{key} 无视防御"
+        block = QWidget()
+        bl = QVBoxLayout(block)
+        bl.setContentsMargins(0, 0, 0, 0)
+        bl.setSpacing(4)
+
+        hdr = QHBoxLayout()
+        lbl = QLabel(label_text)
+        lbl.setObjectName("groupBoxTitle")
+        hdr.addWidget(lbl)
+        hdr.addStretch()
+
+        timing_opts = ["全部", "常驻", "触发"]
+        chips = []
+        for i, opt in enumerate(timing_opts):
+            btn = QPushButton(opt)
+            btn.setCheckable(True)
+            btn.setFixedSize(48, 22)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            base_style = ("QPushButton {{ background: #6b6b80; color: #c0c4ce; "
+                          "border-radius: 10px; border: none; font-size: 11px; padding: 1px 6px; }}")
+            active_style = ("QPushButton:checked {{ background: #e94560; color: white; "
+                            "font-weight: bold; }}")
+            btn.setStyleSheet(base_style + active_style)
+            if i == 0:
+                btn.setChecked(True)
+            btn.clicked.connect(lambda _, o=opt, c=chips, k=key: self._on_timing_chip(k, o, c))
+            chips.append(btn)
+            hdr.addWidget(btn)
+        bl.addLayout(hdr)
+
+        table = self._make_def_table(
+            ["启用", "名称", "副名称", "序列号", "数值", "来源"],
+            proportions=[0.08, 0.20, 0.12, 0.10, 0.18, 0.22]
+        )
+        table.setMinimumHeight(55 * 4 + 30)
+        bl.addWidget(table)
+
+        self._def_tables[key] = {"table": table, "items": [], "chips": chips, "timing_override": None}
+        self._tables_layout.addWidget(block)
+
+    def _on_timing_chip(self, key, value, chips):
+        if self._timing_filters.get(key) == value:
+            return
+        self._timing_filters[key] = value
+        for c in chips:
+            c.setChecked(False)
+        for c in chips:
+            if c.text() == value:
+                c.setChecked(True)
+                break
+        self._refill_tables()
+
+    def _matches_timing(self, eff_type, table_key):
+        f = self._timing_filters.get(table_key, "全部")
+        if f == "全部":
+            return True
+        if f == "常驻":
+            return eff_type == "常驻"
+        if f == "触发":
+            return eff_type == "触发"
+        return True
+
     # ========== 外部来源 ==========
     def set_external_sources(self, sources):
-        """sources: [(label, page, nav_key, category), ...]  category="常驻"|"触发" """
         self._external_sources = sources
-        self._trigger_states.clear()
-        self.recalc()
-
-    def _make_item_key(self, name, src_label, seq_label=""):
-        return f"{name}___{src_label}___{seq_label}"
-
-    def _trigger_select_all(self):
-        for cb in self._trig_checkbox_widgets:
-            self._trigger_states[cb._item_key] = True
-            cb.setChecked(True)
-        self.recalc()
-
-    def _trigger_select_none(self):
-        for cb in self._trig_checkbox_widgets:
-            self._trigger_states[cb._item_key] = False
-            cb.setChecked(False)
         self.recalc()
 
     def _make_def_table(self, headers, proportions=None):
@@ -3324,73 +3356,6 @@ class EnemyDefensePage(BaseTableAttrPage):
         hdr = table.horizontalHeader()
         hdr.setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
         return table
-
-    def _build_ext_ui(self, perm_items, trig_items):
-        def _centered(text):
-            item = QTableWidgetItem(text)
-            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            return item
-
-        # -------- 常驻 --------
-        self.perm_table.setRowCount(0)
-        self._perm_checkbox_widgets = []
-        for item_tuple in perm_items:
-            name, value, src_label, nav_key = item_tuple[:4]
-            seq_label = item_tuple[4] if len(item_tuple) > 4 else ""
-            key = self._make_item_key(name, src_label, seq_label)
-            if key not in self._trigger_states:
-                self._trigger_states[key] = True
-            r = self.perm_table.rowCount()
-            self.perm_table.insertRow(r)
-            cb = QCheckBox()
-            cb.setChecked(self._trigger_states[key])
-            cb._item_key = key
-            cb.toggled.connect(lambda chk, k=key: self._on_item_toggled(k, chk))
-            self._perm_checkbox_widgets.append(cb)
-            cell_center(self.perm_table, r, 0, cb)
-            self.perm_table.setItem(r, 1, _centered(name))
-            self.perm_table.setItem(r, 2, _centered(seq_label))
-            self.perm_table.setItem(r, 3, _centered(f"{value:.1f}%"))
-            src_btn = QPushButton(src_label)
-            src_btn.setObjectName("backButton")
-            src_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            src_btn.clicked.connect(lambda _, nk=nav_key, sq=seq_label:
-                                    self._on_source_clicked(nk, sq))
-            cell_center(self.perm_table, r, 4, src_btn)
-
-        # -------- 触发 --------
-        self.trig_table.setRowCount(0)
-        self._trig_checkbox_widgets = []
-        for item_tuple in trig_items:
-            name, value, src_label, nav_key = item_tuple[:4]
-            seq_label = item_tuple[4] if len(item_tuple) > 4 else ""
-            key = self._make_item_key(name, src_label, seq_label)
-            if key not in self._trigger_states:
-                self._trigger_states[key] = True
-            r = self.trig_table.rowCount()
-            self.trig_table.insertRow(r)
-            cb = QCheckBox()
-            cb.setChecked(self._trigger_states[key])
-            cb._item_key = key
-            cb.toggled.connect(lambda chk, k=key: self._on_item_toggled(k, chk))
-            self._trig_checkbox_widgets.append(cb)
-            cell_center(self.trig_table, r, 0, cb)
-            self.trig_table.setItem(r, 1, _centered(name))
-            self.trig_table.setItem(r, 2, _centered(seq_label))
-            self.trig_table.setItem(r, 3, _centered(f"{value:.1f}%"))
-            src_btn = QPushButton(src_label)
-            src_btn.setObjectName("backButton")
-            src_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            src_btn.clicked.connect(lambda _, nk=nav_key, sq=seq_label:
-                                    self._on_source_clicked(nk, sq))
-            cell_center(self.trig_table, r, 4, src_btn)
-
-        fix_table_height(self.perm_table)
-        fix_table_height(self.trig_table)
-
-    def _on_item_toggled(self, key, checked):
-        self._trigger_states[key] = checked
-        self.recalc()
 
     def _on_source_clicked(self, nav_key, seq_label=""):
         if self.navigate_requested:
@@ -3417,66 +3382,47 @@ class EnemyDefensePage(BaseTableAttrPage):
         except Exception:
             pass
 
-    def highlight_item(self, name, src_label, nav_key, seq_label=""):
-        """按序列号在表格中定位并高亮（seq_label 在列2）"""
-        for table in [self.perm_table, self.trig_table]:
-            for r in range(table.rowCount()):
-                item = table.item(r, 2)  # 序列号列
-                if item and item.text() == name:
-                    scroll = None
-                    p = table.parent()
-                    while p:
-                        if isinstance(p, QScrollArea):
-                            scroll = p; break
-                        p = p.parent()
-                    if scroll:
-                        self._scroll_and_highlight(table, r, scroll)
-                    else:
-                        table.scrollTo(table.model().index(r, 0))
-                        QTimer.singleShot(200, lambda tb=table, row=r:
-                                          self._show_highlight_overlay(tb, row))
-                    return
+    def _highlight_row_in_source(self, nav_key, seq_label):
+        try:
+            ms = self.window().main_screen if self.window() else None
+            if not ms:
+                return
+            QApplication.processEvents()
+            for key, d in self._def_tables.items():
+                table = d["table"]
+                for r in range(table.rowCount()):
+                    sq_item = table.item(r, 3)
+                    if sq_item and sq_item.text() == seq_label:
+                        self._highlight_def_row(table, r)
+                        return
+        except Exception:
+            pass
 
-    def _scroll_and_highlight(self, table, row, scroll):
-        QApplication.processEvents()
-        # 几何计算：行 Y = 表头 + 累积行高
-        hdr_h = table.horizontalHeader().height() if table.horizontalHeader().isVisible() else 0
-        row_y = hdr_h + sum(table.rowHeight(i) for i in range(row))
-        table_origin = table.mapTo(scroll.widget(), QPoint(0, 0))
-        target_y = table_origin.y() + row_y
-        vp_h = scroll.viewport().height()
-        desired = max(0, target_y - vp_h // 5)
-        sb = scroll.verticalScrollBar()
-        old_pos = sb.value()
-        if abs(desired - old_pos) < 2:
-            QTimer.singleShot(80, lambda: self._show_highlight_overlay(table, row))
-            return
-        anim = QPropertyAnimation(sb, b"value")
-        anim.setDuration(450)
-        anim.setStartValue(old_pos)
-        anim.setEndValue(min(desired, sb.maximum()))
-        anim.setEasingCurve(QEasingCurve.Type.InOutCubic)
-        anim.finished.connect(lambda tb=table, r=row:
-            QTimer.singleShot(80, lambda: self._show_highlight_overlay(tb, r)))
-        scroll._scroll_anim = anim
-        anim.start()
-
-    def _show_highlight_overlay(self, table, row):
-        QApplication.processEvents()
+    def _highlight_def_row(self, table, row):
         vp = table.viewport()
-        idx = table.model().index(row, 0)
-        rect = table.visualRect(idx)
-        if rect.y() < 0 or rect.y() > vp.height():
-            return
-        row_rect = QRect(0, rect.y(), vp.width(), table.rowHeight(row))
-        _place_highlight_overlay(vp, row_rect, "background-color: #ffeb3b;")
+        row_height = table.rowHeight(row)
+        y = table.rowViewportPosition(row)
+        overlay = QWidget(vp)
+        overlay.setStyleSheet("background: rgba(255, 193, 7, 0.28); border-radius: 4px;")
+        overlay.setGeometry(0, y, vp.width(), row_height)
+        overlay.show()
+        QTimer.singleShot(1200, overlay.deleteLater)
 
-    def _add(self):
-        super()._add()
-        self.recalc()
+    def collect_data(self):
+        return {
+            "char_level": self.char_level.value(),
+            "enemy_level": self.enemy_level.value(),
+            "timing_filters": dict(self._timing_filters),
+        }
 
-    def _delete_row(self, rd):
-        super()._delete_row(rd)
+    def apply_data(self, data):
+        if not data: return
+        if "char_level" in data:
+            self.char_level.setValue(data["char_level"])
+        if "enemy_level" in data:
+            self.enemy_level.setValue(data["enemy_level"])
+        if "timing_filters" in data:
+            self._timing_filters.update(data["timing_filters"])
         self.recalc()
 
     def _toggle_lock(self, rd):
@@ -3487,13 +3433,7 @@ class EnemyDefensePage(BaseTableAttrPage):
         char_lv = float(self.char_level.value())
         enemy_lv = float(self.enemy_level.value())
 
-        total_ignore = 0.0
-        perm_out = []
-        trig_out = []
-
-        for rd in self._rows:
-            total_ignore += rd['value_spin'].value() / 100.0
-
+        self._all_items = []
         for src_label, page, nav_key, category in self._external_sources:
             row_idx = 0
             for item_data in page.collect_data():
@@ -3501,33 +3441,85 @@ class EnemyDefensePage(BaseTableAttrPage):
                 row_idx += 1
                 if not damage_calc.is_defense_item(name):
                     continue
-                # 生成序列号标签（格式："常驻21" / "触发5"）
-                type_label = "常驻" if category == "常驻" else "触发"
-                seq_label = f"{type_label}{row_idx}"
-                key = self._make_item_key(name, src_label, seq_label)
-                if category == "常驻":
-                    active = self._trigger_states.get(key, True)
-                    if active:
-                        total_ignore += value / 100.0
-                    perm_out.append((name, value, src_label, nav_key, seq_label))
-                else:
-                    active = self._trigger_states.get(key, True)
-                    if active:
-                        total_ignore += value / 100.0
-                    trig_out.append((name, value, src_label, nav_key, seq_label))
+                eff_type = "常驻" if category == "常驻" else "触发"
+                seq_label = f"{eff_type}{row_idx}"
+                self._all_items.append((name, value, eff_type, src_label, nav_key, seq_label))
 
-        total_ignore = min(total_ignore, 1.0)
-        enemy_def = damage_calc.calc_enemy_base_def(enemy_lv) * (1 - total_ignore)
-        multiplier = damage_calc.calc_defense_zone(char_lv, enemy_lv, total_ignore)
-        self.def_multiplier = multiplier
+        generic_items = []
+        skill_items_map = {sk: [] for sk in self._SKILL_NAMES}
+        for name, value, eff_type, src_label, nav_key, seq_label in self._all_items:
+            sk = damage_calc.get_def_pen_skill_type(name)
+            if sk is not None:
+                skill_items_map[sk].append((name, value, eff_type, src_label, nav_key, seq_label))
+            else:
+                generic_items.append((name, value, eff_type, src_label, nav_key, seq_label))
 
-        self.total_ignore_label.setText(f"{total_ignore * 100:.1f}%")
+        self._fill_table("通用", generic_items)
+        self._skill_zones = {}
+        for sk in self._SKILL_NAMES:
+            self._fill_table(sk, skill_items_map[sk])
+            total_ignore = 0.0
+            for _, v, _, _, _, _ in generic_items + skill_items_map[sk]:
+                total_ignore += v / 100.0
+            total_ignore = min(total_ignore, 1.0)
+            self._skill_zones[sk] = damage_calc.calc_defense_zone(char_lv, enemy_lv, total_ignore)
+
+        generic_ignore = sum(v / 100.0 for _, v, _, _, _, _ in generic_items)
+        generic_ignore = min(generic_ignore, 1.0)
+        self.def_multiplier = damage_calc.calc_defense_zone(char_lv, enemy_lv, generic_ignore)
+
+        enemy_def = damage_calc.calc_enemy_base_def(enemy_lv) * (1 - generic_ignore)
+        self.total_ignore_label.setText(f"{generic_ignore * 100:.1f}%")
         self.enemy_def_label.setText(f"{enemy_def:.1f}")
-        self.def_multiplier_label.setText(f"{multiplier:.10f}")
+        self.def_multiplier_label.setText(f"{self.def_multiplier:.10f}")
 
-        self._build_ext_ui(perm_out, trig_out)
         if self._on_change_cb:
             self._on_change_cb()
+
+    def get_defense_zone(self, skill_type=None):
+        if skill_type and hasattr(self, '_skill_zones') and skill_type in self._skill_zones:
+            return self._skill_zones[skill_type]
+        return getattr(self, 'def_multiplier', 1.0)
+
+    def _fill_table(self, key, items):
+        d = self._def_tables.get(key)
+        if not d:
+            return
+        table = d["table"]
+        d["items"] = items
+        self._refill_one(table, items, key)
+
+    def _refill_tables(self):
+        for key, d in self._def_tables.items():
+            self._refill_one(d["table"], d["items"], key)
+
+    def _refill_one(self, table, all_items, key):
+        def _centered(text):
+            item = QTableWidgetItem(text)
+            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            return item
+
+        filtered = [it for it in all_items if self._matches_timing(it[2], key)]
+        table.setRowCount(0)
+        for name, value, eff_type, src_label, nav_key, seq_label in filtered:
+            r = table.rowCount()
+            table.insertRow(r)
+            cb = QCheckBox()
+            cb.setChecked(True)
+            cb.setEnabled(False)
+            cell_center(table, r, 0, cb)
+            table.setItem(r, 1, _centered(name))
+            table.setItem(r, 2, _centered(""))
+            table.setItem(r, 3, _centered(seq_label))
+            table.setItem(r, 4, _centered(f"{value:.1f}%"))
+            src_btn = QPushButton(src_label)
+            src_btn.setObjectName("backButton")
+            src_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            src_btn.clicked.connect(lambda _, nk=nav_key, sq=seq_label:
+                                    self._on_source_clicked(nk, sq))
+            cell_center(table, r, 5, src_btn)
+
+        fix_table_height(table)
 
 # ==================== 抗性页面 ====================
 
@@ -7244,7 +7236,10 @@ class ResultListPage(QWidget):
                                      and not any(kw in n for kw in CRIT_DMG_KEYWORDS))
         total_crit_dmg = 150.0 + sum(v for n, v, _, _, _ in filtered if any(kw in n for kw in CRIT_DMG_KEYWORDS))
         crit_zone = total_crit_dmg / 100.0
-        def_zone = getattr(self._defense_page, 'def_multiplier', 1.0) if self._defense_page else 1.0
+        if self._defense_page and hasattr(self._defense_page, 'get_defense_zone'):
+            def_zone = self._defense_page.get_defense_zone(item.get("skill"))
+        else:
+            def_zone = 1.0
         res_zone = 1.0
         if self._resistance_page:
             res_zone = self._resistance_page.get_resistance_multiplier(item["element"])
@@ -8867,7 +8862,10 @@ class ResultPage(QWidget):
         crit_zone = total_crit_dmg / 100.0
 
         def_zone = 1.0
-        if self._defense_page:
+        if self._defense_page and hasattr(self._defense_page, 'get_defense_zone'):
+            skill = self.filter_skill.currentText()
+            def_zone = self._defense_page.get_defense_zone(None if skill == "(无)" else skill)
+        elif self._defense_page:
             def_zone = getattr(self._defense_page, 'def_multiplier', 1.0)
 
         res_zone = 1.0
