@@ -4518,6 +4518,40 @@ class ResonanceBuffPage(QWidget):
         # 同步效果到综合填写和关键词关联页面
         self._sync_chain_to_pages(item)
 
+    def _sync_indep_zones(self, item):
+        """将 item 的 indep_zones 同步到主程序独立乘区页面"""
+        ms = self._main_screen
+        if ms is None:
+            return
+        indep_page = ms.page_indep_zone
+        chain_tag = f"chain_{item['id']}"
+
+        # 移除该链的旧独立乘区组
+        to_remove = []
+        for gd in indep_page._groups:
+            frame = gd.get("frame")
+            if frame and getattr(frame, "_chain_tag", "") == chain_tag:
+                to_remove.append(frame)
+        for frame in to_remove:
+            indep_page._remove_group(frame)
+
+        # 如果启用且有独立乘区，重新添加
+        if not item.get("enabled"):
+            return
+        for iz_data in item.get("indep_zones", []):
+            group_name = iz_data.get("group_name", "")
+            values = iz_data.get("values", [])
+            if not values:
+                continue
+            converted = [(v.get("name", ""), v.get("value", 0.0), v.get("hidden", False))
+                         for v in values]
+            indep_page._add_group(group_name, converted)
+            # 给新组打上链标签，方便后续移除
+            if indep_page._groups:
+                frame = indep_page._groups[-1].get("frame")
+                if frame:
+                    frame._chain_tag = chain_tag
+
     def _trigger_downstream_recalc(self):
         """触发下游重算：数值总结 → 计算结果 → 结果列表"""
         ms = self._main_screen
@@ -4542,8 +4576,9 @@ class ResonanceBuffPage(QWidget):
         self._main_screen.page_combined_trigger.remove_effects_by_source_and_names(
             "共鸣链效果", set(), chain_num=chain_num)
 
-        # 如果未启用或无效，先移除旧行再返回
+        # 如果未启用或无效，移除旧行和独立乘区，再返回
         if not item.get("enabled", True) or not effects:
+            self._sync_indep_zones(item)
             self._trigger_downstream_recalc()
             return
 
@@ -4575,6 +4610,9 @@ class ResonanceBuffPage(QWidget):
         # 重排序列号（_counter 可能已有值，需对齐行数）
         self._main_screen.page_combined_perm._resequence()
         self._main_screen.page_combined_trigger._resequence()
+
+        # 同步独立乘区到独立乘区页面
+        self._sync_indep_zones(item)
 
         # 触发下游重算（综合填写→数值总结→计算结果→结果列表）
         self._trigger_downstream_recalc()
