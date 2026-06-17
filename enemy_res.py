@@ -246,10 +246,16 @@ class EnemyResistancePage(QWidget):
                 if not scroll: continue
                 pw = scroll.widget()
                 if not isinstance(pw, _CombinedEntryPage): continue
-                for r, rd in enumerate(pw._rows):
-                    if seq_label == f"{type_label}{r + 1}":
-                        pw._highlight_row(r, scroll)
-                        return
+                type_label = "常驻" if key == "combined_perm" else "触发"
+                for r in range(len(pw._rows)):
+                    try:
+                        row_data = pw.collect_data()[r]
+                        row_seq = row_data[4] if len(row_data) > 4 else ""
+                        if row_seq == seq_label:
+                            pw._highlight_row(r, scroll)
+                            return
+                    except (IndexError, AttributeError):
+                        continue
         except Exception:
             pass
 

@@ -3519,15 +3519,15 @@ class EnemyDefensePage(BaseTableAttrPage):
                 pw = scroll.widget()
                 if not isinstance(pw, CombinedEntryPage): continue
                 type_label = "常驻" if key == "combined_perm" else "触发"
-                for r, rd in enumerate(pw._rows):
-                    if seq_label == f"{type_label}{r + 1}":
-                        pw._highlight_row(r, scroll)
-                        return
-        except Exception:
-            pass
-
-    def _highlight_row_in_source(self, nav_key, seq_label):
-        try:
+                for r in range(len(pw._rows)):
+                    try:
+                        row_data = pw.collect_data()[r]
+                        row_seq = row_data[4] if len(row_data) > 4 else ""
+                        if row_seq == seq_label:
+                            pw._highlight_row(r, scroll)
+                            return
+                    except (IndexError, AttributeError):
+                        continue
             ms = self.window().main_screen if self.window() else None
             if not ms:
                 return
@@ -3640,14 +3640,12 @@ class EnemyDefensePage(BaseTableAttrPage):
 
         self._all_items = []
         for src_label, page, nav_key, category in self._external_sources:
-            row_idx = 0
             for item_data in page.collect_data():
                 name = item_data[0]; value = item_data[1]
-                row_idx += 1
                 if not damage_calc.is_defense_item(name):
                     continue
                 eff_type = "常驻" if category == "常驻" else "触发"
-                seq_label = f"{eff_type}{row_idx}"
+                seq_label = item_data[4] if len(item_data) > 4 and item_data[4] else ""
                 self._all_items.append((name, value, eff_type, src_label, nav_key, seq_label))
 
         # 分类：无视防御 vs 忽视/减少防御
@@ -11362,10 +11360,15 @@ class MainScreen(QWidget):
                 continue
             type_label = "常驻" if key == "combined_perm" else "触发"
             for r, rd in enumerate(pw._rows):
-                expected_seq = f"{type_label}{r + 1}"
-                if seq_label == expected_seq:
-                    pw._highlight_row(r, scroll)
-                    return
+                for r in range(len(pw._rows)):
+                    try:
+                        row_data = pw.collect_data()[r]
+                        row_seq = row_data[4] if len(row_data) > 4 else ""
+                        if seq_label == row_seq:
+                            pw._highlight_row(r, scroll)
+                            return
+                    except (IndexError, AttributeError):
+                        continue
         # KeywordAssociationPage — 序列号匹配 + 平滑滚动 + 黄色叠层
         if nav_key == "keyword_assoc" and hasattr(self, 'page_keyword_assoc'):
             kw_page = self.page_keyword_assoc
