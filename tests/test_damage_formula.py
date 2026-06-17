@@ -128,11 +128,16 @@ class TestResistanceZone:
         assert calc_resistance_zone(10) < 1.0
         assert calc_resistance_zone(40) < calc_resistance_zone(10)
 
-    def test_negative_resistance_clamped_to_zero(self):
-        """代码中负最终抗性被截断为 0（而非 /200 公式）"""
-        # 基础 10, 减少 50 → 最终 = -40 → clamped to 0 → zone = 1.0
+    def test_negative_resistance_halved_benefit(self):
+        """负抗性收益减半：超越 1.0 的部分除以 2"""
+        # 基础 10, 减少 50 → 最终 = -40 → 乘区 = 1 - (-40)/200 = 1.20
         result = calc_resistance_zone(base_res=10, reduce_pct=50)
-        assert result == pytest.approx(1.0, abs=1e-10)
+        assert result == pytest.approx(1.20, abs=1e-10)
+
+    def test_negative_resistance_example(self):
+        """负抗性：基础 20, 减少 60 → 最终 = -40 → 乘区 = 1.20"""
+        result = calc_resistance_zone(base_res=20, reduce_pct=60)
+        assert result == pytest.approx(1.20, abs=1e-10)
 
     def test_boost_increases_resistance(self):
         """抗性提升让抗性更高，乘区更低"""

@@ -421,8 +421,6 @@ class EnemyResistancePage(QWidget):
         # 更新表格：最终抗性 和 抗性乘区（委托 damage_calc 计算）
         for i, rtype in enumerate(self.TYPES):
             final_res = table_final[rtype] - ext_reduce[rtype]
-            if final_res < 0:
-                final_res = 0.0
             res_mult = damage_calc.calc_resistance_zone(
                 table_final[rtype], 0, 0, ext_reduce[rtype]
             )

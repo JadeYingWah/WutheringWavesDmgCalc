@@ -227,12 +227,13 @@ def calc_resistance_zone(base_res, boost_pct=0.0, reduce_pct=0.0, ext_reduce=0.0
     来源: EnemyResistancePage._recalc() (line ~4915)
 
     最终抗性 = 基础抗性 × (1 + 抗性提升/100) − 抗性减少 − 外部减免
-    最终抗性 = max(0, 最终抗性)（代码中负值被截断为 0）
-    抗性乘区 = 1 − 最终抗性/100
+    抗性乘区:
+      最终抗性 ≥ 0: 乘区 = 1 − 最终抗性/100
+      最终抗性 < 0: 乘区 = 1 − 最终抗性/200（负抗性收益减半）
     """
     final_res = base_res * (1.0 + boost_pct / 100.0) - reduce_pct - ext_reduce
     if final_res < 0:
-        final_res = 0.0
+        return 1.0 - final_res / 200.0  # 负抗性收益减半
     return 1.0 - final_res / 100.0
 
 
