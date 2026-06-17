@@ -3113,8 +3113,6 @@ class EchoPage(QWidget):
 
 DEFENSE_ITEM_NAMES = {
     "无视防御", "忽视防御", "减少防御",
-    "共鸣技能无视防御", "共鸣解放无视防御",
-    "重击伤害无视防御", "普攻伤害无视防御",
 }
 
 RESISTANCE_ITEM_NAMES = {

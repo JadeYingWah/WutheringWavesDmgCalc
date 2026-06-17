@@ -26,14 +26,20 @@ ELEMENT_NAMES_SET = {"冷凝", "热熔", "气动", "导电", "衍射", "湮灭"}
 SKILL_TYPE_NAMES_SET = {"普攻", "重击", "共鸣技能", "共鸣解放", "变奏技能", "声骸技能"}
 EFFECT_NAMES_SET = {"光噪", "风蚀", "虚湮", "聚爆", "霜渐", "电磁"}
 
-# 防御减伤词条名称
+# 防御减伤词条名称（仅通用，技能专用变体见 SKILL_DEF_PEN）
 DEFENSE_ITEM_NAMES = {
     "无视防御", "忽视防御", "减少防御",
-    "共鸣技能无视防御", "共鸣解放无视防御",
-    "重击伤害无视防御", "普攻伤害无视防御",
 }
 
 # 抗性词条名称
+# 技能专用无视防御（仅匹配对应技能时生效，不归入通用防御池）
+SKILL_DEF_PENETRATION = {
+    "共鸣技能无视防御", "共鸣解放无视防御",
+    "重击伤害无视防御", "普攻伤害无视防御",
+    "共鸣技能伤害无视防御", "共鸣解放伤害无视防御",
+    "重击伤害无视防御", "普攻伤害无视防御",
+}
+
 RESISTANCE_ITEM_NAMES = {
     "冷凝抗性无视", "热熔抗性无视", "气动抗性无视",
     "导电抗性无视", "衍射抗性无视", "湮灭抗性无视",
@@ -104,7 +110,11 @@ def matches_filter(item_name, selected_element, selected_skill, selected_effect)
 
 
 def is_defense_item(name):
-    """判断词条是否属于防御减伤类（支持包含匹配）"""
+    """判断词条是否属于通用防御减伤类；技能专用变体不算。"""
+    # 技能专用无视防御关键词前缀（共鸣技能/共鸣解放/重击伤害/普攻伤害）
+    _skill_prefixes = ("共鸣技能", "共鸣解放", "重击伤害", "普攻伤害")
+    if any(name.startswith(p) and ("无视防御" in name or "忽视防御" in name) for p in _skill_prefixes):
+        return False
     for kw in ("无视防御", "忽视防御", "减少防御"):
         if kw in name:
             return True
