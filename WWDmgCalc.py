@@ -3218,6 +3218,7 @@ class EnemyDefensePage(BaseTableAttrPage):
 
         self._external_sources = []
         self._timing_filters = {}
+        self._disabled_items = set()  # {(name, seq_label)}
 
         # ========== 计算结果 ==========
         result_group = QGroupBox("计算结果")
@@ -3341,6 +3342,14 @@ class EnemyDefensePage(BaseTableAttrPage):
 
         self._def_tables[key] = {"table": table, "items": [], "chips": chips, "timing_override": None}
         self._tables_layout.addWidget(block)
+
+    def _on_def_item_toggled(self, item_key, checked):
+        """启用/关闭单条无视防御词条"""
+        if checked:
+            self._disabled_items.discard(item_key)
+        else:
+            self._disabled_items.add(item_key)
+        self.recalc()
 
     def _on_timing_chip(self, key, value, chips):
         if self._timing_filters.get(key) == value:
@@ -3491,12 +3500,16 @@ class EnemyDefensePage(BaseTableAttrPage):
         for sk in self._SKILL_NAMES:
             self._fill_table(sk, skill_items_map[sk])
             total_ignore = 0.0
-            for _, v, _, _, _, _ in generic_items + skill_items_map[sk]:
-                total_ignore += v / 100.0
+            for it in generic_items:
+                if (it[0], it[5]) not in self._disabled_items:
+                    total_ignore += it[1] / 100.0
+            for it in skill_items_map[sk]:
+                if (it[0], it[5]) not in self._disabled_items:
+                    total_ignore += it[1] / 100.0
             total_ignore = min(total_ignore, 1.0)
             self._skill_zones[sk] = damage_calc.calc_defense_zone(char_lv, enemy_lv, total_ignore)
 
-        generic_ignore = sum(v / 100.0 for _, v, _, _, _, _ in generic_items)
+        generic_ignore = sum(it[1] / 100.0 for it in generic_items if (it[0], it[5]) not in self._disabled_items)
         generic_ignore = min(generic_ignore, 1.0)
         self.def_multiplier = damage_calc.calc_defense_zone(char_lv, enemy_lv, generic_ignore)
 
@@ -3537,8 +3550,10 @@ class EnemyDefensePage(BaseTableAttrPage):
             r = table.rowCount()
             table.insertRow(r)
             cb = QCheckBox()
-            cb.setChecked(True)
-            cb.setEnabled(False)
+            item_key = (name, seq_label)
+            cb.setChecked(item_key not in self._disabled_items)
+            cb.setEnabled(True)
+            cb.toggled.connect(lambda checked, ik=item_key: self._on_def_item_toggled(ik, checked))
             cell_center(table, r, 0, cb)
             table.setItem(r, 1, _centered(name))
             table.setItem(r, 2, _centered(""))
