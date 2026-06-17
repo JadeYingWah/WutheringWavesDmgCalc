@@ -3221,7 +3221,30 @@ class EnemyDefensePage(BaseTableAttrPage):
         self._external_sources = []
         self._timing_filters = {}
         self._disabled_items = set()  # {(name, seq_label)}
+        self._view_skill = None  # None=无类别, 否则普攻/重击/共鸣技能/…
 
+        # ========== 技能视角切换 ==========
+        view_row = QHBoxLayout()
+        view_row.addWidget(QLabel("防御乘区视角:"))
+        view_skills = [("无类别", None)] + [(sk, sk) for sk in self._SKILL_NAMES]
+        self._view_chips = []
+        for label, sk_val in view_skills:
+            btn = QPushButton(label)
+            btn.setCheckable(True)
+            btn.setFixedSize(72, 24)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setStyleSheet(
+                "QPushButton { background: transparent; color: #8b8fa3; border: 1px solid #4a4d5e;"
+                " border-radius: 12px; font-size: 11px; padding: 1px 0px; }"
+                "QPushButton:hover:!checked { background: rgba(255,255,255,0.05); color: #c0c4ce; }"
+                "QPushButton:checked { background: #e94560; color: #ffffff; border-color: #e94560; font-weight: bold; }"
+            )
+            btn.clicked.connect(lambda _, sv=sk_val: self._on_view_skill(sv))
+            self._view_chips.append(btn)
+            view_row.addWidget(btn)
+        if self._view_chips:
+            self._view_chips[0].setChecked(True)
+        view_row.addStretch()
         # ========== 计算结果 ==========
         result_group = QGroupBox("计算结果")
         result_layout = QFormLayout(result_group)
@@ -3235,6 +3258,8 @@ class EnemyDefensePage(BaseTableAttrPage):
         result_layout.addRow("敌人最终防御值:", self.enemy_def_label)
         result_layout.addRow("防御乘区:", self.def_multiplier_label)
         self.layout().insertWidget(2, result_group)
+
+        self.layout().insertLayout(2, view_row)
 
         # ========== 等级参数 ==========
         level_group = QGroupBox("等级参数")
@@ -3483,6 +3508,41 @@ class EnemyDefensePage(BaseTableAttrPage):
         super()._toggle_lock(rd)
         self.recalc()
 
+    def _on_view_skill(self, skill):
+        if self._view_skill == skill:
+            return
+        self._view_skill = skill
+        for btn in self._view_chips:
+            btn.setChecked(False)
+        for btn in self._view_chips:
+            if (btn.text() == "无类别" and skill is None) or btn.text() == skill:
+                btn.setChecked(True)
+                break
+        self._refresh_result_labels()
+
+    def _refresh_result_labels(self):
+        """根据 _view_skill 更新结果标签"""
+        char_lv = float(self.char_level.value())
+        enemy_lv = float(self.enemy_level.value())
+        sk = self._view_skill
+        if sk and hasattr(self, '_skill_zones') and sk in self._skill_zones:
+            dz = self._skill_zones[sk]
+            # 计算该技能的 total_ignore
+            total = sum(it[1] / 100.0 for it in self._all_active_generic
+                       if (it[0], it[5]) not in self._disabled_items)
+            for it in self._all_skill_items.get(sk, []):
+                if (it[0], it[5]) not in self._disabled_items:
+                    total += it[1] / 100.0
+        else:
+            dz = getattr(self, 'def_multiplier', 1.0)
+            total = sum(it[1] / 100.0 for it in self._all_active_generic
+                       if (it[0], it[5]) not in self._disabled_items)
+        total = min(total, 1.0)
+        enemy_def = damage_calc.calc_enemy_base_def(enemy_lv) * (1 - total)
+        self.total_ignore_label.setText(f"{total * 100:.1f}%")
+        self.enemy_def_label.setText(f"{enemy_def:.1f}")
+        self.def_multiplier_label.setText(f"{dz:.10f}")
+
     def recalc(self):
         char_lv = float(self.char_level.value())
         enemy_lv = float(self.enemy_level.value())
@@ -3509,6 +3569,8 @@ class EnemyDefensePage(BaseTableAttrPage):
                 generic_items.append((name, value, eff_type, src_label, nav_key, seq_label))
 
         self._fill_table("通用", generic_items)
+        self._all_active_generic = generic_items
+        self._all_skill_items = skill_items_map
         self._skill_zones = {}
         for sk in self._SKILL_NAMES:
             self._fill_table(sk, skill_items_map[sk])
@@ -3526,10 +3588,7 @@ class EnemyDefensePage(BaseTableAttrPage):
         generic_ignore = min(generic_ignore, 1.0)
         self.def_multiplier = damage_calc.calc_defense_zone(char_lv, enemy_lv, generic_ignore)
 
-        enemy_def = damage_calc.calc_enemy_base_def(enemy_lv) * (1 - generic_ignore)
-        self.total_ignore_label.setText(f"{generic_ignore * 100:.1f}%")
-        self.enemy_def_label.setText(f"{enemy_def:.1f}")
-        self.def_multiplier_label.setText(f"{self.def_multiplier:.10f}")
+        self._refresh_result_labels()
 
         if self._on_change_cb:
             self._on_change_cb()
