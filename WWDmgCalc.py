@@ -1239,6 +1239,7 @@ class KeywordAssociationPage(QWidget):
         value_spin.setRange(0, 9999)
         value_spin.setDecimals(4)
         value_spin.setValue(value)
+        value_spin.valueChanged.connect(lambda cb=self._on_change_cb: cb and cb())
         value_spin.setFixedWidth(100)
         value_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._table.setCellWidget(row_idx, 3, value_spin)
@@ -1260,7 +1261,7 @@ class KeywordAssociationPage(QWidget):
         kw_btn.setObjectName("itemLockBtn")
         kw_btn.setFixedSize(110, 35)
         kw_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        kw_btn.clicked.connect(lambda _, r=row_idx: self._edit_keywords(r))
+        kw_btn.clicked.connect(lambda _, b=kw_btn: self._edit_keywords_for_btn(b))
         self._table.setCellWidget(row_idx, 6, kw_btn)
 
         # 操作（删除）
@@ -1297,6 +1298,13 @@ class KeywordAssociationPage(QWidget):
             self._table.removeRow(row_idx)
             if self._on_change_cb:
                 self._on_change_cb()
+
+    def _edit_keywords_for_btn(self, btn):
+        """通过按钮对象查找所在行，避免 removeRow 后 row_idx 失效。"""
+        for row in range(self._table.rowCount()):
+            if self._table.cellWidget(row, 6) is btn:
+                self._edit_keywords(row)
+                return
 
     def _edit_keywords(self, row_idx):
         """编辑关键词关联"""
@@ -1424,6 +1432,7 @@ class KeywordAssociationPage(QWidget):
         value_spin.setValue(value)
         value_spin.setFixedWidth(100)
         value_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        value_spin.valueChanged.connect(lambda cb=self._on_change_cb: cb and cb())
         self._table.setCellWidget(row_idx, 3, value_spin)
 
         unit_label = QLabel("百分比")
@@ -1440,7 +1449,7 @@ class KeywordAssociationPage(QWidget):
         kw_btn.setObjectName("itemLockBtn")
         kw_btn.setFixedSize(110, 35)
         kw_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        kw_btn.clicked.connect(lambda _, r=row_idx: self._edit_keywords(r))
+        kw_btn.clicked.connect(lambda _, b=kw_btn: self._edit_keywords_for_btn(b))
         self._table.setCellWidget(row_idx, 6, kw_btn)
 
         ops = QWidget()
@@ -1487,6 +1496,7 @@ class KeywordAssociationPage(QWidget):
         value_spin.setRange(0, 9999)
         value_spin.setDecimals(4)
         value_spin.setValue(value)
+        value_spin.valueChanged.connect(lambda cb=self._on_change_cb: cb and cb())
         value_spin.setFixedWidth(100)
         value_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._table.setCellWidget(row_idx, 3, value_spin)
@@ -1505,7 +1515,7 @@ class KeywordAssociationPage(QWidget):
         kw_btn.setObjectName("itemLockBtn")
         kw_btn.setFixedSize(110, 35)
         kw_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        kw_btn.clicked.connect(lambda _, r=row_idx: self._edit_keywords(r))
+        kw_btn.clicked.connect(lambda _, b=kw_btn: self._edit_keywords_for_btn(b))
         self._table.setCellWidget(row_idx, 6, kw_btn)
 
         ops = QWidget()
