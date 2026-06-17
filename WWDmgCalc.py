@@ -1101,7 +1101,8 @@ class CombinedEntryPage(BaseTableAttrPage):
                 # 防御/抗性页面用序列号匹配，总结页面用名称匹配
                 # 总结页用真实名称做二次验证（seq_label 在 highlight_item 列 2 匹配后还需名称列一致）
                 QTimer.singleShot(200, lambda n=name, s=source, nk=nav_key, sq=seq_label:
-                                  target_page.highlight_item(n, s, nk, sq))
+                                  target_page.highlight_item(n, s, nk, sq)
+                                  if hasattr(target_page, 'highlight_item') else None)
 
     def collect_data(self):
         """返回 6 元组 (name,val,locked,source,seq,sub)，seq 已带 常驻N/触发N 前缀"""
