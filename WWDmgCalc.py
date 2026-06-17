@@ -4518,6 +4518,16 @@ class ResonanceBuffPage(QWidget):
         # 同步效果到综合填写和关键词关联页面
         self._sync_chain_to_pages(item)
 
+    def _trigger_downstream_recalc(self):
+        """触发下游重算：数值总结 → 计算结果 → 结果列表"""
+        ms = self._main_screen
+        if ms is None:
+            return
+        if ms.page_combined_perm._on_change_cb:
+            ms.page_combined_perm._on_change_cb()
+        if ms.page_keyword_assoc._on_change_cb:
+            ms.page_keyword_assoc._on_change_cb()
+
     def _sync_chain_to_pages(self, item):
         """启用时添加效果到综合填写和关键词关联页面，关闭时移除。"""
         if self._main_screen is None:
@@ -4532,8 +4542,9 @@ class ResonanceBuffPage(QWidget):
         self._main_screen.page_combined_trigger.remove_effects_by_source_and_names(
             "共鸣链效果", set(), chain_num=chain_num)
 
-        # 如果启用且有效果，重新添加
+        # 如果未启用或无效，先移除旧行再返回
         if not item.get("enabled", True) or not effects:
+            self._trigger_downstream_recalc()
             return
 
         for eff in effects:
@@ -4566,10 +4577,7 @@ class ResonanceBuffPage(QWidget):
         self._main_screen.page_combined_trigger._resequence()
 
         # 触发下游重算（综合填写→数值总结→计算结果→结果列表）
-        if self._main_screen.page_combined_perm._on_change_cb:
-            self._main_screen.page_combined_perm._on_change_cb()
-        if self._main_screen.page_keyword_assoc._on_change_cb:
-            self._main_screen.page_keyword_assoc._on_change_cb()
+        self._trigger_downstream_recalc()
 
     def get_items(self):
         return self._items
