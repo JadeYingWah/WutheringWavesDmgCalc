@@ -126,10 +126,7 @@ def matches_filter(item_name, selected_element, selected_skill, selected_effect)
 
 
 def is_defense_item(name):
-    """判断词条是否属于通用防御减伤类；技能专用变体不算。"""
-    # 技能专用无视防御
-    if get_def_pen_skill_type(name) is not None:
-        return False
+    """判断词条是否属于防御减伤类（含技能专用变体）。"""
     for kw in ("无视防御", "忽视防御", "减少防御"):
         if kw in name:
             return True
