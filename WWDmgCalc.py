@@ -3280,11 +3280,14 @@ class EnemyDefensePage(BaseTableAttrPage):
         result_layout = QFormLayout(result_group)
         self.total_ignore_label = QLabel("0.0%")
         self.total_ignore_label.setObjectName("resultValue")
+        self.total_reduce_label = QLabel("0.0%")
+        self.total_reduce_label.setObjectName("resultValue")
         self.enemy_def_label = QLabel("0.0")
         self.enemy_def_label.setObjectName("resultValue")
         self.def_multiplier_label = QLabel("0.0000")
         self.def_multiplier_label.setObjectName("resultValue")
-        result_layout.addRow("总无视/忽视/减少防御:", self.total_ignore_label)
+        result_layout.addRow("无视防御:", self.total_ignore_label)
+        result_layout.addRow("忽视/减少防御:", self.total_reduce_label)
         result_layout.addRow("敌人最终防御值:", self.enemy_def_label)
         result_layout.addRow("防御乘区:", self.def_multiplier_label)
         self.layout().insertWidget(2, result_group)
@@ -3600,21 +3603,34 @@ class EnemyDefensePage(BaseTableAttrPage):
         char_lv = float(self.char_level.value())
         enemy_lv = float(self.enemy_level.value())
         sk = self._view_skill
+
+        def _is_ignore(n): return '无视防御' in n
+        def _is_reduce(n): return '忽视防御' in n or '减少防御' in n
+
         if sk and hasattr(self, '_skill_zones') and sk in self._skill_zones:
             dz = self._skill_zones[sk]
-            # 计算该技能的 total_ignore
-            total = sum(it[1] / 100.0 for it in self._all_active_generic
-                       if (it[0], it[5]) not in self._disabled_items)
+            ignore = reduce = 0.0
+            for it in self._all_active_generic:
+                if (it[0], it[5]) not in self._disabled_items:
+                    if _is_ignore(it[0]): ignore += it[1] / 100.0
+                    elif _is_reduce(it[0]): reduce += it[1] / 100.0
             for it in self._all_skill_items.get(sk, []):
                 if (it[0], it[5]) not in self._disabled_items:
-                    total += it[1] / 100.0
+                    if _is_ignore(it[0]): ignore += it[1] / 100.0
+                    elif _is_reduce(it[0]): reduce += it[1] / 100.0
         else:
             dz = getattr(self, 'def_multiplier', 1.0)
-            total = sum(it[1] / 100.0 for it in self._all_active_generic
-                       if (it[0], it[5]) not in self._disabled_items)
-        total = min(total, 1.0)
-        enemy_def = damage_calc.calc_enemy_base_def(enemy_lv) * (1 - total)
-        self.total_ignore_label.setText(f"{total * 100:.1f}%")
+            ignore = sum(it[1] / 100.0 for it in self._all_active_generic
+                        if (it[0], it[5]) not in self._disabled_items and _is_ignore(it[0]))
+            reduce = sum(it[1] / 100.0 for it in self._all_active_generic
+                        if (it[0], it[5]) not in self._disabled_items and _is_reduce(it[0]))
+
+        ignore = min(ignore, 1.0)
+        reduce = min(reduce, 1.0)
+        enemy_base = damage_calc.calc_enemy_base_def(enemy_lv)
+        enemy_def = enemy_base * (1.0 - ignore) * (1.0 - reduce)
+        self.total_ignore_label.setText(f"{ignore * 100:.1f}%")
+        self.total_reduce_label.setText(f"{reduce * 100:.1f}%")
         self.enemy_def_label.setText(f"{enemy_def:.1f}")
         self.def_multiplier_label.setText(f"{dz:.10f}")
 
@@ -3634,6 +3650,12 @@ class EnemyDefensePage(BaseTableAttrPage):
                 seq_label = f"{eff_type}{row_idx}"
                 self._all_items.append((name, value, eff_type, src_label, nav_key, seq_label))
 
+        # 分类：无视防御 vs 忽视/减少防御
+        def _is_ignore(name):
+            return '无视防御' in name
+        def _is_reduce(name):
+            return '忽视防御' in name or '减少防御' in name
+
         generic_items = []
         skill_items_map = {sk: [] for sk in self._SKILL_NAMES}
         for name, value, eff_type, src_label, nav_key, seq_label in self._all_items:
@@ -3649,19 +3671,22 @@ class EnemyDefensePage(BaseTableAttrPage):
         self._skill_zones = {}
         for sk in self._SKILL_NAMES:
             self._fill_table(sk, skill_items_map[sk])
-            total_ignore = 0.0
+            ignore = reduce = 0.0
             for it in generic_items:
                 if (it[0], it[5]) not in self._disabled_items:
-                    total_ignore += it[1] / 100.0
+                    if _is_ignore(it[0]): ignore += it[1] / 100.0
+                    elif _is_reduce(it[0]): reduce += it[1] / 100.0
             for it in skill_items_map[sk]:
                 if (it[0], it[5]) not in self._disabled_items:
-                    total_ignore += it[1] / 100.0
-            total_ignore = min(total_ignore, 1.0)
-            self._skill_zones[sk] = damage_calc.calc_defense_zone(char_lv, enemy_lv, total_ignore)
+                    if _is_ignore(it[0]): ignore += it[1] / 100.0
+                    elif _is_reduce(it[0]): reduce += it[1] / 100.0
+            self._skill_zones[sk] = damage_calc.calc_defense_zone(char_lv, enemy_lv, ignore, reduce)
 
-        generic_ignore = sum(it[1] / 100.0 for it in generic_items if (it[0], it[5]) not in self._disabled_items)
-        generic_ignore = min(generic_ignore, 1.0)
-        self.def_multiplier = damage_calc.calc_defense_zone(char_lv, enemy_lv, generic_ignore)
+        generic_ignore = sum(it[1] / 100.0 for it in generic_items
+                            if (it[0], it[5]) not in self._disabled_items and _is_ignore(it[0]))
+        generic_reduce = sum(it[1] / 100.0 for it in generic_items
+                            if (it[0], it[5]) not in self._disabled_items and _is_reduce(it[0]))
+        self.def_multiplier = damage_calc.calc_defense_zone(char_lv, enemy_lv, generic_ignore, generic_reduce)
 
         self._refresh_result_labels()
 

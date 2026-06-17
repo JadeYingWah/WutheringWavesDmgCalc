@@ -200,18 +200,19 @@ def classify_item_category(name):
 # 核心伤害公式
 # ============================================================
 
-def calc_defense_zone(char_level, enemy_level, total_ignore=0.0):
+def calc_defense_zone(char_level, enemy_level, total_ignore=0.0, total_reduce=0.0):
     """计算防御乘区。
 
-    来源: EnemyDefensePage.recalc() (line ~4616)
+    来源: EnemyDefensePage.recalc()
 
     敌方基础防御 = 792 + 8 × 敌人等级
-    敌方最终防御 = 敌方基础防御 × (1 − 无视防御合计)
+    敌方最终防御 = 敌方基础防御 × (1 − 无视防御) × (1 − 忽视/减少防御)
     防御乘区 = (800 + 8 × 角色等级) / (敌方最终防御 + 800 + 8 × 角色等级)
     """
     total_ignore = min(total_ignore, 1.0)
+    total_reduce = min(total_reduce, 1.0)
     enemy_base_def = 792 + 8 * enemy_level
-    enemy_final_def = enemy_base_def * (1.0 - total_ignore)
+    enemy_final_def = enemy_base_def * (1.0 - total_ignore) * (1.0 - total_reduce)
     return (800 + 8 * char_level) / (enemy_final_def + 800 + 8 * char_level)
 
 
@@ -322,7 +323,7 @@ def calc_final_damage(base_zone, bonus_zone, deepen_zone, crit_zone,
 
 def compute_all_zones(base_value, weapon_base, total_pct, total_flat,
                       total_bonus, total_deepen, total_crit_rate, total_crit_dmg,
-                      char_level, enemy_level, total_ignore,
+                      char_level, enemy_level, total_ignore, total_reduce,
                       base_res, res_boost, res_reduce, res_ext_reduce,
                       indep_groups, base_mult, mult_increase, mult_boosts):
     """一次性计算所有乘区和最终伤害。
@@ -335,7 +336,7 @@ def compute_all_zones(base_value, weapon_base, total_pct, total_flat,
     deepen_zone = calc_deepen_zone(total_deepen)
     crit_rate = calc_crit_rate(total_crit_rate)
     crit_zone = calc_crit_zone(total_crit_dmg)
-    def_zone = calc_defense_zone(char_level, enemy_level, total_ignore)
+    def_zone = calc_defense_zone(char_level, enemy_level, total_ignore, total_reduce)
     res_zone = calc_resistance_zone(base_res, res_boost, res_reduce, res_ext_reduce)
     indep_zone, indep_factors = calc_indep_zone(indep_groups)
     mult_zone = calc_mult_zone(base_mult, mult_increase, mult_boosts)
