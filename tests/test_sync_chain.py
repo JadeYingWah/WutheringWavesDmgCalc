@@ -118,12 +118,12 @@ class TestSyncBasics:
         """效果保存后出现在关键词关联页"""
         ms = main_window.main_screen
         chain_item["effects"] = [
-            {"name": "攻击力加成", "value": 12.0, "type": "常驻", "source": "共鸣链效果", "sub_name": "测试备注"}
+            {"name": "倍率增加", "value": 12.0, "type": "常驻", "source": "共鸣链效果", "sub_name": "测试备注"}
         ]
         chain_item["enabled"] = True
         ms.page_resonance_buff._sync_chain_to_pages(chain_item)
 
-        assert "攻击力加成" in _get_kw_names(ms)
+        assert "倍率增加" in _get_kw_names(ms)
 
     def test_disabled_chain_not_synced(self, main_window, chain_item):
         """关闭状态的共鸣链不会同步效果"""
@@ -162,12 +162,12 @@ class TestSubNameSync:
         """副名称同步到关键词关联页"""
         ms = main_window.main_screen
         chain_item["effects"] = [
-            {"name": "攻击力加成", "value": 12.0, "type": "常驻", "source": "共鸣链效果", "sub_name": "测试备注"}
+            {"name": "倍率增加", "value": 12.0, "type": "常驻", "source": "共鸣链效果", "sub_name": "测试备注"}
         ]
         chain_item["enabled"] = True
         ms.page_resonance_buff._sync_chain_to_pages(chain_item)
 
-        sub = _get_kw_sub_name(ms, "攻击力加成")
+        sub = _get_kw_sub_name(ms, "倍率增加")
         assert sub is not None
         assert sub == "测试备注"
 
@@ -227,11 +227,11 @@ class TestSequenceFormat:
         """共鸣链效果序列号格式为「共鸣链X关联Y」"""
         ms = main_window.main_screen
         chain_item["effects"] = [
-            {"name": "攻击力加成", "value": 12.0, "type": "常驻", "source": "共鸣链效果", "sub_name": ""}
+            {"name": "倍率增加", "value": 12.0, "type": "常驻", "source": "共鸣链效果", "sub_name": ""}
         ]
         chain_item["enabled"] = True
         ms.page_resonance_buff._sync_chain_to_pages(chain_item)
 
-        seq = _get_kw_seq(ms, "攻击力加成")
+        seq = _get_kw_seq(ms, "倍率增加")
         assert seq is not None
         assert seq.startswith("共鸣链1关联")
