@@ -3373,6 +3373,17 @@ class EnemyDefensePage(BaseTableAttrPage):
             return eff_type == "触发"
         return True
 
+    def highlight_item(self, name, source, nav_key, seq_label):
+        """从综合填写页"查看总结"跳转，按序列号匹配并高亮"""
+        for key, d in self._def_tables.items():
+            table = d["table"]
+            for r in range(table.rowCount()):
+                sq_item = table.item(r, 3)
+                if sq_item and sq_item.text() == seq_label:
+                    self._highlight_def_row(table, r)
+                    return
+
+
     # ========== 外部来源 ==========
     def set_external_sources(self, sources):
         self._external_sources = sources
