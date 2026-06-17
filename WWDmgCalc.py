@@ -3183,6 +3183,36 @@ class PropTable(QTableWidget):
             p = p.parent()
         super().wheelEvent(event)
 
+# ==================== 防御减伤页面 ====================
+#
+# EnemyDefensePage: 通用 + 6 技能类型无视防御表格
+# ───────────────────────────────────────────────
+# 结构:
+#   【技能视角切换】[无类别][普攻][重击][共鸣技能][共鸣解放][变奏技能][声骸技能]
+#   【计算结果框】  总无视/减少防御 | 敌人最终防御值 | 防御乘区
+#   【等级参数】    角色等级 | 敌人等级
+#   【可滚动区域  QScrollArea → _tables_container】
+#     ├── 通用无视/忽视/减少防御  表头: 启用/名称/副名称/序列号/数值/来源
+#     ├── 普攻无视防御            表头同上 [全部|常驻|触发] 时效筛选
+#     ├── 重击无视防御            ⋯
+#     ├── 共鸣技能无视防御         ⋯
+#     ├── 共鸣解放无视防御         ⋯
+#     ├── 变奏技能无视防御         ⋯
+#     └── 声骸技能无视防御          ⋯
+#
+# 计算分离:
+#   def_multiplier            = 仅通用词条的防御乘区
+#   _skill_zones["普攻"]      = 通用词条 + 普攻专用词条
+#   get_defense_zone(skill)   → ResultPage / ResultListPage 按技能取
+#
+# 关键 API:
+#   recalc()                   — 全量收集、分类、填充 7 表、计算各技能防御乘区
+#   _on_timing_chip(key,val)   — 单表时效筛选（全部/常驻/触发）
+#   _on_view_skill(skill)      — 技能视角切换，刷新结果标签
+#   _on_def_item_toggled(key)  — 单行启用/关闭，控制 _disabled_items
+#   get_defense_zone(skill)    — 供 ResultPage 获取对应技能的防御乘区
+#   highlight_item(name,src,nk,sq) — 查看总结跳转：平滑滚动 + 黄色叠层
+#
 class EnemyDefensePage(BaseTableAttrPage):
     """敌人防御减伤页. 通用+6技能类型 无视防御表格，按技能分离计算."""
     navigate_requested = None

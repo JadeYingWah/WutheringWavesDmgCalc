@@ -50,7 +50,20 @@ _SKILL_DEF_PEN_MAP = {
 }
 
 def get_def_pen_skill_type(name):
-    """判断技能专用无视防御词条属于哪个技能类型，不属于则返回 None"""
+    """判断「技能专用无视防御」词条归属于哪个技能类型。
+
+    Args:
+        name: 词条名称（如 "普攻无视防御"、"共鸣解放无视防御"）
+
+    Returns:
+        str: 技能类型名（"普攻"/"重击"/"共鸣技能"/"共鸣解放"/"变奏技能"/"声骸技能"）
+        None: 不属于任何技能专用类型（通用词条）
+
+    用途:
+        - 防御页 recalc() 按技能类型分类词条到 7 张表格
+        - is_defense_item() 排除技能专用变体避免重复匹配
+        - 计算结果页根据卡片技能类型获取对应防御乘区
+    """
     for skill_type, prefixes in _SKILL_DEF_PEN_MAP.items():
         if name in prefixes:
             return skill_type
@@ -126,7 +139,17 @@ def matches_filter(item_name, selected_element, selected_skill, selected_effect)
 
 
 def is_defense_item(name):
-    """判断词条是否属于防御减伤类（含技能专用变体）。"""
+    """判断词条是否属于防御减伤类（含技能专用变体）。
+
+    Returns True 的条件（满足任一）:
+        1. 名称包含 "无视防御"/"忽视防御"/"减少防御" 任一子串
+        2. 名称在 DEFENSE_ITEM_NAMES 中精确匹配
+
+    用途:
+        - CombinedEntryPage._navigate_to_summary(): 决定"查看总结"跳转目标
+        - EnemyDefensePage.recalc(): 收集防御词条
+        - classify_item_category(): 词条→"defense" 分类路由
+    """
     for kw in ("无视防御", "忽视防御", "减少防御"):
         if kw in name:
             return True
