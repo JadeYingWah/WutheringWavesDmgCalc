@@ -246,7 +246,6 @@ class EnemyResistancePage(QWidget):
                 if not scroll: continue
                 pw = scroll.widget()
                 if not isinstance(pw, _CombinedEntryPage): continue
-                type_label = "常驻" if key == "combined_perm" else "触发"
                 for r, rd in enumerate(pw._rows):
                     if seq_label == f"{type_label}{r + 1}":
                         pw._highlight_row(r, scroll)
@@ -389,14 +388,11 @@ class EnemyResistancePage(QWidget):
         trig_out = []
 
         for src_label, page, nav_key, category in self._external_sources:
-            row_idx = 0
             for item_data in page.collect_data():
                 name = item_data[0]; value = item_data[1]
-                row_idx += 1
                 if not damage_calc.is_resistance_item(name):
                     continue
-                type_label = "常驻" if category == "常驻" else "触发"
-                seq_label = f"{type_label}{row_idx}"
+                seq_label = item_data[4] if len(item_data) > 4 and item_data[4] else ""
                 key = self._make_item_key(name, src_label, seq_label)
                 active = self._trigger_states.get(key, True)
                 if name == "全属性抗性减少":
