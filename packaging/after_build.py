@@ -124,14 +124,6 @@ def main():
     # save/ 已在步骤1建好，不复制文件
     print('    save/ (空目录，不复制文件)')
 
-    # 7b. 复制使用手册图片目录
-    src_manual = os.path.join(ROOT, 'manual', 'images')
-    dst_manual = os.path.join(OUT, 'manual', 'images')
-    if os.path.exists(src_manual):
-        os.makedirs(dst_manual, exist_ok=True)
-        for img in os.listdir(src_manual):
-            shutil.copy2(os.path.join(src_manual, img), os.path.join(dst_manual, img))
-        print('  manual/images/ copied')
     # 7. 复制 CONTRIBUTORS.md
     src_contrib = os.path.join(ROOT, 'CONTRIBUTORS.md')
     dst_contrib = os.path.join(OUT, 'CONTRIBUTORS.md')
