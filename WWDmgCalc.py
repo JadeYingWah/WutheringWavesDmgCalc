@@ -3283,6 +3283,7 @@ class EnemyDefensePage(BaseTableAttrPage):
         self._tables_layout.setSpacing(12)
         self._tables_layout.setContentsMargins(0, 4, 0, 8)
         scroll.setWidget(self._tables_container)
+        self._scroll = scroll
         self.layout().insertWidget(4, scroll)
 
         self._def_tables = {}
@@ -3401,14 +3402,32 @@ class EnemyDefensePage(BaseTableAttrPage):
         return True
 
     def highlight_item(self, name, source, nav_key, seq_label):
-        """从综合填写页"查看总结"跳转，按序列号匹配并高亮"""
+        """从综合填写页"查看总结"跳转 —— 平滑滚动 + 黄色叠层高亮"""
         for key, d in self._def_tables.items():
             table = d["table"]
             for r in range(table.rowCount()):
                 sq_item = table.item(r, 3)
                 if sq_item and sq_item.text() == seq_label:
-                    self._highlight_def_row(table, r)
+                    QApplication.processEvents()
+                    row_y = table.rowViewportPosition(r)
+                    table_y = table.mapTo(self._tables_container, table.pos()).y()
+                    target = max(0, table_y + row_y - 80)
+                    sb = self._scroll.verticalScrollBar()
+                    if not sb:
+                        return
+                    cur = sb.value()
+                    steps = 15
+                    dlt = (target - cur) / steps
+
+                    def _anim(s=1):
+                        sb.setValue(int(cur + dlt * s))
+                        if s < steps:
+                            QTimer.singleShot(16, lambda ss=s+1: _anim(ss))
+                        else:
+                            QTimer.singleShot(60, lambda t=table, row=r: self._highlight_def_row(t, row))
+                    _anim()
                     return
+
 
 
     # ========== 外部来源 ==========
