@@ -743,6 +743,12 @@ class PresetLoaderDialog(QDialog):
 
         lay_dlg.addLayout(form)
 
+        # 按钮（先创建，让声骸件数分配能引用 OK 按钮）
+        btns = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        btns.accepted.connect(dlg.accept)
+        btns.rejected.connect(dlg.reject)
+
         # ── 声骸套装件数分配 ──
         if echo_names:
             stage_gb = QGroupBox("声骸套装（分配件数给各套装，总计不超过 5 件）")
@@ -816,11 +822,8 @@ class PresetLoaderDialog(QDialog):
             buff_label.setWordWrap(True)
             lay_dlg.addWidget(buff_label)
 
-        # 按钮
-        btns = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        btns.accepted.connect(dlg.accept)
-        btns.rejected.connect(dlg.reject)
+
+
         lay_dlg.addWidget(btns)
 
         if dlg.exec() != QDialog.DialogCode.Accepted:
