@@ -3257,7 +3257,7 @@ class EnemyDefensePage(BaseTableAttrPage):
         self._sub_name_timer = QTimer(self)
         self._sub_name_timer.setSingleShot(True)
         self._sub_name_timer.setInterval(500)
-        self._sub_name_timer.timeout.connect(self._trigger_downstream_recalc)
+        self._sub_name_timer.timeout.connect(self.recalc)
 
         # ========== 技能视角切换 ==========
         view_row = QHBoxLayout()
