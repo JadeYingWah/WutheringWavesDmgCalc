@@ -29,6 +29,23 @@ def inject_deps(combined_entry_cls, cell_center_fn, fix_table_height_fn, prop_ta
     _place_highlight_overlay = place_hl_fn
 
 
+def _make_sub_name_editor(line_edit):
+    """简版副名称编辑弹窗"""
+    dlg = QDialog(line_edit.window())
+    dlg.setWindowTitle("编辑副名称")
+    dlg.setMinimumSize(350, 200)
+    lay = QVBoxLayout(dlg)
+    lay.addWidget(QLabel("编辑备注信息:"))
+    edit = QLineEdit(line_edit.text())
+    edit.setPlaceholderText("（备注）")
+    lay.addWidget(edit)
+    btns = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+    btns.accepted.connect(dlg.accept)
+    btns.rejected.connect(dlg.reject)
+    if dlg.exec() == QDialog.DialogCode.Accepted and edit.text() != line_edit.text():
+        line_edit.setText(edit.text())
+
+
 class EnemyResistancePage(QWidget):
     """敌人抗性页. 6 元素抗性 + 预设 + 外部抗性来源叠加."""
     TYPES = ["冷凝抗性", "热熔抗性", "气动抗性", "导电抗性", "衍射抗性", "湮灭抗性"]
@@ -233,7 +250,7 @@ class EnemyResistancePage(QWidget):
         if self.navigate_requested:
             self.navigate_requested(nav_key)
         if seq_label:
-            QTimer.singleShot(500, lambda: self._do_highlight_in_source(nav_key, seq_label))
+            QTimer.singleShot(350, lambda: self._do_highlight_in_source(nav_key, seq_label))
 
     def _do_highlight_in_source(self, nav_key, seq_label):
         ms = self.window().main_screen if self.window() else None
@@ -366,11 +383,21 @@ class EnemyResistancePage(QWidget):
             _cell_center(self.perm_table, r, 0, cb)
             self.perm_table.setItem(r, 1, _centered(name))
             # 副名称：复用
+            sw = QWidget()
+            sl = QHBoxLayout(sw)
+            sl.setContentsMargins(0, 0, 0, 0)
+            sl.setSpacing(2)
             sub_edit = QLineEdit(sub_name)
             sub_edit.setObjectName("nameEdit")
             sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_edit.setPlaceholderText("（备注）")
-            self.perm_table.setCellWidget(r, 2, sub_edit)
+            sl.addWidget(sub_edit, stretch=1)
+            eb = QPushButton("...")
+            eb.setFixedWidth(24)
+            eb.setCursor(Qt.CursorShape.PointingHandCursor)
+            eb.clicked.connect(lambda _, le=sub_edit: _make_sub_name_editor(le))
+            sl.addWidget(eb)
+            self.perm_table.setCellWidget(r, 2, sw)
             self.perm_table.setItem(r, 3, _centered(seq_label))
             self.perm_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
@@ -400,11 +427,21 @@ class EnemyResistancePage(QWidget):
             _cell_center(self.trig_table, r, 0, cb)
             self.trig_table.setItem(r, 1, _centered(name))
             # 副名称：复用
+            sw = QWidget()
+            sl = QHBoxLayout(sw)
+            sl.setContentsMargins(0, 0, 0, 0)
+            sl.setSpacing(2)
             sub_edit = QLineEdit(sub_name)
             sub_edit.setObjectName("nameEdit")
             sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_edit.setPlaceholderText("（备注）")
-            self.trig_table.setCellWidget(r, 2, sub_edit)
+            sl.addWidget(sub_edit, stretch=1)
+            eb = QPushButton("...")
+            eb.setFixedWidth(24)
+            eb.setCursor(Qt.CursorShape.PointingHandCursor)
+            eb.clicked.connect(lambda _, le=sub_edit: _make_sub_name_editor(le))
+            sl.addWidget(eb)
+            self.trig_table.setCellWidget(r, 2, sw)
             self.trig_table.setItem(r, 3, _centered(seq_label))
             self.trig_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)

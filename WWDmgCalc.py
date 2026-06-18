@@ -3507,7 +3507,7 @@ class EnemyDefensePage(BaseTableAttrPage):
         if self.navigate_requested:
             self.navigate_requested(nav_key)
         if seq_label:
-            QTimer.singleShot(500, lambda: self._do_highlight_in_source(nav_key, seq_label))
+            QTimer.singleShot(350, lambda: self._do_highlight_in_source(nav_key, seq_label))
 
     def _do_highlight_in_source(self, nav_key, seq_label):
         ms = self.window().main_screen if self.window() else None
