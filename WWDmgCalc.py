@@ -3752,6 +3752,7 @@ class EnemyDefensePage(BaseTableAttrPage):
             se.setObjectName("nameEdit")
             se.setAlignment(Qt.AlignmentFlag.AlignCenter)
             se.setPlaceholderText("（备注）")
+            se.editingFinished.connect(lambda cb=self._trigger_downstream_recalc: cb())
             cell_center(table, r, 2, _make_sub_name_cell(se))
             table.setItem(r, 3, _centered(seq_label))
             table.setItem(r, 4, _centered(f"{value:.1f}%"))
@@ -5700,6 +5701,8 @@ def _make_sub_name_cell(line_edit, get_name_cb=None):
             syncing[0] = True
             line_edit.setText(t)
             syncing[0] = False
+            # 通知下游页面：触发 editingFinished → 各页面已连接的回调
+            line_edit.editingFinished.emit()
 
         def _from_input():
             if syncing[0]:
@@ -5723,7 +5726,7 @@ def _make_sub_name_cell(line_edit, get_name_cb=None):
 # 延迟注入 _make_sub_name_cell 到 summary_pages
 from summary_pages import set_make_sub_name_cell as _set_smnc
 _set_smnc(_make_sub_name_cell)
-_inject_enemy_res(CombinedEntryPage, cell_center, fix_table_height, PropTable, _place_highlight_overlay)
+_inject_enemy_res(CombinedEntryPage, cell_center, fix_table_height, PropTable, _place_highlight_overlay, _make_sub_name_cell)
 
 
 def _get_sub_name_text(widget):

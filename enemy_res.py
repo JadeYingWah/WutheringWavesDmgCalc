@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QTableWidget, QTableWidgetItem, QCheckBox, QDoubleSpinBox,
     QGroupBox, QScrollArea, QApplication,
-    QHeaderView, QSizePolicy, QLineEdit, QDialog, QDialogButtonBox,
+    QHeaderView, QSizePolicy, QLineEdit,
 )
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, QRect
 
@@ -19,31 +19,16 @@ _fix_table_height = None
 _CombinedEntryPage = None
 _PropTable = None
 _place_highlight_overlay = None
+_make_sub_name_cell = None
 
-def inject_deps(combined_entry_cls, cell_center_fn, fix_table_height_fn, prop_table_cls, place_hl_fn):
-    global _cell_center, _fix_table_height, _CombinedEntryPage, _PropTable, _place_highlight_overlay
+def inject_deps(combined_entry_cls, cell_center_fn, fix_table_height_fn, prop_table_cls, place_hl_fn, make_sub_name_fn):
+    global _cell_center, _fix_table_height, _CombinedEntryPage, _PropTable, _place_highlight_overlay, _make_sub_name_cell
     _cell_center = cell_center_fn
     _fix_table_height = fix_table_height_fn
     _CombinedEntryPage = combined_entry_cls
     _PropTable = prop_table_cls
     _place_highlight_overlay = place_hl_fn
-
-
-def _make_sub_name_editor(line_edit):
-    """简版副名称编辑弹窗"""
-    dlg = QDialog(line_edit.window())
-    dlg.setWindowTitle("编辑副名称")
-    dlg.setMinimumSize(350, 200)
-    lay = QVBoxLayout(dlg)
-    lay.addWidget(QLabel("编辑备注信息:"))
-    edit = QLineEdit(line_edit.text())
-    edit.setPlaceholderText("（备注）")
-    lay.addWidget(edit)
-    btns = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-    btns.accepted.connect(dlg.accept)
-    btns.rejected.connect(dlg.reject)
-    if dlg.exec() == QDialog.DialogCode.Accepted and edit.text() != line_edit.text():
-        line_edit.setText(edit.text())
+    _make_sub_name_cell = make_sub_name_fn
 
 
 class EnemyResistancePage(QWidget):
@@ -382,22 +367,12 @@ class EnemyResistancePage(QWidget):
             self._perm_checkbox_widgets.append(cb)
             _cell_center(self.perm_table, r, 0, cb)
             self.perm_table.setItem(r, 1, _centered(name))
-            # 副名称：复用
-            sw = QWidget()
-            sl = QHBoxLayout(sw)
-            sl.setContentsMargins(0, 0, 0, 0)
-            sl.setSpacing(2)
             sub_edit = QLineEdit(sub_name)
             sub_edit.setObjectName("nameEdit")
             sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_edit.setPlaceholderText("（备注）")
-            sl.addWidget(sub_edit, stretch=1)
-            eb = QPushButton("...")
-            eb.setFixedWidth(24)
-            eb.setCursor(Qt.CursorShape.PointingHandCursor)
-            eb.clicked.connect(lambda _, le=sub_edit: _make_sub_name_editor(le))
-            sl.addWidget(eb)
-            self.perm_table.setCellWidget(r, 2, sw)
+            sub_edit.editingFinished.connect(self._recalc)
+            _cell_center(self.perm_table, r, 2, _make_sub_name_cell(sub_edit))
             self.perm_table.setItem(r, 3, _centered(seq_label))
             self.perm_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
@@ -426,22 +401,12 @@ class EnemyResistancePage(QWidget):
             self._trig_checkbox_widgets.append(cb)
             _cell_center(self.trig_table, r, 0, cb)
             self.trig_table.setItem(r, 1, _centered(name))
-            # 副名称：复用
-            sw = QWidget()
-            sl = QHBoxLayout(sw)
-            sl.setContentsMargins(0, 0, 0, 0)
-            sl.setSpacing(2)
             sub_edit = QLineEdit(sub_name)
             sub_edit.setObjectName("nameEdit")
             sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_edit.setPlaceholderText("（备注）")
-            sl.addWidget(sub_edit, stretch=1)
-            eb = QPushButton("...")
-            eb.setFixedWidth(24)
-            eb.setCursor(Qt.CursorShape.PointingHandCursor)
-            eb.clicked.connect(lambda _, le=sub_edit: _make_sub_name_editor(le))
-            sl.addWidget(eb)
-            self.trig_table.setCellWidget(r, 2, sw)
+            sub_edit.editingFinished.connect(self._recalc)
+            _cell_center(self.trig_table, r, 2, _make_sub_name_cell(sub_edit))
             self.trig_table.setItem(r, 3, _centered(seq_label))
             self.trig_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
