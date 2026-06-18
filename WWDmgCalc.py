@@ -756,6 +756,7 @@ class BaseTableAttrPage(QWidget):
         self.table.setRowHeight(row, 42)
 
         name_edit = QLineEdit(name)
+        name_edit.setReadOnly(True)
         name_edit.setObjectName("nameEdit")
         name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.table.setCellWidget(row, 0, name_edit)
