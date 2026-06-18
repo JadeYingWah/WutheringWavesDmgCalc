@@ -648,6 +648,10 @@ class BaseTableAttrPage(QWidget):
         self._rows = []          # 存储每行的数据字典
         self._attr_list = attr_list or WEAPON_RESONANCE_ATTRS
         self._on_change_cb = None  # 变更回调，通知外部
+        self._value_change_timer = QTimer(self)
+        self._value_change_timer.setSingleShot(True)
+        self._value_change_timer.setInterval(500)
+        self._value_change_timer.timeout.connect(self._on_value_debounced)
 
         layout = QVBoxLayout(self)
         layout.setSpacing(16)
@@ -838,6 +842,10 @@ class BaseTableAttrPage(QWidget):
             self._on_change_cb()
 
     def _on_item_value_changed(self, *_):
+        self._value_change_timer.start()
+
+    def _on_value_debounced(self):
+        """防抖回调：停止输入500ms后才触发."""
         if self._on_change_cb:
             self._on_change_cb()
 
@@ -931,7 +939,6 @@ class CombinedEntryPage(BaseTableAttrPage):
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub_name_edit.setReadOnly(True)
         sub_name_edit.setPlaceholderText("（备注）")
-        sub_name_edit.editingFinished.connect(self._on_item_value_changed)
         self.table.setCellWidget(row, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
         type_label = "常驻" if self.page_key == "combined_perm" else "触发"
@@ -1128,6 +1135,10 @@ class KeywordAssociationPage(QWidget):
 
     def __init__(self):
         super().__init__()
+        self._value_change_timer = QTimer(self)
+        self._value_change_timer.setSingleShot(True)
+        self._value_change_timer.setInterval(500)
+        self._value_change_timer.timeout.connect(self._on_value_debounced)
         self._counter = 0          # 手动添加计数器
         self._chain_counter = 0    # 共鸣链添加计数器
         self._rows = []
@@ -1248,7 +1259,7 @@ class KeywordAssociationPage(QWidget):
         value_spin.setRange(0, 9999)
         value_spin.setDecimals(4)
         value_spin.setValue(value)
-        value_spin.valueChanged.connect(lambda cb=self._on_change_cb: cb and cb())
+        value_spin.valueChanged.connect(self._value_change_timer.start)
         value_spin.setFixedWidth(100)
         value_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._table.setCellWidget(row_idx, 3, value_spin)
@@ -1443,7 +1454,7 @@ class KeywordAssociationPage(QWidget):
         value_spin.setValue(value)
         value_spin.setFixedWidth(100)
         value_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        value_spin.valueChanged.connect(lambda cb=self._on_change_cb: cb and cb())
+        value_spin.valueChanged.connect(self._value_change_timer.start)
         self._table.setCellWidget(row_idx, 3, value_spin)
 
         unit_label = QLabel("百分比")
@@ -1509,7 +1520,7 @@ class KeywordAssociationPage(QWidget):
         value_spin.setRange(0, 9999)
         value_spin.setDecimals(4)
         value_spin.setValue(value)
-        value_spin.valueChanged.connect(lambda cb=self._on_change_cb: cb and cb())
+        value_spin.valueChanged.connect(self._value_change_timer.start)
         value_spin.setFixedWidth(100)
         value_spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._table.setCellWidget(row_idx, 3, value_spin)
@@ -3264,10 +3275,6 @@ class EnemyDefensePage(BaseTableAttrPage):
         self._timing_filters = {}
         self._disabled_items = set()  # {(name, seq_label)}
         self._view_skill = None  # None=无类别, 否则普攻/重击/共鸣技能/…
-        self._sub_name_timer = QTimer(self)
-        self._sub_name_timer.setSingleShot(True)
-        self._sub_name_timer.setInterval(500)
-        self._sub_name_timer.timeout.connect(self.recalc)
 
         # ========== 技能视角切换 ==========
         view_row = QHBoxLayout()
