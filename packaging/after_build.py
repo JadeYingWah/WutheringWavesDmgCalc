@@ -43,7 +43,6 @@ $ws = New-Object -ComObject WScript.Shell
 $s = $ws.CreateShortcut("{link_lnk}")
 $s.TargetPath = "{target}"
 $s.Description = "{description}"
-$s.WorkingDirectory = "{os.path.dirname(target)}"
 $s.Save()
 '''
     subprocess.run(['powershell', '-Command', ps], check=True, capture_output=True)
@@ -55,6 +54,7 @@ def main():
     folders = [
         os.path.join(OUT, 'WWDmgCalc'),
         os.path.join(OUT, 'ErrorViewer'),
+        os.path.join(OUT, 'ico'),
         os.path.join(OUT, 'presets', 'official'),
         os.path.join(OUT, 'presets', 'user', 'character'),
         os.path.join(OUT, 'presets', 'user', 'character_buff'),
@@ -130,6 +130,21 @@ def main():
     if os.path.exists(src_contrib):
         shutil.copy2(src_contrib, dst_contrib)
         print('  CONTRIBUTORS.md copied')
+    src_ico = os.path.join(ROOT, 'ico', 'icon.ico')
+    dst_ico = os.path.join(OUT, 'ico', 'icon.ico')
+    if os.path.exists(src_ico):
+        shutil.copy2(src_ico, dst_ico)
+        print('  icon.ico copied')
+    di = os.path.join(OUT, 'desktop.ini')
+    with open(di, 'w', encoding='utf-8') as df:
+        df.write('[.ShellClassInfo]\nIconResource=ico\\icon.ico,0\nIconFile=ico\\icon.ico\nIconIndex=0\n')
+    import ctypes
+    try:
+        ctypes.windll.kernel32.SetFileAttributesW(di, 6)
+        ctypes.windll.kernel32.SetFileAttributesW(OUT, 4)
+        print('  desktop.ini created')
+    except:
+        pass
 
     # 8. 移入工具目录（Git 代理 + 上传预设）
     TOOLS_DIR = os.path.join(OUT, 'tools')
