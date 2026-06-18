@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QTableWidget, QTableWidgetItem, QCheckBox, QDoubleSpinBox,
     QGroupBox, QScrollArea, QApplication,
-    QHeaderView, QSizePolicy, QDialog, QDialogButtonBox, QLineEdit,
+    QHeaderView, QSizePolicy, QLineEdit,
 )
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, QRect
 
@@ -339,12 +339,12 @@ class EnemyResistancePage(QWidget):
             self._perm_checkbox_widgets.append(cb)
             _cell_center(self.perm_table, r, 0, cb)
             self.perm_table.setItem(r, 1, _centered(name))
-            # 副名称：复用 _make_sub_name_cell
+            # 副名称：复用
             sub_edit = QLineEdit(sub_name)
             sub_edit.setObjectName("nameEdit")
             sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_edit.setPlaceholderText("（备注）")
-            _cell_center(self.perm_table, r, 2, _make_sub_name_cell(sub_edit))
+            _cell_center(self.perm_table, r, 2, sub_edit)
             self.perm_table.setItem(r, 3, _centered(seq_label))
             self.perm_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
@@ -373,12 +373,12 @@ class EnemyResistancePage(QWidget):
             self._trig_checkbox_widgets.append(cb)
             _cell_center(self.trig_table, r, 0, cb)
             self.trig_table.setItem(r, 1, _centered(name))
-            # 副名称：复用 _make_sub_name_cell
+            # 副名称：复用
             sub_edit = QLineEdit(sub_name)
             sub_edit.setObjectName("nameEdit")
             sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_edit.setPlaceholderText("（备注）")
-            _cell_center(self.trig_table, r, 2, _make_sub_name_cell(sub_edit))
+            _cell_center(self.trig_table, r, 2, sub_edit)
             self.trig_table.setItem(r, 3, _centered(seq_label))
             self.trig_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
