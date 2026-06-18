@@ -3507,42 +3507,61 @@ class EnemyDefensePage(BaseTableAttrPage):
         if self.navigate_requested:
             self.navigate_requested(nav_key)
         if seq_label:
-            QTimer.singleShot(350, lambda: self._do_highlight_in_source(nav_key, seq_label))
+            QTimer.singleShot(500, lambda: self._do_highlight_in_source(nav_key, seq_label))
 
     def _do_highlight_in_source(self, nav_key, seq_label):
-        try:
-            ms = self.window().main_screen if self.window() else None
-            if not ms:
-                return
+        ms = self.window().main_screen if self.window() else None
+        if not ms:
+            return
+        QApplication.processEvents()
+        if nav_key and nav_key in ms._scrolls:
             QApplication.processEvents()
-            for key in ["combined_perm", "combined_trigger"]:
-                scroll = ms._scrolls.get(key)
-                if not scroll: continue
-                pw = scroll.widget()
-                if not isinstance(pw, CombinedEntryPage): continue
-                type_label = "常驻" if key == "combined_perm" else "触发"
-                for r in range(len(pw._rows)):
-                    try:
-                        row_data = pw.collect_data()[r]
-                        row_seq = row_data[4] if len(row_data) > 4 else ""
-                        if row_seq == seq_label:
-                            pw._highlight_row(r, scroll)
-                            return
-                    except (IndexError, AttributeError):
-                        continue
-            ms = self.window().main_screen if self.window() else None
-            if not ms:
-                return
-            QApplication.processEvents()
-            for key, d in self._def_tables.items():
-                table = d["table"]
-                for r in range(table.rowCount()):
-                    sq_item = table.item(r, 3)
-                    if sq_item and sq_item.text() == seq_label:
-                        self._highlight_def_row(table, r)
+        # 先尝试综合填写页高亮
+        for key in ["combined_perm", "combined_trigger"]:
+            scroll = ms._scrolls.get(key)
+            if not scroll: continue
+            pw = scroll.widget()
+            if not isinstance(pw, CombinedEntryPage): continue
+            for r in range(len(pw._rows)):
+                try:
+                    row_data = pw.collect_data()[r]
+                    row_seq = row_data[4] if len(row_data) > 4 else ""
+                    if row_seq == seq_label:
+                        pw._highlight_row(r, scroll)
                         return
-        except Exception:
-            pass
+                except (IndexError, AttributeError):
+                    continue
+        # 失败则重试一次
+        if seq_label:
+            QTimer.singleShot(300, lambda: self._do_highlight_retry_def(seq_label))
+        # 同时也高亮自己的表格
+        QApplication.processEvents()
+        for key, d in self._def_tables.items():
+            table = d["table"]
+            for r in range(table.rowCount()):
+                sq_item = table.item(r, 3)
+                if sq_item and sq_item.text() == seq_label:
+                    self._highlight_def_row(table, r)
+                    return
+
+    def _do_highlight_retry_def(self, seq_label):
+        ms = self.window().main_screen if self.window() else None
+        if not ms:
+            return
+        QApplication.processEvents()
+        for key in ["combined_perm", "combined_trigger"]:
+            scroll = ms._scrolls.get(key)
+            if not scroll: continue
+            pw = scroll.widget()
+            if not isinstance(pw, CombinedEntryPage): continue
+            for r in range(len(pw._rows)):
+                try:
+                    row_data = pw.collect_data()[r]
+                    if len(row_data) > 4 and row_data[4] == seq_label:
+                        pw._highlight_row(r, scroll)
+                        return
+                except (IndexError, AttributeError):
+                    continue
 
     def _highlight_def_row(self, table, row):
         """在防御减伤表格行上放置黄色叠层，双轮渐入渐出"""
