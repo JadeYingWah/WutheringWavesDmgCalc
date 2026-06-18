@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QTableWidget, QTableWidgetItem, QCheckBox, QDoubleSpinBox,
     QGroupBox, QScrollArea, QApplication,
-    QHeaderView, QSizePolicy, QLineEdit,
+    QHeaderView, QSizePolicy, QLineEdit, QDialog, QDialogButtonBox,
 )
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, QRect
 
