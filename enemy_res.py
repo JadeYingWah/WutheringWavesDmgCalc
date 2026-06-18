@@ -260,10 +260,10 @@ class EnemyResistancePage(QWidget):
             pass
 
     def highlight_item(self, name, src_label, nav_key, seq_label=""):
-        """按序列号在表格中定位并高亮（seq_label 在列2）"""
+        """按序列号在表格中定位并高亮（seq_label 在列3）"""
         for table in [self.perm_table, self.trig_table]:
             for r in range(table.rowCount()):
-                item = table.item(r, 2)
+                item = table.item(r, 3)
                 if item and item.text() == seq_label:
                     scroll = None
                     p = table.parent()
@@ -339,7 +339,23 @@ class EnemyResistancePage(QWidget):
             self._perm_checkbox_widgets.append(cb)
             _cell_center(self.perm_table, r, 0, cb)
             self.perm_table.setItem(r, 1, _centered(name))
-            self.perm_table.setItem(r, 2, _centered(sub_name))
+            # 副名称：带 ... 编辑按钮的 QLineEdit
+            from PyQt6.QtWidgets import QLineEdit, QPushButton, QHBoxLayout, QWidget
+            sub_widget = QWidget()
+            sub_lay = QHBoxLayout(sub_widget)
+            sub_lay.setContentsMargins(0, 0, 0, 0)
+            sub_lay.setSpacing(2)
+            sub_edit = QLineEdit(sub_name)
+            sub_edit.setObjectName("nameEdit")
+            sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            sub_edit.setPlaceholderText("（备注）")
+            sub_lay.addWidget(sub_edit, stretch=1)
+            exp_btn = QPushButton("...")
+            exp_btn.setFixedWidth(24)
+            exp_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            exp_btn.clicked.connect(lambda _, le=sub_edit: _make_sub_name_editor(le))
+            sub_lay.addWidget(exp_btn)
+            _cell_center(self.perm_table, r, 2, sub_widget)
             self.perm_table.setItem(r, 3, _centered(seq_label))
             self.perm_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
@@ -368,7 +384,22 @@ class EnemyResistancePage(QWidget):
             self._trig_checkbox_widgets.append(cb)
             _cell_center(self.trig_table, r, 0, cb)
             self.trig_table.setItem(r, 1, _centered(name))
-            self.trig_table.setItem(r, 2, _centered(sub_name))
+            from PyQt6.QtWidgets import QLineEdit, QPushButton, QHBoxLayout, QWidget
+            sub_widget = QWidget()
+            sub_lay = QHBoxLayout(sub_widget)
+            sub_lay.setContentsMargins(0, 0, 0, 0)
+            sub_lay.setSpacing(2)
+            sub_edit = QLineEdit(sub_name)
+            sub_edit.setObjectName("nameEdit")
+            sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            sub_edit.setPlaceholderText("（备注）")
+            sub_lay.addWidget(sub_edit, stretch=1)
+            exp_btn = QPushButton("...")
+            exp_btn.setFixedWidth(24)
+            exp_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            exp_btn.clicked.connect(lambda _, le=sub_edit: _make_sub_name_editor(le))
+            sub_lay.addWidget(exp_btn)
+            _cell_center(self.trig_table, r, 2, sub_widget)
             self.trig_table.setItem(r, 3, _centered(seq_label))
             self.trig_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)

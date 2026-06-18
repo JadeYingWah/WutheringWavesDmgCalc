@@ -3158,6 +3158,23 @@ def fix_table_height(table):
     table.setMinimumHeight(h + 4)
 
 
+def _make_sub_name_editor(line_edit):
+    """弹出非模态编辑窗，编辑副名称"""
+    dlg = QDialog(line_edit.window())
+    dlg.setWindowTitle("编辑副名称")
+    dlg.setMinimumSize(350, 200)
+    lay = QVBoxLayout(dlg)
+    lay.addWidget(QLabel("编辑备注信息:"))
+    edit = QLineEdit(line_edit.text())
+    edit.setPlaceholderText("（备注）")
+    lay.addWidget(edit)
+    btns = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+    btns.accepted.connect(dlg.accept)
+    btns.rejected.connect(dlg.reject)
+    if dlg.exec() == QDialog.DialogCode.Accepted and edit.text() != line_edit.text():
+        line_edit.setText(edit.text())
+
+
 class PropTable(QTableWidget):
     """QTableWidget with proportional column widths."""
     def __init__(self, proportions, parent=None):
@@ -3727,7 +3744,21 @@ class EnemyDefensePage(BaseTableAttrPage):
             cb.toggled.connect(lambda checked, ik=item_key: self._on_def_item_toggled(ik, checked))
             cell_center(table, r, 0, cb)
             table.setItem(r, 1, _centered(name))
-            table.setItem(r, 2, _centered(sub_name))
+            sw = QWidget()
+            sl = QHBoxLayout(sw)
+            sl.setContentsMargins(0, 0, 0, 0)
+            sl.setSpacing(2)
+            se = QLineEdit(sub_name)
+            se.setObjectName("nameEdit")
+            se.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            se.setPlaceholderText("（备注）")
+            sl.addWidget(se, stretch=1)
+            eb = QPushButton("...")
+            eb.setFixedWidth(24)
+            eb.setCursor(Qt.CursorShape.PointingHandCursor)
+            eb.clicked.connect(lambda _, le=se: _make_sub_name_editor(le))
+            sl.addWidget(eb)
+            cell_center(table, r, 2, sw)
             table.setItem(r, 3, _centered(seq_label))
             table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
