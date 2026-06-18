@@ -236,28 +236,31 @@ class EnemyResistancePage(QWidget):
             QTimer.singleShot(350, lambda: self._do_highlight_in_source(nav_key, seq_label))
 
     def _do_highlight_in_source(self, nav_key, seq_label):
-        try:
-            ms = self.window().main_screen if self.window() else None
-            if not ms:
-                return
-            QApplication.processEvents()
-            for key in ["combined_perm", "combined_trigger"]:
-                scroll = ms._scrolls.get(key)
-                if not scroll: continue
-                pw = scroll.widget()
-                if not isinstance(pw, _CombinedEntryPage): continue
-                type_label = "常驻" if key == "combined_perm" else "触发"
-                for r in range(len(pw._rows)):
-                    try:
-                        row_data = pw.collect_data()[r]
-                        row_seq = row_data[4] if len(row_data) > 4 else ""
-                        if row_seq == seq_label:
-                            pw._highlight_row(r, scroll)
-                            return
-                    except (IndexError, AttributeError):
-                        continue
-        except Exception:
-            pass
+        ms = self.window().main_screen if self.window() else None
+        if not ms:
+            return
+        QApplication.processEvents()
+        CombinedPageCls = _CombinedEntryPage
+        if CombinedPageCls is None and hasattr(ms, 'page_combined_perm'):
+            CombinedPageCls = type(ms.page_combined_perm)
+        if CombinedPageCls is None:
+            return
+        for key in ["combined_perm", "combined_trigger"]:
+            scroll = ms._scrolls.get(key)
+            if not scroll:
+                continue
+            pw = scroll.widget()
+            if not isinstance(pw, CombinedPageCls):
+                continue
+            for r in range(len(pw._rows)):
+                try:
+                    row_data = pw.collect_data()[r]
+                    row_seq = row_data[4] if len(row_data) > 4 else ""
+                    if row_seq == seq_label:
+                        pw._highlight_row(r, scroll)
+                        return
+                except (IndexError, AttributeError):
+                    continue
 
     def highlight_item(self, name, src_label, nav_key, seq_label=""):
         """按序列号在表格中定位并高亮（seq_label 在列3）"""
