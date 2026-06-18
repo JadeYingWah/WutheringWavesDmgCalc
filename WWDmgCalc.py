@@ -3646,7 +3646,8 @@ class EnemyDefensePage(BaseTableAttrPage):
                     continue
                 eff_type = "常驻" if category == "常驻" else "触发"
                 seq_label = item_data[4] if len(item_data) > 4 and item_data[4] else ""
-                self._all_items.append((name, value, eff_type, src_label, nav_key, seq_label))
+                sub_name = item_data[5] if len(item_data) > 5 else ""
+                self._all_items.append((name, value, eff_type, src_label, nav_key, seq_label, sub_name))
 
         # 分类：无视防御 vs 忽视/减少防御
         def _is_ignore(name):
@@ -3656,12 +3657,12 @@ class EnemyDefensePage(BaseTableAttrPage):
 
         generic_items = []
         skill_items_map = {sk: [] for sk in self._SKILL_NAMES}
-        for name, value, eff_type, src_label, nav_key, seq_label in self._all_items:
+        for name, value, eff_type, src_label, nav_key, seq_label, sub_name in self._all_items:
             sk = damage_calc.get_def_pen_skill_type(name)
             if sk is not None:
-                skill_items_map[sk].append((name, value, eff_type, src_label, nav_key, seq_label))
+                skill_items_map[sk].append((name, value, eff_type, src_label, nav_key, seq_label, sub_name))
             else:
-                generic_items.append((name, value, eff_type, src_label, nav_key, seq_label))
+                generic_items.append((name, value, eff_type, src_label, nav_key, seq_label, sub_name))
 
         self._fill_table("通用", generic_items)
         self._all_active_generic = generic_items
@@ -3716,7 +3717,7 @@ class EnemyDefensePage(BaseTableAttrPage):
 
         filtered = [it for it in all_items if self._matches_timing(it[2], key)]
         table.setRowCount(0)
-        for name, value, eff_type, src_label, nav_key, seq_label in filtered:
+        for name, value, eff_type, src_label, nav_key, seq_label, sub_name in filtered:
             r = table.rowCount()
             table.insertRow(r)
             cb = QCheckBox()
@@ -3726,7 +3727,7 @@ class EnemyDefensePage(BaseTableAttrPage):
             cb.toggled.connect(lambda checked, ik=item_key: self._on_def_item_toggled(ik, checked))
             cell_center(table, r, 0, cb)
             table.setItem(r, 1, _centered(name))
-            table.setItem(r, 2, _centered(""))
+            table.setItem(r, 2, _centered(sub_name))
             table.setItem(r, 3, _centered(seq_label))
             table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)

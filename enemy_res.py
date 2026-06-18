@@ -145,8 +145,8 @@ class EnemyResistancePage(QWidget):
         perm_label.setObjectName("groupBoxTitle")
         layout.addWidget(perm_label)
         self.perm_table = self._make_def_table(
-            ["启用", "属性名称", "序列号", "数值", "来源"],
-            proportions=[0.08, 0.25, 0.12, 0.22, 0.22]
+            ["启用", "属性名称", "副名称", "序列号", "数值", "来源"],
+            proportions=[0.08, 0.20, 0.12, 0.10, 0.18, 0.22]
         )
         layout.addWidget(self.perm_table)
 
@@ -169,8 +169,8 @@ class EnemyResistancePage(QWidget):
         layout.addLayout(trig_header)
 
         self.trig_table = self._make_def_table(
-            ["启用", "属性名称", "序列号", "数值", "来源"],
-            proportions=[0.08, 0.25, 0.12, 0.22, 0.22]
+            ["启用", "属性名称", "副名称", "序列号", "数值", "来源"],
+            proportions=[0.08, 0.20, 0.12, 0.10, 0.18, 0.22]
         )
         layout.addWidget(self.trig_table)
 
@@ -325,6 +325,7 @@ class EnemyResistancePage(QWidget):
         self._perm_checkbox_widgets = []
         for item_tuple in perm_items:
             name, value, src_label, nav_key = item_tuple[:4]
+            sub_name = item_tuple[5] if len(item_tuple) > 5 else ""
             seq_label = item_tuple[4] if len(item_tuple) > 4 else ""
             key = self._make_item_key(name, src_label, seq_label)
             if key not in self._trigger_states:
@@ -338,20 +339,22 @@ class EnemyResistancePage(QWidget):
             self._perm_checkbox_widgets.append(cb)
             _cell_center(self.perm_table, r, 0, cb)
             self.perm_table.setItem(r, 1, _centered(name))
-            self.perm_table.setItem(r, 2, _centered(seq_label))
-            self.perm_table.setItem(r, 3, _centered(f"{value:.1f}%"))
+            self.perm_table.setItem(r, 2, _centered(sub_name))
+            self.perm_table.setItem(r, 3, _centered(seq_label))
+            self.perm_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
             src_btn.setObjectName("backButton")
             src_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             src_btn.clicked.connect(lambda _, nk=nav_key, sq=seq_label:
                                     self._on_source_clicked(nk, sq))
-            _cell_center(self.perm_table, r, 4, src_btn)
+            _cell_center(self.perm_table, r, 5, src_btn)
 
         # 触发
         self.trig_table.setRowCount(0)
         self._trig_checkbox_widgets = []
         for item_tuple in trig_items:
             name, value, src_label, nav_key = item_tuple[:4]
+            sub_name = item_tuple[5] if len(item_tuple) > 5 else ""
             seq_label = item_tuple[4] if len(item_tuple) > 4 else ""
             key = self._make_item_key(name, src_label, seq_label)
             if key not in self._trigger_states:
@@ -365,17 +368,16 @@ class EnemyResistancePage(QWidget):
             self._trig_checkbox_widgets.append(cb)
             _cell_center(self.trig_table, r, 0, cb)
             self.trig_table.setItem(r, 1, _centered(name))
-            self.trig_table.setItem(r, 2, _centered(seq_label))
-            self.trig_table.setItem(r, 3, _centered(f"{value:.1f}%"))
+            self.trig_table.setItem(r, 2, _centered(sub_name))
+            self.trig_table.setItem(r, 3, _centered(seq_label))
+            self.trig_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
             src_btn.setObjectName("backButton")
             src_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             src_btn.clicked.connect(lambda _, nk=nav_key, sq=seq_label:
                                     self._on_source_clicked(nk, sq))
-            _cell_center(self.trig_table, r, 4, src_btn)
+            _cell_center(self.trig_table, r, 5, src_btn)
 
-        _fix_table_height(self.perm_table)
-        _fix_table_height(self.trig_table)
 
     # ========== 计算 ==========
     def _recalc(self, *_):
@@ -414,12 +416,14 @@ class EnemyResistancePage(QWidget):
                     if active:
                         for t in targets:
                             ext_reduce[t] += value
-                    perm_out.append((name, value, src_label, nav_key, seq_label))
+                    sub_name = item_data[5] if len(item_data) > 5 else ""
+                    perm_out.append((name, value, src_label, nav_key, seq_label, sub_name))
                 else:
                     if active:
                         for t in targets:
                             ext_reduce[t] += value
-                    trig_out.append((name, value, src_label, nav_key, seq_label))
+                    sub_name = item_data[5] if len(item_data) > 5 else ""
+                    trig_out.append((name, value, src_label, nav_key, seq_label, sub_name))
 
         # 更新表格：最终抗性 和 抗性乘区（委托 damage_calc 计算）
         for i, rtype in enumerate(self.TYPES):
