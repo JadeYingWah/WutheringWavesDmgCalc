@@ -29,22 +29,6 @@ def inject_deps(combined_entry_cls, cell_center_fn, fix_table_height_fn, prop_ta
     _place_highlight_overlay = place_hl_fn
 
 
-def _make_sub_name_editor(line_edit):
-    """弹出非模态编辑窗，编辑副名称"""
-    dlg = QDialog(line_edit.window())
-    dlg.setWindowTitle("编辑副名称")
-    dlg.setMinimumSize(350, 200)
-    lay = QVBoxLayout(dlg)
-    lay.addWidget(QLabel("编辑备注信息:"))
-    edit = QLineEdit(line_edit.text())
-    edit.setPlaceholderText("（备注）")
-    lay.addWidget(edit)
-    btns = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-    btns.accepted.connect(dlg.accept)
-    btns.rejected.connect(dlg.reject)
-    if dlg.exec() == QDialog.DialogCode.Accepted and edit.text() != line_edit.text():
-        line_edit.setText(edit.text())
-
 class EnemyResistancePage(QWidget):
     """敌人抗性页. 6 元素抗性 + 预设 + 外部抗性来源叠加."""
     TYPES = ["冷凝抗性", "热熔抗性", "气动抗性", "导电抗性", "衍射抗性", "湮灭抗性"]
@@ -355,23 +339,12 @@ class EnemyResistancePage(QWidget):
             self._perm_checkbox_widgets.append(cb)
             _cell_center(self.perm_table, r, 0, cb)
             self.perm_table.setItem(r, 1, _centered(name))
-            # 副名称：带 ... 编辑按钮的 QLineEdit
-            from PyQt6.QtWidgets import QLineEdit, QPushButton, QHBoxLayout, QWidget
-            sub_widget = QWidget()
-            sub_lay = QHBoxLayout(sub_widget)
-            sub_lay.setContentsMargins(0, 0, 0, 0)
-            sub_lay.setSpacing(2)
+            # 副名称：复用 _make_sub_name_cell
             sub_edit = QLineEdit(sub_name)
             sub_edit.setObjectName("nameEdit")
             sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_edit.setPlaceholderText("（备注）")
-            sub_lay.addWidget(sub_edit, stretch=1)
-            exp_btn = QPushButton("...")
-            exp_btn.setFixedWidth(24)
-            exp_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            exp_btn.clicked.connect(lambda _, le=sub_edit: _make_sub_name_editor(le))
-            sub_lay.addWidget(exp_btn)
-            _cell_center(self.perm_table, r, 2, sub_widget)
+            _cell_center(self.perm_table, r, 2, _make_sub_name_cell(sub_edit))
             self.perm_table.setItem(r, 3, _centered(seq_label))
             self.perm_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
@@ -400,22 +373,12 @@ class EnemyResistancePage(QWidget):
             self._trig_checkbox_widgets.append(cb)
             _cell_center(self.trig_table, r, 0, cb)
             self.trig_table.setItem(r, 1, _centered(name))
-            from PyQt6.QtWidgets import QLineEdit, QPushButton, QHBoxLayout, QWidget
-            sub_widget = QWidget()
-            sub_lay = QHBoxLayout(sub_widget)
-            sub_lay.setContentsMargins(0, 0, 0, 0)
-            sub_lay.setSpacing(2)
+            # 副名称：复用 _make_sub_name_cell
             sub_edit = QLineEdit(sub_name)
             sub_edit.setObjectName("nameEdit")
             sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_edit.setPlaceholderText("（备注）")
-            sub_lay.addWidget(sub_edit, stretch=1)
-            exp_btn = QPushButton("...")
-            exp_btn.setFixedWidth(24)
-            exp_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            exp_btn.clicked.connect(lambda _, le=sub_edit: _make_sub_name_editor(le))
-            sub_lay.addWidget(exp_btn)
-            _cell_center(self.trig_table, r, 2, sub_widget)
+            _cell_center(self.trig_table, r, 2, _make_sub_name_cell(sub_edit))
             self.trig_table.setItem(r, 3, _centered(seq_label))
             self.trig_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
