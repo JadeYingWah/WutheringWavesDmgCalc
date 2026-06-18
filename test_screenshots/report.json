@@ -1,142 +1,342 @@
 [
   {
-    "step": "test_01_app_launch",
-    "passed": false,
-    "detail": "异常: name '_make_sub_name_cell' is not defined"
+    "step": "启动 DmgCalculator",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_02_toolbar_buttons",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'findChildren'"
+    "step": "MainScreen 存在",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_03_auto_update_btn",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'findChildren'"
+    "step": "窗口标题: 鸣潮伤害计算器",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_04_theme_btn",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'findChildren'"
+    "step": "工具栏按钮: 快速保存",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_05_nav_tree",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'nav_tree'"
+    "step": "工具栏按钮: 快速加载",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_06_all_scrolls",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute '_scrolls'"
+    "step": "工具栏按钮: 导入",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_07_defense_7_tables",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_defense'"
+    "step": "工具栏按钮: 导出",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_08_defense_view_chips",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_defense'"
+    "step": "工具栏按钮: 预设构建器",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_09_defense_view_switch",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_defense'"
+    "step": "工具栏按钮: 使用预设",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_10_defense_timing_chips",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_defense'"
+    "step": "自动更新按钮: 关闭自动更新",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_11_defense_level_spins",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_defense'"
+    "step": "主题切换按钮",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_12_defense_result_labels",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_defense'"
+    "step": "顶级节点: 5",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_13_defense_zone_api",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_defense'"
+    "step": "scroll: char_base",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_14_resistance_page",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_resistance'"
+    "step": "scroll: combined_perm",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_15_add_defense_item",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_combined_perm'"
+    "step": "scroll: combined_trigger",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_16_navigate_to_summary_defense",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_combined_perm'"
+    "step": "scroll: keyword_assoc",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_17_resistance_highlight",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_resistance'"
+    "step": "scroll: echo_counter",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_18_defense_highlight",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_defense'"
+    "step": "scroll: summary_base",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_19_result_page_compute",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_result'"
+    "step": "scroll: summary_bonus",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_20_auto_compute_toggle",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_result'"
+    "step": "scroll: summary_deepen",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_21_result_list_recalc",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_result_list'"
+    "step": "scroll: summary_crit",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_22_defense_timing_filter",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_defense'"
+    "step": "scroll: summary_indep",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_23_defense_checkbox",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_defense'"
+    "step": "scroll: enemy_defense",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_24_save_collect",
-    "passed": false,
-    "detail": "异常: name '_make_sub_name_cell' is not defined"
+    "step": "scroll: enemy_resistance",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_25_resistance_recalc",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_resistance'"
+    "step": "scroll: result",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_26_summary_pages_recalc",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute '_scrolls'"
+    "step": "scroll: result_list",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_27_defense_level_change",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_enemy_defense'"
+    "step": "scroll: resonance_buff",
+    "passed": true,
+    "detail": ""
   },
   {
-    "step": "test_28_final_state",
-    "passed": false,
-    "detail": "异常: 'NoneType' object has no attribute 'page_combined_perm'"
+    "step": "表格数: 7",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "表: 通用",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "表: 普攻",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "表: 重击",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "表: 共鸣技能",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "表: 共鸣解放",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "表: 变奏技能",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "表: 声骸技能",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "视角芯片: {'共鸣解放', '变奏技能', '无类别', '普攻', '共鸣技能', '重击', '声骸技能'}",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "视角芯片: {'共鸣解放', '变奏技能', '无类别', '普攻', '共鸣技能', '重击', '声骸技能'}",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "切换后视角: 共鸣解放",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "通用 芯片: {'常驻', '触发', '全部'}",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "普攻 芯片: {'常驻', '触发', '全部'}",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "重击 芯片: {'常驻', '触发', '全部'}",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "共鸣技能 芯片: {'常驻', '触发', '全部'}",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "共鸣解放 芯片: {'常驻', '触发', '全部'}",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "变奏技能 芯片: {'常驻', '触发', '全部'}",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "声骸技能 芯片: {'常驻', '触发', '全部'}",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "角色等级: 90",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "敌人等级: 100",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "总无视标签",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "总减少标签",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "防御乘区标签",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "防御乘区: 0.4884",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "元素数: 6",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "抗性乘数: 1.0000",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "收集: ['无视防御']",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "导航未崩溃",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "抗性高亮未崩溃",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "防御高亮未崩溃",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "compute 未崩溃",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "切换: True → False",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "recalc 未崩溃",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "筛选: 全部 → 常驻",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "无复选框可测试（无词条数据）",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "state 是 dict",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "防御页字段: ['rows', 'counter', 'disabled_items', 'timing_filters', 'view_skill', 'char_level', 'enemy_level']",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "_recalc 未崩溃",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "4 个总结页 recalc 全部通过",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "等级 100→90: 0.4884 → 0.5013",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "step": "清理完成",
+    "passed": true,
+    "detail": ""
   }
 ]
