@@ -5709,8 +5709,13 @@ def _make_sub_name_cell(line_edit, get_name_cb=None):
             syncing[0] = True
             line_edit.setText(t)
             syncing[0] = False
-            # 通知下游页面：触发 editingFinished → 各页面已连接的回调
-            line_edit.editingFinished.emit()
+            # 300ms 防抖：连续输入不重复触发下游重算
+            if not hasattr(line_edit, '_sub_sync_timer'):
+                line_edit._sub_sync_timer = QTimer(line_edit)
+                line_edit._sub_sync_timer.setSingleShot(True)
+                line_edit._sub_sync_timer.setInterval(300)
+                line_edit._sub_sync_timer.timeout.connect(line_edit.editingFinished.emit)
+            line_edit._sub_sync_timer.start()
 
         def _from_input():
             if syncing[0]:
