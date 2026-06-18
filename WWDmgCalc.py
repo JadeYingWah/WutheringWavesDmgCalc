@@ -550,7 +550,7 @@ class AttrListItem(QWidget):
         self.name_edit = QLineEdit(name)
         self.name_edit.setObjectName("nameEdit")
         self.name_edit.setReadOnly(True)
-        name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.name_edit.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.name_edit.textChanged.connect(self._on_name_changed)
 
