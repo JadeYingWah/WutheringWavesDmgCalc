@@ -3254,6 +3254,10 @@ class EnemyDefensePage(BaseTableAttrPage):
         self._timing_filters = {}
         self._disabled_items = set()  # {(name, seq_label)}
         self._view_skill = None  # None=无类别, 否则普攻/重击/共鸣技能/…
+        self._sub_name_timer = QTimer(self)
+        self._sub_name_timer.setSingleShot(True)
+        self._sub_name_timer.setInterval(500)
+        self._sub_name_timer.timeout.connect(self._trigger_downstream_recalc)
 
         # ========== 技能视角切换 ==========
         view_row = QHBoxLayout()
@@ -3752,7 +3756,7 @@ class EnemyDefensePage(BaseTableAttrPage):
             se.setObjectName("nameEdit")
             se.setAlignment(Qt.AlignmentFlag.AlignCenter)
             se.setPlaceholderText("（备注）")
-            se.editingFinished.connect(lambda cb=self._trigger_downstream_recalc: cb())
+            se.textChanged.connect(lambda cb=self._trigger_downstream_recalc: self._sub_name_timer.start() if cb else None)
             cell_center(table, r, 2, _make_sub_name_cell(se))
             table.setItem(r, 3, _centered(seq_label))
             table.setItem(r, 4, _centered(f"{value:.1f}%"))

@@ -19,14 +19,16 @@ _fix_table_height = None
 _CombinedEntryPage = None
 _PropTable = None
 _place_highlight_overlay = None
+_place_highlight_overlay = None
 _make_sub_name_cell = None
 
 def inject_deps(combined_entry_cls, cell_center_fn, fix_table_height_fn, prop_table_cls, place_hl_fn, make_sub_name_fn):
     global _cell_center, _fix_table_height, _CombinedEntryPage, _PropTable, _place_highlight_overlay, _make_sub_name_cell
-    _cell_center = cell_center_fn
+    global _cell_center, _fix_table_height, _CombinedEntryPage, _PropTable, _place_highlight_overlay, _make_sub_name_cell
     _fix_table_height = fix_table_height_fn
     _CombinedEntryPage = combined_entry_cls
-    _PropTable = prop_table_cls
+    _place_highlight_overlay = place_hl_fn
+    _make_sub_name_cell = make_sub_name_fn
     _place_highlight_overlay = place_hl_fn
     _make_sub_name_cell = make_sub_name_fn
 
