@@ -1218,6 +1218,11 @@ class KeywordAssociationPage(QWidget):
 
         layout.addWidget(self._table, stretch=1)
 
+    def _on_value_debounced(self):
+        """防抖回调：停止输入500ms后触发."""
+        if self._on_change_cb:
+            self._on_change_cb()
+
     def _add_row(self):
         name = self._name_combo.currentText().strip()
         if not name:
