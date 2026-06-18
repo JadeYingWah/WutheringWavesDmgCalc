@@ -549,7 +549,8 @@ class AttrListItem(QWidget):
 
         self.name_edit = QLineEdit(name)
         self.name_edit.setObjectName("nameEdit")
-        self.name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.name_edit.setReadOnly(True)
+        name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.name_edit.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.name_edit.textChanged.connect(self._on_name_changed)
 
@@ -920,6 +921,7 @@ class CombinedEntryPage(BaseTableAttrPage):
 
         name_edit = QLineEdit(name)
         name_edit.setObjectName("nameEdit")
+        name_edit.setReadOnly(True)
         name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.table.setCellWidget(row, 0, name_edit)
 
@@ -1222,6 +1224,7 @@ class KeywordAssociationPage(QWidget):
         # 名称
         name_edit = QLineEdit(name)
         name_edit.setObjectName("nameEdit")
+        name_edit.setReadOnly(True)
         name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._table.setCellWidget(row_idx, 0, name_edit)
 
@@ -1417,6 +1420,7 @@ class KeywordAssociationPage(QWidget):
 
         name_edit = QLineEdit(name)
         name_edit.setObjectName("nameEdit")
+        name_edit.setReadOnly(True)
         name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._table.setCellWidget(row_idx, 0, name_edit)
 
@@ -1484,6 +1488,7 @@ class KeywordAssociationPage(QWidget):
 
         name_edit = QLineEdit(name)
         name_edit.setObjectName("nameEdit")
+        name_edit.setReadOnly(True)
         name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._table.setCellWidget(row_idx, 0, name_edit)
 
