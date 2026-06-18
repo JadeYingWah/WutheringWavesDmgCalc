@@ -41,7 +41,7 @@ from PyQt6.QtWidgets import (
     QGroupBox, QFormLayout, QDoubleSpinBox, QSpinBox, QCheckBox, QComboBox, QLineEdit,
     QListWidget, QListWidgetItem, QSizePolicy, QScrollArea,
     QTableWidget, QTabWidget, QHeaderView, QStyle, QStyleOptionComboBox, QFrame, QTableWidgetItem,
-    QDialog, QFileDialog, QInputDialog, QMenu, QMessageBox, QTextEdit, QToolTip
+    QDialog, QDialogButtonBox, QFileDialog, QInputDialog, QMenu, QMessageBox, QTextEdit, QToolTip
 )
 
 # 导入 Qt 核心枚举与动画支持

@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QTableWidget, QTableWidgetItem, QCheckBox, QDoubleSpinBox,
     QGroupBox, QScrollArea, QApplication,
-    QHeaderView, QSizePolicy,
+    QHeaderView, QSizePolicy, QDialog, QDialogButtonBox, QLineEdit,
 )
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, QRect
 
@@ -28,6 +28,22 @@ def inject_deps(combined_entry_cls, cell_center_fn, fix_table_height_fn, prop_ta
     _PropTable = prop_table_cls
     _place_highlight_overlay = place_hl_fn
 
+
+def _make_sub_name_editor(line_edit):
+    """弹出非模态编辑窗，编辑副名称"""
+    dlg = QDialog(line_edit.window())
+    dlg.setWindowTitle("编辑副名称")
+    dlg.setMinimumSize(350, 200)
+    lay = QVBoxLayout(dlg)
+    lay.addWidget(QLabel("编辑备注信息:"))
+    edit = QLineEdit(line_edit.text())
+    edit.setPlaceholderText("（备注）")
+    lay.addWidget(edit)
+    btns = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+    btns.accepted.connect(dlg.accept)
+    btns.rejected.connect(dlg.reject)
+    if dlg.exec() == QDialog.DialogCode.Accepted and edit.text() != line_edit.text():
+        line_edit.setText(edit.text())
 
 class EnemyResistancePage(QWidget):
     """敌人抗性页. 6 元素抗性 + 预设 + 外部抗性来源叠加."""
