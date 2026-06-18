@@ -19,14 +19,16 @@ _fix_table_height = None
 _CombinedEntryPage = None
 _PropTable = None
 _place_highlight_overlay = None
+_make_sub_name_cell = None
 
-def inject_deps(combined_entry_cls, cell_center_fn, fix_table_height_fn, prop_table_cls, place_hl_fn):
+def inject_deps(combined_entry_cls, cell_center_fn, fix_table_height_fn, prop_table_cls, place_hl_fn, make_sub_name_fn):
     global _cell_center, _fix_table_height, _CombinedEntryPage, _PropTable, _place_highlight_overlay
     _cell_center = cell_center_fn
     _fix_table_height = fix_table_height_fn
     _CombinedEntryPage = combined_entry_cls
     _PropTable = prop_table_cls
     _place_highlight_overlay = place_hl_fn
+    _make_sub_name_cell = make_sub_name_fn
 
 
 class EnemyResistancePage(QWidget):
@@ -344,7 +346,7 @@ class EnemyResistancePage(QWidget):
             sub_edit.setObjectName("nameEdit")
             sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_edit.setPlaceholderText("（备注）")
-            _cell_center(self.perm_table, r, 2, sub_edit)
+            _cell_center(self.perm_table, r, 2, _make_sub_name_cell(sub_edit))
             self.perm_table.setItem(r, 3, _centered(seq_label))
             self.perm_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)
@@ -378,7 +380,7 @@ class EnemyResistancePage(QWidget):
             sub_edit.setObjectName("nameEdit")
             sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_edit.setPlaceholderText("（备注）")
-            _cell_center(self.trig_table, r, 2, sub_edit)
+            _cell_center(self.trig_table, r, 2, _make_sub_name_cell(sub_edit))
             self.trig_table.setItem(r, 3, _centered(seq_label))
             self.trig_table.setItem(r, 4, _centered(f"{value:.1f}%"))
             src_btn = QPushButton(src_label)

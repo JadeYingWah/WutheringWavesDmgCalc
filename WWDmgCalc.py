@@ -3749,7 +3749,6 @@ class EnemyDefensePage(BaseTableAttrPage):
 
 from enemy_res import EnemyResistancePage
 from enemy_res import inject_deps as _inject_enemy_res
-_inject_enemy_res(CombinedEntryPage, cell_center, fix_table_height, PropTable, _place_highlight_overlay)
 # ==================== 通用数据收集 ====================
 
 def _collect_all_items(external_sources, echo_pages=None):
@@ -5705,6 +5704,7 @@ def _make_sub_name_cell(line_edit, get_name_cb=None):
 # 延迟注入 _make_sub_name_cell 到 summary_pages
 from summary_pages import set_make_sub_name_cell as _set_smnc
 _set_smnc(_make_sub_name_cell)
+_inject_enemy_res(CombinedEntryPage, cell_center, fix_table_height, PropTable, _place_highlight_overlay, _make_sub_name_cell)
 
 
 def _get_sub_name_text(widget):
