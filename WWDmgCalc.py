@@ -843,6 +843,7 @@ class BaseTableAttrPage(QWidget):
         for i, rd in enumerate(self._rows):
             tp = "常驻" if self.page_key == "combined_perm" else "触发"
             rd['seq_label'].setText(f"{tp}{i + 1}")
+        self._counter = len(self._rows)  # 同步计数器：预设/删除后编号不留缺口
 
     def collect_data(self):
         return [(rd['name_edit'].text(), rd['value_spin'].value(), rd['locked']) for rd in self._rows]
