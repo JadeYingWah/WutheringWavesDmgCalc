@@ -5697,7 +5697,6 @@ def _make_sub_name_cell(line_edit, get_name_cb=None):
     expand_btn.setToolTip("展开编辑")
 
     def _open():
-        # 如果已有弹窗，复用
         existing = getattr(line_edit, '_sub_name_dlg', None)
         if existing and existing.isVisible():
             existing.raise_()
@@ -5706,34 +5705,14 @@ def _make_sub_name_cell(line_edit, get_name_cb=None):
         name = get_name_cb() if get_name_cb else ""
         dlg = SubNameEditDialog(line_edit.text(), name, container)
 
-        # 双向同步（防循环）
-        syncing = [False]
+        def _on_close():
+            new_text = dlg.text_edit.toPlainText()
+            if new_text != line_edit.text():
+                line_edit.setText(new_text)
+                line_edit.editingFinished.emit()
+            setattr(line_edit, '_sub_name_dlg', None)
 
-        def _from_dlg(t):
-            if syncing[0]:
-                return
-            syncing[0] = True
-            line_edit.setText(t)
-            syncing[0] = False
-            # 300ms 防抖：连续输入不重复触发下游重算
-            if not hasattr(line_edit, '_sub_sync_timer'):
-                line_edit._sub_sync_timer = QTimer(line_edit)
-                line_edit._sub_sync_timer.setSingleShot(True)
-                line_edit._sub_sync_timer.setInterval(300)
-                line_edit._sub_sync_timer.timeout.connect(line_edit.editingFinished.emit)
-            line_edit._sub_sync_timer.start()
-
-        def _from_input():
-            if syncing[0]:
-                return
-            syncing[0] = True
-            dlg.text_edit.setPlainText(line_edit.text())
-            syncing[0] = False
-
-        dlg.text_changed.connect(_from_dlg)
-        line_edit.textChanged.connect(_from_input)
-        dlg.destroyed.connect(lambda: (setattr(line_edit, '_sub_name_dlg', None),
-                                        line_edit.textChanged.disconnect(_from_input)))
+        dlg.destroyed.connect(_on_close)
         line_edit._sub_name_dlg = dlg
         dlg.show()
 
