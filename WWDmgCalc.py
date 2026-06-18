@@ -926,6 +926,7 @@ class CombinedEntryPage(BaseTableAttrPage):
         sub_name_edit = QLineEdit()
         sub_name_edit.setObjectName("subNameEdit")
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sub_name_edit.setReadOnly(True)
         sub_name_edit.setPlaceholderText("（备注）")
         sub_name_edit.editingFinished.connect(self._on_item_value_changed)
         self.table.setCellWidget(row, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
@@ -1227,6 +1228,7 @@ class KeywordAssociationPage(QWidget):
         sub_name_edit = QLineEdit()
         sub_name_edit.setObjectName("nameEdit")
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sub_name_edit.setReadOnly(True)
         sub_name_edit.setPlaceholderText("（备注）")
         self._table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
@@ -1420,6 +1422,7 @@ class KeywordAssociationPage(QWidget):
         sub_name_edit = QLineEdit(sub_name)
         sub_name_edit.setObjectName("nameEdit")
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sub_name_edit.setReadOnly(True)
         sub_name_edit.setPlaceholderText("（备注）")
         self._table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
@@ -1486,6 +1489,7 @@ class KeywordAssociationPage(QWidget):
         sub_name_edit = QLineEdit(sub_name)
         sub_name_edit.setObjectName("nameEdit")
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        sub_name_edit.setReadOnly(True)
         sub_name_edit.setPlaceholderText("（备注）")
         self._table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
