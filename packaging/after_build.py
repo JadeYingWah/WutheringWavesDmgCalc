@@ -33,7 +33,7 @@ DIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dist')
 OUT = os.path.join(DIST, 'WutheringWavesDmgCalc')
 
 
-def create_shortcut(target, link_path, description=''):
+def create_shortcut(target, link_path, description='', icon_path=''):
     """用 PowerShell 创建 .lnk 快捷方式。"""
     link_lnk = link_path.replace('.exe', '.exe.lnk') if not link_path.endswith('.lnk') else link_path
     if not link_lnk.endswith('.lnk'):
@@ -43,6 +43,7 @@ $ws = New-Object -ComObject WScript.Shell
 $s = $ws.CreateShortcut("{link_lnk}")
 $s.TargetPath = "{target}"
 $s.Description = "{description}"
+$s.IconLocation = "{icon_path}"
 $s.Save()
 '''
     subprocess.run(['powershell', '-Command', ps], check=True, capture_output=True)
@@ -165,12 +166,14 @@ def main():
     create_shortcut(
         os.path.join(OUT, 'WWDmgCalc', 'WWDmgCalc.exe'),
         os.path.join(OUT, 'WWDmgCalc.lnk'),
-        '鸣潮伤害计算器'
+        '鸣潮伤害计算器',
+        os.path.join(OUT, 'ico', 'icon.ico')
     )
     create_shortcut(
         os.path.join(OUT, 'ErrorViewer', 'ErrorViewer.exe'),
         os.path.join(OUT, 'ErrorViewer.lnk'),
-        '错误查看器'
+        '错误查看器',
+        os.path.join(OUT, 'ico', 'icon.ico')
     )
 
     # 工具快捷方式
@@ -181,7 +184,7 @@ def main():
         exe_path = os.path.join(OUT, 'tools', folder_label, exe_name + '.exe')
         link_path = os.path.join(OUT, 'tools', folder_label + '.lnk')
         if os.path.exists(exe_path):
-            create_shortcut(exe_path, link_path, folder_label)
+            create_shortcut(exe_path, link_path, folder_label, os.path.join(OUT, 'ico', 'icon.ico'))
 
     print()
     print(f'Build complete: {OUT}')
