@@ -3563,7 +3563,7 @@ class PresetBuilderDialog(QDialog):
             _fill_internal_name(raw_name)
 
             # 归一化文件名对比：统一清洗非法字符
-            _INV = r'\/:*?"<>|'
+            _INV = r' \/:*?"<>|'
             def _to_file(name):
                 return "".join(c for c in name if c not in _INV) or name
             new_safe = _to_file(raw_name)

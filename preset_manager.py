@@ -261,7 +261,7 @@ class PresetManager:
         target_dir = os.path.join(base_dir, category)
 
         # 检查文件名非法字符
-        _INVALID_CHARS = r'\/:*?"<>|'
+        _INVALID_CHARS = r' \/:*?"<>|'
         _bad = [c for c in name if c in _INVALID_CHARS]
         if _bad:
             return None, f"预设名称不能包含以下字符：{' '.join(sorted(set(_bad)))}"
