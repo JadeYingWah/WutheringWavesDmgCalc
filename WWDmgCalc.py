@@ -318,12 +318,29 @@ class WelcomeScreen(QWidget):
                         if len(_parts) >= 2 and _parts[0] not in ('贡献者',) and _parts[0] != '*(虚位以待)*':
                             _md_name = _parts[0]
                             _md_contrib = _parts[1] if len(_parts) >= 2 else ''
+                            _items = [i.strip() for i in _md_contrib.replace('<br>', '\n').split('\n') if i.strip()]
+                            if not _items:
+                                _items = [_md_contrib] if _md_contrib else []
+                            # 转换 .md 格式为弹窗显示格式（category/fname.json → [类别] 名称）
+                            _cat_map = {"character": "角色", "weapon": "武器", "echo_set": "套装", "character_buff": "增益"}
+                            _display_items = []
+                            for _raw in _items:
+                                _display = _raw
+                                for _c_key, _c_label in _cat_map.items():
+                                    if _raw.startswith(_c_key + "/"):
+                                        _name = _raw[len(_c_key)+1:]
+                                        if _name.endswith(".json"):
+                                            _name = _name[:-5]
+                                        _display = "[{}] {}".format(_c_label, _name)
+                                        break
+                                _display_items.append(_display)
                             if _md_name not in author_map:
-                                # 解析 <br> 分隔的多条贡献
-                                _items = [i.strip() for i in _md_contrib.replace('<br>', '\n').split('\n') if i.strip()]
-                                if not _items:
-                                    _items = [_md_contrib] if _md_contrib else []
-                                author_map[_md_name] = _items
+                                author_map[_md_name] = _display_items
+                            else:
+                                # 合并去重
+                                for _di in _display_items:
+                                    if _di not in author_map[_md_name]:
+                                        author_map[_md_name].append(_di)
         except Exception:
             pass
 
