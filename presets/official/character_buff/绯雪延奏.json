@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "type": "preset",
+  "name": "绯雪延奏",
+  "author": "JadeYingWah",
+  "category": "character_buff",
+  "character_buff": {
+    "name": "绯雪延奏",
+    "intro": "附近队伍中除绯雪以外的角色对拥有【霜渐效应】\n的敌人造成的冷凝伤害加深20%，持续20秒。",
+    "effects": [
+      {
+        "name": "冷凝伤害加深",
+        "value": 20.0,
+        "type": "触发",
+        "source": "角色效果",
+        "sub_name": "绯雪延奏技能\n挽雪照身\n附近队伍中除绯雪以外的角色对拥有【霜渐效应】\n的敌人造成的冷凝伤害加深20%，持续20秒。"
+      }
+    ],
+    "indep_zones": []
+  }
+}

@@ -8,7 +8,7 @@
 
 | 贡献者 | 贡献内容 | 贡献时间 |
 |--------|---------|----------|
-| JadeYingWah | character/漂泊者-气动.json<br>echo_set/碎梦忘鬼之魇（露西+丽贝卡专用）.json | 2026-06-19 |
+| JadeYingWah | character/漂泊者-气动.json<br>character_buff/绯雪延奏.json<br>echo_set/碎梦忘鬼之魇（露西+丽贝卡专用）.json | 2026-06-19 |
 
 ---
 
