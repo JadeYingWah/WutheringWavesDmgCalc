@@ -70,6 +70,9 @@
 WutheringWavesDmgCalc/
 ├── WWDmgCalc.lnk
 ├── ErrorViewer.lnk
+├── desktop.ini
+├── ico/
+│   └── icon.ico
 ├── WWDmgCalc/          ← 主程序
 ├── ErrorViewer/        ← 错误报告
 ├── tools/              ← 独立工具
