@@ -53,6 +53,12 @@ GITHUB_RAW_URLS = [
     f"https://raw.gitmirror.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/main/presets/official",
     f"https://cdn.jsdelivr.net/gh/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}@main/presets/official",
 ]
+# 仓库根 raw URL（用于下载 CONTRIBUTORS.md 等根目录文件）
+GITHUB_ROOT_RAW_URLS = [
+    f"https://raw.githubusercontent.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/main",
+    f"https://raw.gitmirror.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/main",
+    f"https://cdn.jsdelivr.net/gh/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}@main",
+]
 
 
 def _round_floats(obj, decimals=4):
@@ -645,6 +651,24 @@ class PresetManager:
                         pass
 
 
+            # ── 阶段2c：下载 CONTRIBUTORS.md 到本地 ──
+            contrib_downloaded = False
+            for root_url in GITHUB_ROOT_RAW_URLS:
+                try:
+                    cr = urllib.request.Request(f"{root_url}/CONTRIBUTORS.md?_=" + str(int(__import__("time").time())))
+                    cr.add_header("User-Agent", "WutheringWavesDmgCalc-PresetUpdater/1.0")
+                    with urllib.request.urlopen(cr, timeout=10) as cr_resp:
+                        cm_text = cr_resp.read().decode("utf-8")
+                    contrib_path = os.path.join(_APP_DIR, 'CONTRIBUTORS.md')
+                    with open(contrib_path, 'w', encoding='utf-8') as _cf:
+                        _cf.write(cm_text)
+                    contrib_downloaded = True
+                    break
+                except Exception:
+                    continue
+            if not contrib_downloaded:
+                PresetManager.rebuild_contributors_md()
+
             # 3. 写入错误日志（供侧边栏"错误日志"查看）
             if failed_details:
                 try:
@@ -662,7 +686,6 @@ class PresetManager:
                 if failed:
                     msg += f"\n{failed} 个下载失败（可点击侧边栏「错误日志」查看详情）。"
                 QMessageBox.information(parent_widget, "更新完成", msg)
-                PresetManager.rebuild_contributors_md()
                 return True, f"成功 {downloaded} 个"
             else:
                 # 全部失败 → 详细信息写入日志并弹窗

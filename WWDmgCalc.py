@@ -300,6 +300,33 @@ class WelcomeScreen(QWidget):
                     author_map[a] = []
                 cat_label = {"character":"角色","weapon":"武器","echo_set":"套装","character_buff":"增益"}.get(p["category"], p["category"])
                 author_map[a].append(f"[{cat_label}] {p['name']}")
+        # ── 后备：从 CONTRIBUTORS.md 补充 JSON 中缺失的贡献者 ──
+        try:
+            import os as _os
+            contrib_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'CONTRIBUTORS.md')
+            if not _os.path.exists(contrib_path):
+                # 打包后路径
+                import sys as _sys
+                contrib_path = _os.path.join(_os.path.dirname(_os.path.dirname(_sys.executable)), 'CONTRIBUTORS.md')
+            if _os.path.exists(contrib_path):
+                with open(contrib_path, 'r', encoding='utf-8') as _f:
+                    for _line in _f:
+                        _line = _line.strip()
+                        if not _line.startswith('|') or _line.startswith('|-'):
+                            continue
+                        _parts = [p.strip() for p in _line.split('|') if p.strip()]
+                        if len(_parts) >= 2 and _parts[0] not in ('贡献者',) and _parts[0] != '*(虚位以待)*':
+                            _md_name = _parts[0]
+                            _md_contrib = _parts[1] if len(_parts) >= 2 else ''
+                            if _md_name not in author_map:
+                                # 解析 <br> 分隔的多条贡献
+                                _items = [i.strip() for i in _md_contrib.replace('<br>', '\n').split('\n') if i.strip()]
+                                if not _items:
+                                    _items = [_md_contrib] if _md_contrib else []
+                                author_map[_md_name] = _items
+        except Exception:
+            pass
+
         if not author_map:
             QMessageBox.information(self, "贡献者名单", "暂无贡献者记录。\n欢迎你成为第一位贡献者！")
             return
