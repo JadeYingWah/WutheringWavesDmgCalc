@@ -266,6 +266,8 @@ class PresetManager:
         if _bad:
             return None, f"预设名称不能包含以下字符：{' '.join(sorted(set(_bad)))}"
         safe_name = name.strip()
+        # 去除文件名不允许的控制字符（\n \r \t 等）
+        safe_name = safe_name.replace('\n', '').replace('\r', '').replace('\t', ' ')
         if not safe_name:
             return None, "预设名称不能为空"
 

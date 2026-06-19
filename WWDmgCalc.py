@@ -321,6 +321,10 @@ class WelcomeScreen(QWidget):
                             _items = [i.strip() for i in _md_contrib.replace('<br>', '\n').split('\n') if i.strip()]
                             if not _items:
                                 _items = [_md_contrib] if _md_contrib else []
+                            # 归一化函数：统一全角/半角变体
+                            def _normalize(s):
+                                _t = str.maketrans("（）／％", "()/%")
+                                return s.translate(_t)
                             # 转换 .md 格式为弹窗显示格式（category/fname.json → [类别] 名称）
                             _cat_map = {"character": "角色", "weapon": "武器", "echo_set": "套装", "character_buff": "增益"}
                             _display_items = []
@@ -337,10 +341,12 @@ class WelcomeScreen(QWidget):
                             if _md_name not in author_map:
                                 author_map[_md_name] = _display_items
                             else:
-                                # 合并去重
+                                # 归一化去重：统一全角/半角括号等变体后比较
+                                _existing_norm = {_normalize(x) for x in author_map[_md_name]}
                                 for _di in _display_items:
-                                    if _di not in author_map[_md_name]:
+                                    if _normalize(_di) not in _existing_norm:
                                         author_map[_md_name].append(_di)
+                                        _existing_norm.add(_normalize(_di))
         except Exception:
             pass
 
