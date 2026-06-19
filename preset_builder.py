@@ -3564,6 +3564,12 @@ class PresetBuilderDialog(QDialog):
 
             # 归一化文件名对比：统一清洗非法字符
             _INV = r' \/:*?"<>|'
+            _bad = [c for c in raw_name if c in _INV]
+            if _bad:
+                QMessageBox.warning(self, "名称无效",
+                    "预设文件名称不能包含以下字符：\n" + " ".join(sorted(set(_bad)))
+                    + "\n请修改后重试。")
+                return
             def _to_file(name):
                 return "".join(c for c in name if c not in _INV) or name
             new_safe = _to_file(raw_name)
