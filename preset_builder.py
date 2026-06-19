@@ -3559,30 +3559,53 @@ class PresetBuilderDialog(QDialog):
         if self._edit_preset_path:
             # 编辑模式：使用窗口中的预设名称
             raw_name = user_name if user_name else os.path.splitext(os.path.basename(self._edit_preset_path))[0]
-            # 清洗非法字符仅用于文件名对比和保存（/ 等符号文件名不支持，但 preset["name"] 保留原样）
-            safe_name = "".join(c for c in raw_name if c not in r'\/:*?"<>|') or raw_name
-            old_name = os.path.splitext(os.path.basename(self._edit_preset_path))[0]
             preset["name"] = raw_name  # 保留原始名称（含 / 等符号）用于显示
             _fill_internal_name(raw_name)
 
-            if safe_name != old_name:
-                # 重命名：保存新文件，删除旧文件
-                path, err = PresetManager.save_preset(preset, raw_name, source=self._edit_preset_source, overwrite=False)
-                if err:
-                    QMessageBox.warning(self, "保存失败", err)
-                    return
-                try:
-                    os.remove(self._edit_preset_path)
-                except OSError:
-                    pass
-                self._edit_preset_path = path
+            # 归一化文件名对比：统一清洗非法字符
+            _INV = r'\/:*?"<>|'
+            def _to_file(name):
+                return "".join(c for c in name if c not in _INV) or name
+            new_safe = _to_file(raw_name)
+            old_safe = _to_file(os.path.splitext(os.path.basename(self._edit_preset_path))[0])
+            old_dir = os.path.dirname(self._edit_preset_path)
+
+            if new_safe != old_safe:
+                # 真·重命名：检查目标是否已被占用
+                new_path = os.path.join(old_dir, new_safe + ".json")
+                if os.path.exists(new_path) and os.path.abspath(new_path) != os.path.abspath(self._edit_preset_path):
+                    # 目标文件名已被别的预设占用 → 先在旧路径覆盖保存，再手动重命名
+                    save_path, err = PresetManager.save_preset(preset, old_safe, source=self._edit_preset_source, overwrite=True)
+                    if err:
+                        QMessageBox.warning(self, "保存失败", err)
+                        return
+                    # 手动重命名文件
+                    try:
+                        os.rename(save_path, new_path)
+                        self._edit_preset_path = new_path
+                    except OSError as e:
+                        QMessageBox.warning(self, "重命名失败",
+                            f"预设已保存为 {old_safe}.json，但无法重命名为 {new_safe}.json:\n{e}\n\n请手动删除旧文件后重新保存。")
+                        self._edit_preset_path = save_path
+                else:
+                    # 目标未被占用：直接覆盖保存到新名称
+                    path, err = PresetManager.save_preset(preset, new_safe, source=self._edit_preset_source, overwrite=True)
+                    if err:
+                        QMessageBox.warning(self, "保存失败", err)
+                        return
+                    # 删除旧文件
+                    try:
+                        os.remove(self._edit_preset_path)
+                    except OSError:
+                        pass
+                    self._edit_preset_path = path
             else:
-                # 名称未变（或仅非法字符差异）：直接覆盖
-                path, err = PresetManager.save_preset(preset, raw_name, source=self._edit_preset_source, overwrite=True)
+                # 名称未变：直接覆盖
+                path, err = PresetManager.save_preset(preset, old_safe, source=self._edit_preset_source, overwrite=True)
                 if err:
                     QMessageBox.warning(self, "保存失败", err)
                     return
-            QMessageBox.information(self, "保存成功", f"预设已保存到:\n{path}")
+            QMessageBox.information(self, "保存成功", f"预设已保存到:\n{self._edit_preset_path}")
             window.accept()
             # 刷新编辑列表
             if hasattr(self, '_edit_category'):
