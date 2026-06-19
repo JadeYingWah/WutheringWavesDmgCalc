@@ -633,6 +633,17 @@ class PresetManager:
                 QApplication.processEvents()
                 progress.close()
 
+            # ── 阶段2b：写入下载文件到本地 ──
+            for cat, files in downloaded_data.items():
+                cat_dir = os.path.join(OFFICIAL_DIR, cat)
+                os.makedirs(cat_dir, exist_ok=True)
+                for fname, content in files:
+                    try:
+                        with open(os.path.join(cat_dir, fname), 'w', encoding='utf-8') as _wf:
+                            _wf.write(content)
+                    except OSError:
+                        pass
+
 
             # 3. 写入错误日志（供侧边栏"错误日志"查看）
             if failed_details:
