@@ -264,7 +264,7 @@ class PresetManager:
         _INVALID_CHARS = r' \/:*?"<>|'
         _bad = [c for c in name if c in _INVALID_CHARS]
         if _bad:
-            return None, f"预设名称不能包含以下字符：{' '.join(sorted(set(_bad)))}"
+            return None, f"预设名称不能包含以下字符：{' '.join(sorted(set(_bad))).replace(' ', '[空格] ')}"
         safe_name = name.strip()
         # 去除文件名不允许的控制字符（\n \r \t 等）
         safe_name = safe_name.replace('\n', '').replace('\r', '').replace('\t', ' ')

@@ -3530,7 +3530,7 @@ class PresetBuilderDialog(QDialog):
         if user_name and any(c in user_name for c in illegal_chars):
             QMessageBox.warning(
                 self, "名称无效",
-                f"预设文件名称不能包含以下字符：\n{' '.join(illegal_chars)}\n\n"
+                f"预设文件名称不能包含以下字符：\n{' '.join(illegal_chars).replace(' ','[空格] ')}\n\n"
                 f"请修改后重试。")
             if hasattr(window, 'preset_name_edit'):
                 window.preset_name_edit.setFocus()
@@ -3567,7 +3567,7 @@ class PresetBuilderDialog(QDialog):
             _bad = [c for c in raw_name if c in _INV]
             if _bad:
                 QMessageBox.warning(self, "名称无效",
-                    "预设文件名称不能包含以下字符：\n" + " ".join(sorted(set(_bad)))
+                    "预设文件名称不能包含以下字符：\n" + " ".join(sorted(set(_bad))).replace(' ','[空格] ')
                     + "\n请修改后重试。")
                 return
             def _to_file(name):
