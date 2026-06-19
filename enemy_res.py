@@ -371,6 +371,7 @@ class EnemyResistancePage(QWidget):
             sub_edit.setObjectName("nameEdit")
             sub_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
             sub_edit.setPlaceholderText("（备注）")
+            sub_edit.editingFinished.connect(self._recalc)
             _cell_center(self.perm_table, r, 2, _make_sub_name_cell(sub_edit))
             self.perm_table.setItem(r, 3, _centered(seq_label))
             self.perm_table.setItem(r, 4, _centered(f"{value:.1f}%"))

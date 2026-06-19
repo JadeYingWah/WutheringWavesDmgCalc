@@ -939,6 +939,7 @@ class CombinedEntryPage(BaseTableAttrPage):
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub_name_edit.setReadOnly(True)
         sub_name_edit.setPlaceholderText("（备注）")
+        sub_name_edit.editingFinished.connect(self._value_change_timer.start)
         self.table.setCellWidget(row, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
         type_label = "常驻" if self.page_key == "combined_perm" else "触发"
@@ -1250,6 +1251,7 @@ class KeywordAssociationPage(QWidget):
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub_name_edit.setReadOnly(True)
         sub_name_edit.setPlaceholderText("（备注）")
+        sub_name_edit.editingFinished.connect(self._value_change_timer.start)
         self._table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
         # 序列号
@@ -1445,6 +1447,7 @@ class KeywordAssociationPage(QWidget):
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub_name_edit.setReadOnly(True)
         sub_name_edit.setPlaceholderText("（备注）")
+        sub_name_edit.editingFinished.connect(self._value_change_timer.start)
         self._table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
         seq_label = QLabel(seq_text)
@@ -1513,6 +1516,7 @@ class KeywordAssociationPage(QWidget):
         sub_name_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         sub_name_edit.setReadOnly(True)
         sub_name_edit.setPlaceholderText("（备注）")
+        sub_name_edit.editingFinished.connect(self._value_change_timer.start)
         self._table.setCellWidget(row_idx, 1, _make_sub_name_cell(sub_name_edit, lambda: name))
 
         seq_label = QLabel(seq_text)
@@ -3779,6 +3783,7 @@ class EnemyDefensePage(BaseTableAttrPage):
             se.setAlignment(Qt.AlignmentFlag.AlignCenter)
             se.setReadOnly(True)
             se.setPlaceholderText("（备注）")
+            se.editingFinished.connect(self._value_change_timer.start)
             cell_center(table, r, 2, _make_sub_name_cell(se))
             table.setItem(r, 3, _centered(seq_label))
             table.setItem(r, 4, _centered(f"{value:.1f}%"))
