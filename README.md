@@ -51,7 +51,7 @@
 3. 填写你的 GitHub 用户名 → 选择预设文件 → 提交投稿
 4. 自动创建 Pull Request，审核合并后你的名字会出现在贡献者名单中 🎖️
 
-> 💡 你需要一个 GitHub Personal Access Token（repo 权限），在 [GitHub Settings](https://github.com/settings/tokens) 中生成。
+> 💡 你需要先找作者索要Token，然后填写自己的GitHub用户名即可。
 
 ---
 
