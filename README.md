@@ -88,14 +88,17 @@ WutheringWavesDmgCalc/
 ## 🔧 开发者
 
 ```bash
-# 环境
+# 环境（只跑程序）
 pip install -r requirements.txt
+
+# 环境（改代码 / 跑测试 / 自己打包）
+pip install -r requirements-dev.txt
 
 # 运行
 python WWDmgCalc.py
 
-# 测试
-pytest tests/ -q
+# 测试（214 条：187 无头 + 27 图形界面，约 3.5 分钟）
+pytest
 
 # 打包
 cd packaging
@@ -105,6 +108,9 @@ pyinstaller --clean --noconfirm git_proxy_manager.spec
 pyinstaller --clean --noconfirm preset_uploader.spec
 cd .. && python packaging/after_build.py
 ```
+
+> `tests/test_gui.py` 会**弹出真实窗口**，需要 `pytest-qt`（已在 `requirements-dev.txt` 里）。
+> OCR 测试另有要求：`models/` 下的 ONNX 模型不入库，需要时从 CI 的下载步骤取（见 `.github/workflows/build.yml`）。
 
 ---
 

@@ -1,0 +1,27 @@
+# 鸣潮伤害计算器 —— 运行时依赖
+#
+# 推导依据（不是照抄 CI 的 pip 行）：
+#   1. 代码中的真实 import（30 个 .py 文件全量 AST 扫描）
+#   2. packaging/WWDmgCalc.spec 的 hiddenimports（PyInstaller 打包时必须已安装）
+#
+# Python 版本见 README 徽章与 CI（3.13）。
+
+# ── 界面 ──
+PyQt6
+
+# ── 数值与图像 ──
+numpy
+pillow
+
+# ── OCR 截图识别 ──
+opencv-python
+rapidocr-onnxruntime
+
+# ── OCR 运行链 ──
+# rapidocr-onnxruntime 的传递依赖；同时被 WWDmgCalc.spec 列为 hiddenimports，
+# 缺失会导致 PyInstaller 打包出的 exe 在识别时报 ImportError。
+onnxruntime
+shapely
+pyclipper
+pyyaml
+six

@@ -1,0 +1,14 @@
+# 鸣潮伤害计算器 —— 开发依赖（测试 + 打包）
+#
+#   pip install -r requirements-dev.txt
+#
+# 只跑程序不需要这些；改代码 / 跑测试 / 自己打包时才需要。
+
+-r requirements.txt
+
+# ── 测试 ──
+pytest
+pytest-qt          # tests/test_gui.py 的 qtbot fixture 由它提供，缺失会导致 27 条 GUI 用例全部 ERROR
+
+# ── 打包 ──
+pyinstaller
