@@ -109,7 +109,9 @@ pyinstaller --clean --noconfirm preset_uploader.spec
 cd .. && python packaging/after_build.py
 ```
 
-> `tests/test_gui.py` 会**弹出真实窗口**，需要 `pytest-qt`（已在 `requirements-dev.txt` 里）。
+> `tests/test_gui.py` 会**弹出真实窗口**，需要 `pytest-qt`（已在 `requirements-dev.txt` 里）——
+> 所以**完整套件需要真实桌面**，只能在有桌面的机器上跑。
+> CI 只跑其中 **178 条不依赖 Qt** 的用例（`test_damage_formula` / `test_data_flow` / `test_save_format`）。
 > OCR 测试另有要求：`models/` 下的 ONNX 模型不入库，需要时从 CI 的下载步骤取（见 `.github/workflows/build.yml`）。
 
 ---
